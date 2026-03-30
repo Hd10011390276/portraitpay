@@ -4,7 +4,7 @@
   "devCommand": "next dev",
   "installCommand": "npm install",
   "framework": "nextjs",
-  "regions": ["iad1", "sfo1", "hnd1"],
+  "regions": ["iad1"],
   "functions": {
     "src/app/api/**/*.ts": {
       "memory": 512,
@@ -46,11 +46,5 @@
         { "key": "Permissions-Policy", "value": "camera=(), microphone=(), geolocation=()" }
       ]
     }
-  ],
-  "env": {
-    "DATABASE_URL": "@database_url",
-    "AUTH_SECRET": "@auth_secret",
-    "AUTH_URL": "@auth_url",
-    "NEXTAUTH_URL": "@nextauth_url"
-  }
+  ]
 }
