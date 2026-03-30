@@ -44,12 +44,21 @@ export default function FaceTracePage() {
           <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-indigo-100 mb-4">
             <span className="text-2xl">🔍</span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
-            AI 人脸溯源
-          </h1>
+          <div className="flex items-center justify-center gap-2 mb-3">
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
+              AI 人脸溯源
+            </h1>
+            <span className="px-2.5 py-1 text-xs font-bold rounded-full bg-amber-100 text-amber-700 border border-amber-200 tracking-wide">
+              DEMO
+            </span>
+          </div>
           <p className="text-sm text-gray-500 max-w-md mx-auto leading-relaxed">
             上传 AI 生成的人像图片，系统将提取人脸向量，与链上已登记的真实名人数据库进行余弦相似度匹配，揭示权属来源。
           </p>
+          <div className="mt-3 inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-50 border border-amber-200 rounded-lg text-xs text-amber-700">
+            <span>⚠️</span>
+            <span>当前名人人脸向量为模拟数据，匹配结果仅供演示参考</span>
+          </div>
         </div>
 
         {/* Architecture callout */}
@@ -110,11 +119,14 @@ export default function FaceTracePage() {
             </p>
           </div>
           <div className="p-4 bg-white border border-gray-200 rounded-xl">
-            <h3 className="text-sm font-semibold text-gray-800 mb-1.5">🔮 预留接口</h3>
+            <h3 className="text-sm font-semibold text-gray-800 mb-1.5 flex items-center gap-2">
+              🔮 预留接口
+              <span className="px-1.5 py-0.5 text-xs font-medium rounded-full bg-gray-100 text-gray-500">生产环境</span>
+            </h3>
             <p className="text-xs text-gray-500 leading-relaxed">
               真实名人数据库接口（pgvector ANN 查询）已预留，替换{" "}
               <code className="bg-gray-100 px-1 rounded text-xs">celebrityDb.ts</code>{" "}
-              即可接入生产数据。
+              即可接入生产数据。当前向量为模拟生成。
             </p>
           </div>
         </div>

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { LanguageToggle } from "@/components/layout/LanguageToggle";
 
 export default function HomePage() {
   return (
@@ -20,6 +21,7 @@ export default function HomePage() {
               ))}
             </nav>
             <div className="flex items-center gap-3">
+              <LanguageToggle />
               <Link href="/login"
                 className="hidden sm:inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors">
                 Sign In
@@ -200,13 +202,21 @@ export default function HomePage() {
                 desc: "Enterprise-grade identity verification for celebrities, artists, and public figures. Whitelisted on-chain.",
                 color: "from-indigo-50 to-indigo-100 dark:from-indigo-900/20 dark:to-indigo-800/20",
                 border: "border-indigo-200 dark:border-indigo-800",
+                cta: "Get Verified",
+                ctaHref: "/kyc",
               },
             ].map((feature) => (
               <div key={feature.title}
                 className={`bg-gradient-to-br ${feature.color} rounded-2xl p-6 border ${feature.border} hover:shadow-lg transition-shadow`}>
                 <div className="text-4xl mb-4">{feature.icon}</div>
                 <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">{feature.title}</h3>
-                <p className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed">{feature.desc}</p>
+                <p className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed mb-4">{feature.desc}</p>
+                {feature.cta && (
+                  <Link href={feature.ctaHref!}
+                    className="inline-flex items-center gap-1.5 text-sm font-semibold text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 transition-colors">
+                    {feature.cta} →
+                  </Link>
+                )}
               </div>
             ))}
           </div>
@@ -323,7 +333,7 @@ export default function HomePage() {
                     </li>
                   ))}
                 </ul>
-                <Link href="/register"
+                <Link href={plan.name === "Enterprise" ? "/contact" : "/register"}
                   className={`block w-full text-center px-6 py-3 rounded-xl font-semibold transition-all
                     ${plan.highlight
                       ? "bg-blue-600 text-white hover:bg-blue-700 shadow-lg shadow-blue-600/25"
@@ -418,12 +428,18 @@ export default function HomePage() {
             <span className="text-gray-500 dark:text-gray-400 text-sm">© 2026 PortraitPay AI. All rights reserved.</span>
           </div>
           <div className="flex items-center gap-6">
-            {["Privacy Policy", "Terms of Service", "Contact"].map((link) => (
-              <a key={link} href="#"
-                className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">
-                {link}
-              </a>
-            ))}
+            <Link href="/privacy"
+              className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">
+              Privacy Policy
+            </Link>
+            <Link href="/terms"
+              className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">
+              Terms of Service
+            </Link>
+            <Link href="/contact"
+              className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">
+              Contact
+            </Link>
           </div>
         </div>
       </footer>

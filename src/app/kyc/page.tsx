@@ -35,7 +35,14 @@ export default function KYCPage() {
 
   return (
     <DashboardShell
-      title="KYC 身份认证"
+      title={
+        <span className="flex items-center gap-2">
+          KYC 身份认证
+          <span className="px-2 py-0.5 text-xs font-bold rounded-full bg-amber-100 text-amber-700 border border-amber-200 tracking-wide">
+            DEMO
+          </span>
+        </span>
+      }
       subtitle="完成身份验证以解锁企业授权和更多功能"
     >
       <div className="max-w-2xl mx-auto space-y-6">

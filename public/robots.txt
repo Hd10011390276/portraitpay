@@ -1,0 +1,23 @@
+User-agent: *
+Allow: /
+
+# Disallow admin/api routes
+Disallow: /api/
+Disallow: /admin/
+Disallow: /dashboard/
+Disallow: /portraits/
+Disallow: /earnings/
+Disallow: /withdraw/
+Disallow: /kyc/
+Disallow: /infringements/
+Disallow: /owner/
+Disallow: /enterprise/
+Disallow: /face-trace/
+Disallow: /ip-register/
+Disallow: /report/
+
+# Allow static assets
+Allow: /favicon.png
+Allow: /logo.png
+
+Sitemap: https://portraitpayai.com/sitemap.xml

@@ -518,11 +518,24 @@ export default function IPRegisterPage() {
       <header className="bg-white border-b border-gray-200 sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
-            <div>
-              <h1 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-                🎨 AI IP 版权注册
-              </h1>
-              <p className="text-xs text-gray-500">为 AI 生成的角色和内容登记版权，建立权属证明</p>
+            <div className="flex items-center gap-3">
+              <div>
+                <h1 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+                  🎨 AI IP 版权注册
+                  <span className="px-2.5 py-1 text-xs font-bold rounded-full bg-amber-100 text-amber-700 border border-amber-200 tracking-wide">
+                    DEMO
+                  </span>
+                </h1>
+                <p className="text-xs text-gray-500">为 AI 生成的角色和内容登记版权，建立权属证明</p>
+              </div>
+              <div className="ml-auto shrink-0">
+                <div className="flex flex-col items-end gap-1">
+                  <div className="flex items-center gap-1.5 px-2.5 py-1.5 bg-amber-50 border border-amber-200 rounded-lg text-xs text-amber-700">
+                    <span>⚠️</span>
+                    <span>区块链存证为演示功能</span>
+                  </div>
+                </div>
+              </div>
             </div>
             <Link href="/portraits" className="text-sm text-gray-500 hover:text-gray-700 flex items-center gap-1">
               ← 肖像管理
@@ -982,7 +995,7 @@ export default function IPRegisterPage() {
                                 disabled={isCertifying}
                                 className="flex-1 px-3 py-1.5 text-xs font-medium bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50 transition-colors"
                               >
-                                {isCertifying ? "🔗 认证中..." : "🔗 区块链认证"}
+                                {isCertifying ? "🔗 认证中..." : "🔗 DEMO 区块链认证"}
                               </button>
                             )}
 

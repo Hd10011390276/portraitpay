@@ -7,13 +7,16 @@ const PUBLIC_PATHS = [
   "/forgot-password",
   "/terms",
   "/privacy",
+  "/contact",
+  "/kyc",
+  "/enterprise/authorization/apply",
 ];
 
 export function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
-  // Allow public pages
-  if (PUBLIC_PATHS.some((p) => pathname.startsWith(p))) {
+  // Allow public pages (exact match for "/" + prefix match for others)
+  if (pathname === "/" || PUBLIC_PATHS.some((p) => pathname.startsWith(p))) {
     return NextResponse.next();
   }
 
