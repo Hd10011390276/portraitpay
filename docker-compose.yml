@@ -1,0 +1,117 @@
+version: "3.9"
+
+# ============================================================
+# PortraitPay AI — Docker Self-Hosted Configuration
+# ============================================================
+
+services:
+  # ─── Next.js Application ──────────────────────────────────
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: portraitpay-app
+    restart: unless-stopped
+    ports:
+      - "${APP_PORT:-3000}:3000"
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: ${DATABASE_URL}
+      AUTH_SECRET: ${AUTH_SECRET}
+      AUTH_URL: https://${APP_DOMAIN:-localhost:${APP_PORT:-3000}}
+      NEXTAUTH_URL: https://${APP_DOMAIN:-localhost:${APP_PORT:-3000}}
+      NEXTAUTH_SECRET: ${AUTH_SECRET}
+      # OAuth
+      AUTH_GOOGLE_ID: ${AUTH_GOOGLE_ID:-}
+      AUTH_GOOGLE_SECRET: ${AUTH_GOOGLE_SECRET:-}
+      # External
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      # Blockchain
+      ETHEREUM_SEPOLIA_RPC_URL: ${ETHEREUM_SEPOLIA_RPC_URL:-}
+      ETH_WALLET_PRIVATE_KEY: ${ETH_WALLET_PRIVATE_KEY:-}
+      PORTRAIT_CERT_CONTRACT_ADDRESS: ${PORTRAIT_CERT_CONTRACT_ADDRESS:-}
+      # IPFS
+      PINATA_API_KEY: ${PINATA_API_KEY:-}
+      PINATA_SECRET_API_KEY: ${PINATA_SECRET_API_KEY:-}
+      PINATA_JWT: ${PINATA_JWT:-}
+      # S3/R2
+      AWS_S3_BUCKET: ${AWS_S3_BUCKET:-portraitpay-uploads}
+      AWS_S3_REGION: ${AWS_S3_REGION:-us-east-1}
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID:-}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY:-}
+      AWS_ENDPOINT: ${AWS_ENDPOINT:-}
+      # Stripe
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:-}
+      STRIPE_PUBLISHABLE_KEY: ${STRIPE_PUBLISHABLE_KEY:-}
+      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:-}
+      STRIPE_STUB: ${STRIPE_STUB:-false}
+      # KYC
+      KYC_PROVIDER: ${KYC_PROVIDER:-aliyun}
+      KYC_ALIYUN_STUB: ${KYC_ALIYUN_STUB:-false}
+      KYC_ALIYUN_AUTO_APPROVE: ${KYC_ALIYUN_AUTO_APPROVE:-false}
+      KYC_ALIYUN_ACCESS_KEY_ID: ${KYC_ALIYUN_ACCESS_KEY_ID:-}
+      KYC_ALIYUN_ACCESS_KEY_SECRET: ${KYC_ALIYUN_ACCESS_KEY_SECRET:-}
+      KYC_ALIYUN_REGION: ${KYC_ALIYUN_REGION:-cn-shanghai}
+      KYC_ALIYUN_APP_ID: ${KYC_ALIYUN_APP_ID:-}
+      KYC_ALIYUN_WEBHOOK_SECRET: ${KYC_ALIYUN_WEBHOOK_SECRET:-}
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./uploads:/app/uploads:rw
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # ─── PostgreSQL Database ──────────────────────────────────
+  db:
+    image: postgres:16-alpine
+    container_name: portraitpay-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: portraitpay
+      POSTGRES_USER: ${DB_USER:-portraitpay}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-changeme}
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data:rw
+      - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-portraitpay} -d portraitpay"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  # ─── Redis (Session/Cache) ───────────────────────────────
+  redis:
+    image: redis:7-alpine
+    container_name: portraitpay-redis
+    restart: unless-stopped
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redisdata:/data:rw
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+# ─── Volumes ────────────────────────────────────────────────
+volumes:
+  pgdata:
+    driver: local
+  redisdata:
+    driver: local
+
+# ─── Networks ───────────────────────────────────────────────
+networks:
+  default:
+    name: portraitpay-network
+    driver: bridge
