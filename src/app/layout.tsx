@@ -20,7 +20,7 @@ export const metadata: Metadata = {
   description:
     "Register your portrait rights on Ethereum. Upload, certify, and manage portrait authorization with blockchain timestamps and IPFS storage.",
   icons: {
-    icon: "/logo.png",
+    icon: "/favicon.png",
   },
 };
 
