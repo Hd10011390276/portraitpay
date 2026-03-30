@@ -357,5 +357,3 @@ export async function createAccountLink(stripeCustomerId: string, returnUrl: str
   });
   return accountLink;
 }
-
-export { stripe };
