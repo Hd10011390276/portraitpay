@@ -66,8 +66,8 @@ export async function POST(request: NextRequest, context: RouteContext) {
 
     // ── Step 2: Check if imageHash already exists ────────────────
     if (portrait.imageHash) {
-      const existing = await prisma.portrait.findUnique({
-        where: { imageHash: portrait.imageHash, id: { not: id } },
+      const existing = await prisma.portrait.findFirst({
+        where: { imageHash: portrait.imageHash, NOT: { id } },
       });
       if (existing) {
         return NextResponse.json(

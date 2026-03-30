@@ -42,15 +42,16 @@ export async function GET(request: NextRequest) {
 
     const [alerts, total] = await Promise.all([
       prisma.infringementAlert.findMany({
-        where,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        where: where as any,
         orderBy: { createdAt: "desc" },
         skip: (page - 1) * limit,
         take: limit,
-        include: {
-          portrait: { select: { id: true, title: true, thumbnailUrl: true } },
-        },
       }),
-      prisma.infringementAlert.count({ where }),
+      prisma.infringementAlert.count({
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        where: where as any,
+      }),
     ]);
 
     return NextResponse.json({
