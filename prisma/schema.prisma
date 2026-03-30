@@ -84,6 +84,12 @@ enum InfringementType {
   DEEPFAKE
 }
 
+enum CelebrityAppStatus {
+  PENDING_REVIEW
+  APPROVED
+  REJECTED
+}
+
 enum LicenseType {
   EXCLUSIVE
   NON_EXCLUSIVE
@@ -130,6 +136,7 @@ model User {
   infringementReports   InfringementReport[] @relation("ReportDefendant")
   myReports             InfringementReport[] @relation("ReportPlaintiff")
   kycLogs               KYCLog[]
+  celebrityApplications CelebrityApplication[]
 
   // Revenue & Settlement
   withdrawals Withdrawal[]
@@ -556,9 +563,57 @@ model KYCLog {
   action      String
   result      Json?
 
+  // Additional KYC verification fields
+  level          Int?
+  idCardNumber   String?
+  idCardName     String?
+  idCardAddress  String?
+  idCardExpire   DateTime?
+  faceMatchScore Float?
+  ocrRawData     Json?
+  faceRawData    Json?
+  rejectReason   String?
+  verifierId     String?
+
   createdAt DateTime @default(now())
 
   @@index([userId])
+}
+
+// ============================================================
+// CelebrityApplication
+// ============================================================
+
+model CelebrityApplication {
+  id String @id @default(cuid())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  stageName       String
+  realName        String
+  idCardNumber    String
+  idCardFrontUrl  String
+  idCardBackUrl   String
+  authLetterUrl   String
+  authLetterHash  String?
+  notaryCertUrl   String?
+
+  agencyName    String?
+  agencyContact String?
+  agencyPhone   String?
+
+  status CelebrityAppStatus @default(PENDING_REVIEW)
+
+  reviewerId      String?
+  reviewedAt      DateTime?
+  rejectionReason String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([status])
 }
 
 // ============================================================
