@@ -19,7 +19,7 @@
 import { PrismaClient } from "@prisma/client";
 import { runMonitoringCycle } from "../src/lib/infringement/scanner";
 
-const prisma = new PrismaClient();
+const prisma = new PrismaClient({ datasourceUrl: process.env.DATABASE_URL });
 
 async function main() {
   const start = Date.now();

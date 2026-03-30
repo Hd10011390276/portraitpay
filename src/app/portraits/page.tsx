@@ -57,7 +57,7 @@ export default function PortraitsPage() {
       if (statusFilter) params.set("status", statusFilter);
       const res = await fetch(`/api/portraits?${params.toString()}`);
       const json = await res.json();
-      if (json.success) setPortraits(json.data);
+      if (json.success) setPortraits(json.data as Portrait[]);
     } catch {
       // Fallback mock data
       setPortraits([
