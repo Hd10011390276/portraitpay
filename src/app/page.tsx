@@ -233,19 +233,19 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto">
           <div className="text-center max-w-2xl mx-auto mb-16">
             <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white mb-4">
-              {t.steps.title}
+              {t.howItWorks.title}
             </h2>
             <p className="text-gray-600 dark:text-gray-400 text-lg">
-              {t.steps.sub}
+              {t.howItWorks.sub}
             </p>
           </div>
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
             {[
-              { step: "01", icon: "📤", title: t.steps.upload, desc: t.steps.uploadDesc },
-              { step: "02", icon: "🔍", title: t.steps.kyc, desc: t.steps.kycDesc },
-              { step: "03", icon: "🔗", title: t.steps.certify, desc: t.steps.certifyDesc },
-              { step: "04", icon: "💎", title: t.steps.license, desc: t.steps.licenseDesc },
+              { step: "01", icon: "📤", title: t.howItWorks.upload, desc: t.howItWorks.uploadDesc },
+              { step: "02", icon: "🔍", title: t.howItWorks.kyc, desc: t.howItWorks.kycDesc },
+              { step: "03", icon: "🔗", title: t.howItWorks.certify, desc: t.howItWorks.certifyDesc },
+              { step: "04", icon: "💎", title: t.howItWorks.license, desc: t.howItWorks.licenseDesc },
             ].map((item, i) => (
               <div key={item.step} className="relative">
                 {i < 3 && (
