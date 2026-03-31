@@ -159,6 +159,7 @@ export default function HomePage() {
           <div className="text-center max-w-2xl mx-auto mb-16">
             <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white mb-4">
               {t.features.title}
+            </h2>
             <p className="text-gray-600 dark:text-gray-400 text-lg">
               {t.features.sub}
             </p>
@@ -275,8 +276,10 @@ export default function HomePage() {
           <div className="text-center max-w-2xl mx-auto mb-16">
             <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white mb-4">
               {t.pricing.title}
+            </h2>
             <p className="text-gray-600 dark:text-gray-400 text-lg">
               {t.pricing.sub}
+            </p>
           </div>
 
           <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
