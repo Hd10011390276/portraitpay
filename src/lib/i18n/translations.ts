@@ -50,7 +50,16 @@ export const translations = {
     howItWorks: {
       title: "从肖像到受保护资产，只需4步",
       sub: "无需加密货币专业知识。我们处理区块链复杂性——你来掌控。",
+      upload: "上传肖像",
+      uploadDesc: "上传清晰的高分辨率肖像。我们自动检测并裁剪人脸。",
+      kyc: "完成 KYC",
+      kycDesc: "验证身份，解锁企业授权，提高个人资料信任分数。",
+      certify: "链上认证",
+      certifyDesc: "一键在以太坊 Sepolia 测试网铸造（Beta）。你的肖像哈希、元数据和时间戳被永久记录。",
+      license: "授权并收益",
+      licenseDesc: "设定授权条款。接受请求、收取版税、提取收益——全部在仪表板完成。",
     },
+
     // Pricing
     pricing: {
       title: "简单透明的定价",
@@ -196,7 +205,16 @@ steps: {
     howItWorks: {
       title: "From portrait to protected asset in 4 steps",
       sub: "No crypto expertise required. We handle the blockchain complexity — you keep control.",
+      upload: "Upload Portrait",
+      uploadDesc: "Upload a clear, high-resolution portrait. We detect faces automatically and crop for you.",
+      kyc: "Complete KYC",
+      kycDesc: "Verify your identity to unlock enterprise licensing and increase your profile trust score.",
+      certify: "Certify On-Chain",
+      certifyDesc: "One click to mint on Ethereum Sepolia testnet (Beta). Your portrait hash, metadata, and timestamp permanently recorded.",
+      license: "License & Earn",
+      licenseDesc: "Set your licensing terms. Accept requests, collect royalties, withdraw earnings — all from your dashboard.",
     },
+
     // Pricing
     pricing: {
       title: "Simple, transparent pricing",
