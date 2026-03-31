@@ -160,7 +160,7 @@ export default function HomePage() {
             <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white mb-4">
               {t.features.title}
             <p className="text-gray-600 dark:text-gray-400 text-lg">
-              From upload to on-chain certification in minutes. Fully automated, cryptographically secure.
+              {t.features.sub}
             </p>
           </div>
 
@@ -274,9 +274,9 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto">
           <div className="text-center max-w-2xl mx-auto mb-16">
             <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white mb-4">
-              Simple, transparent pricing
+              {t.pricing.title}
             <p className="text-gray-600 dark:text-gray-400 text-lg">
-              Start free. Scale as you grow. No hidden fees.
+              {t.pricing.sub}
           </div>
 
           <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
