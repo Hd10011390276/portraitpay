@@ -1,7 +1,12 @@
+"use client";
+
 import Link from "next/link";
 import { LanguageToggle } from "@/components/layout/LanguageToggle";
+import { useLanguage } from "@/context/LanguageContext";
 
 export default function HomePage() {
+  const { t } = useLanguage();
+
   return (
     <div className="min-h-screen bg-white dark:bg-gray-950">
       {/* ── Navbar ─────────────────────────────────────────────────────── */}
@@ -111,7 +116,7 @@ export default function HomePage() {
                 <div className="w-3 h-3 rounded-full bg-red-400" />
                 <div className="w-3 h-3 rounded-full bg-yellow-400" />
                 <div className="w-3 h-3 rounded-full bg-green-400" />
-                <div className="flex-1 text-center text-xs text-gray-400">PortraitPay Dashboard</div>
+                <div className="flex-1 text-center text-xs text-gray-400">{t.dashboard.title}</div>
               </div>
               <div className="p-6 grid grid-cols-2 md:grid-cols-4 gap-4">
                 {[
@@ -361,7 +366,7 @@ export default function HomePage() {
             {[
               {
                 q: "What is portrait rights certification?",
-                a: "Portrait rights certification records your portrait's existence, authorship, and timestamp on the Ethereum blockchain. This creates an immutable, legally admissible proof of when and by whom the portrait was created.",
+                a: "t.faq.q1Ans",
               },
               {
                 q: "Do I need cryptocurrency to use PortraitPay?",
@@ -404,7 +409,7 @@ export default function HomePage() {
             <div className="absolute bottom-0 left-0 w-48 h-48 rounded-full bg-white" />
           </div>
           <div className="relative">
-            <h2 className="text-3xl sm:text-4xl font-bold mb-4">Ready to own your portrait rights?</h2>
+            <h2 className="text-3xl sm:text-4xl font-bold mb-4">{t.cta.title}</h2>
             <p className="text-blue-100 text-lg mb-8 max-w-xl mx-auto">
               Join creators protecting their image identity on the blockchain. Beta — your feedback shapes the product.
             </p>
@@ -428,7 +433,7 @@ export default function HomePage() {
           <div className="flex items-center gap-3">
             <img src="/logo-dark.svg" alt="PortraitPay AI" className="hidden dark:block w-auto h-7" />
             <img src="/logo-light.svg" alt="PortraitPay AI" className="block dark:hidden w-auto h-7" />
-            <span className="text-gray-500 dark:text-gray-400 text-sm">© 2026 PortraitPay AI. All rights reserved.</span>
+            <span className="text-gray-500 dark:text-gray-400 text-sm">{t.footer.copyright}</span>
           </div>
           <div className="flex items-center gap-6">
             <Link href="/privacy"
