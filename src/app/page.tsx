@@ -9,8 +9,10 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center gap-3">
-              <img src="/logo.png" alt="PortraitPay AI" className="w-8 h-8 rounded-lg" />
-              <span className="font-bold text-gray-900 dark:text-white">PortraitPay AI</span>
+              {/* Dark mode: white text on black background */}
+              <img src="/logo-dark.svg" alt="PortraitPay AI" className="hidden dark:block w-auto h-8" style={{minHeight:'24px'}} />
+              {/* Light mode: black text on white background */}
+              <img src="/logo-light.svg" alt="PortraitPay AI" className="block dark:hidden w-auto h-8" style={{minHeight:'24px'}} />
             </div>
             <nav className="hidden md:flex items-center gap-8">
               {["Features", "How it Works", "Pricing", "FAQ"].map((item) => (
