@@ -159,10 +159,8 @@ export default function HomePage() {
           <div className="text-center max-w-2xl mx-auto mb-16">
             <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white mb-4">
               Everything you need to protect your portrait rights
-            </h2>
             <p className="text-gray-600 dark:text-gray-400 text-lg">
-              From upload to on-chain certification in minutes. Fully automated,
-              cryptographically secure.
+              From upload to on-chain certification in minutes. Fully automated, cryptographically secure.
             </p>
           </div>
 
@@ -170,36 +168,36 @@ export default function HomePage() {
             {[
               {
                 icon: "🔗",
-                title: "Blockchain Certification",
-                desc: "Mint your portrait as an on-chain asset on Ethereum Sepolia testnet. Immutable timestamps, tamper-proof records.",
+                title: t.features.blockchain,
+                desc: t.features.blockchainDesc,
                 color: "from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20",
                 border: "border-purple-200 dark:border-purple-800",
               },
               {
                 icon: "🖼️",
-                title: "IPFS Storage",
-                desc: "Your portrait and metadata stored on IPFS via Pinata — decentralized and redundant. Beta feature.",
+                title: t.features.ipfs,
+                desc: t.features.ipfsDesc,
                 color: "from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20",
                 border: "border-blue-200 dark:border-blue-800",
               },
               {
                 icon: "📋",
-                title: "Smart Licensing",
-                desc: "Define usage terms — who can use your portrait, for how long, and at what price. Coming soon.",
+                title: t.features.smartLicensing,
+                desc: t.features.smartLicensingDesc,
                 color: "from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20",
                 border: "border-green-200 dark:border-green-800",
               },
               {
                 icon: "💰",
-                title: "Royalty Collection",
-                desc: "Earn automatically when your portrait is licensed. 99% of licensing revenue goes to you, 1% platform fee.",
+                title: t.features.royalty,
+                desc: t.features.royaltyDesc,
                 color: "from-yellow-50 to-yellow-100 dark:from-yellow-900/20 dark:to-yellow-800/20",
                 border: "border-yellow-200 dark:border-yellow-800",
               },
               {
                 icon: "👁️",
-                title: "Infringement Detection",
-                desc: "AI-powered image scanning monitors the web for unauthorized use of your certified portraits. Beta — platforms in development.",
+                title: t.features.infringement,
+                desc: t.features.infringementDesc,
                 color: "from-red-50 to-red-100 dark:from-red-900/20 dark:to-red-800/20",
                 border: "border-red-200 dark:border-red-800",
               },
@@ -277,39 +275,37 @@ export default function HomePage() {
           <div className="text-center max-w-2xl mx-auto mb-16">
             <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white mb-4">
               Simple, transparent pricing
-            </h2>
             <p className="text-gray-600 dark:text-gray-400 text-lg">
               Start free. Scale as you grow. No hidden fees.
-            </p>
           </div>
 
           <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
             {[
               {
-                name: "Free",
-                price: "¥0",
-                period: "forever",
-                desc: "For individual creators getting started",
-                features: ["5 portrait uploads", "Basic KYC (self-attested)", "Community support", "Standard licensing"],
-                cta: "Get Started",
+                name: t.pricing.free,
+                price: t.pricing.freePrice,
+                period: t.pricing.forever,
+                desc: t.pricing.freeDesc,
+                features: [t.pricing.f1, t.pricing.f2, t.pricing.f3, t.pricing.f4],
+                cta: t.pricing.getStarted,
                 highlight: false,
               },
               {
-                name: "Pro",
-                price: "¥99",
-                period: "/ month",
-                desc: "For professional artists and influencers",
-                features: ["Unlimited portraits", "Full KYC verification", "Priority support", "Smart contract licensing", "Real-time earnings dashboard", "IPFS permanent storage"],
-                cta: "Start Pro Trial",
+                name: t.pricing.pro,
+                price: t.pricing.proPrice,
+                period: t.pricing.perMonth,
+                desc: t.pricing.proDesc,
+                features: [t.pricing.f5, t.pricing.f6, t.pricing.f7, t.pricing.f8, t.pricing.f9, t.pricing.f10],
+                cta: t.pricing.proTrial,
                 highlight: true,
               },
               {
-                name: "Enterprise",
+                name: t.pricing.enterprise,
                 price: "Custom",
                 period: "",
-                desc: "For agencies and entertainment companies",
-                features: ["Everything in Pro", "Multi-artist management", "White-label certificates", "Dedicated account manager", "Custom licensing terms", "API access"],
-                cta: "Contact Sales",
+                desc: t.pricing.enterpriseDesc,
+                features: [t.pricing.f11, t.pricing.f12, t.pricing.f13, t.pricing.f14, t.pricing.f15, t.pricing.f16],
+                cta: t.pricing.contactSales,
                 highlight: false,
               },
             ].map((plan) => (
