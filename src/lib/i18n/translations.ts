@@ -32,6 +32,19 @@ export const translations = {
     features: {
       title: "保护你肖像权所需的一切",
       sub: "从上传到链上认证，只需几分钟。完全自动化，密码学安全。",
+      blockchain: "区块链认证",
+      blockchainDesc: "在以太坊 Sepolia 测试网上将你的肖像铸造为链上资产。不可变时间戳，防篡改记录。",
+      ipfs: "IPFS 存储",
+      ipfsDesc: "你的肖像和元数据通过 Pinata 存储在 IPFS 上——去中心化且冗余。Beta 功能。",
+      smartLicensing: "智能许可",
+      smartLicensingDesc: "设定使用条款——谁可以使用你的肖像、使用多久、价格多少。即将推出。",
+      royalty: "版权收益",
+      royaltyDesc: "肖像被授权时自动获得收益。授权收入的 99% 归你，1% 平台费。",
+      infringement: "侵权检测",
+      infringementDesc: "AI 驱动图像扫描，监测网上对你已认证肖像的未授权使用。Beta——平台覆盖范围正在扩展。",
+      kyc: "KYC 实名认证",
+      kycDesc: "为名人、艺术家和公众人物提供企业级身份验证。Beta 功能。",
+      kycLink: "立即认证 →",
     },
     // How it works
     howItWorks: {
@@ -182,6 +195,19 @@ export const translations = {
     features: {
       title: "Everything you need to protect your portrait rights",
       sub: "From upload to on-chain certification in minutes. Fully automated, cryptographically secure.",
+      blockchain: "Blockchain Certification",
+      blockchainDesc: "Mint your portrait as an on-chain asset on Ethereum Sepolia testnet. Immutable timestamps, tamper-proof records.",
+      ipfs: "IPFS Storage",
+      ipfsDesc: "Your portrait and metadata stored on IPFS via Pinata — decentralized and redundant. Beta feature.",
+      smartLicensing: "Smart Licensing",
+      smartLicensingDesc: "Define usage terms — who can use your portrait, for how long, and at what price. Coming soon.",
+      royalty: "Royalty Collection",
+      royaltyDesc: "Earn automatically when your portrait is licensed. 99% of licensing revenue goes to you, 1% platform fee.",
+      infringement: "Infringement Detection",
+      infringementDesc: "AI-powered image scanning monitors the web for unauthorized use of your certified portraits. Beta — platforms in development.",
+      kyc: "KYC Verified Profiles",
+      kycDesc: "Enterprise-grade identity verification for celebrities, artists, and public figures. Beta feature.",
+      kycLink: "Get Verified →",
     },
     // How it works
     howItWorks: {
