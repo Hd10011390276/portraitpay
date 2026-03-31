@@ -426,7 +426,8 @@ export default function HomePage() {
       <footer className="border-t border-gray-100 dark:border-gray-800 py-12 px-4">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-6">
           <div className="flex items-center gap-3">
-            <img src="/logo.png" alt="PortraitPay AI" className="w-7 h-7 rounded-lg" />
+            <img src="/logo-dark.svg" alt="PortraitPay AI" className="hidden dark:block w-auto h-7" />
+            <img src="/logo-light.svg" alt="PortraitPay AI" className="block dark:hidden w-auto h-7" />
             <span className="text-gray-500 dark:text-gray-400 text-sm">© 2026 PortraitPay AI. All rights reserved.</span>
           </div>
           <div className="flex items-center gap-6">
