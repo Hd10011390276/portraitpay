@@ -1,7 +1,12 @@
+"use client";
+
 import Link from "next/link";
 import { LanguageToggle } from "@/components/layout/LanguageToggle";
+import { useLanguage } from "@/context/LanguageContext";
 
 export default function HomePage() {
+  const { t } = useLanguage();
+
   return (
     <div className="min-h-screen bg-white dark:bg-gray-950">
       {/* ── Navbar ─────────────────────────────────────────────────────── */}
@@ -9,11 +14,12 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center gap-3">
-              <img src="/logo.png" alt="PortraitPay AI" className="w-8 h-8 rounded-lg" />
-              <span className="font-bold text-gray-900 dark:text-white">PortraitPay AI</span>
+              {/* Light mode: logo with dark bg + white text; dark mode: logo with white bg + black text */}
+              <img src="/logo-light.svg" alt="PortraitPay AI" className="block dark:hidden w-auto h-8" style={{minHeight:'24px'}} />
+              <img src="/logo-dark.svg" alt="PortraitPay AI" className="hidden dark:block w-auto h-8" style={{minHeight:'24px'}} />
             </div>
             <nav className="hidden md:flex items-center gap-8">
-              {["Features", "How it Works", "Pricing", "FAQ"].map((item) => (
+              {Object.values(t.nav).map((item) => (
                 <a key={item} href={`#${item.toLowerCase().replace(" ", "-")}`}
                   className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">
                   {item}
@@ -24,11 +30,11 @@ export default function HomePage() {
               <LanguageToggle />
               <Link href="/login"
                 className="hidden sm:inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors">
-                Sign In
+                {t.nav.signIn}
               </Link>
               <Link href="/register"
                 className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors shadow-sm">
-                Get Started Free
+                {t.nav.getStarted}
               </Link>
             </div>
           </div>
@@ -50,24 +56,17 @@ export default function HomePage() {
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75" />
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500" />
               </span>
-              Now live on Ethereum Sepolia Testnet (Beta)
+              {t.hero.badge}
             </div>
 
             {/* Headline */}
-            <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold text-gray-900 dark:text-white leading-tight tracking-tight">
-              Your Portrait.
-              <br />
-              <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                Your Rights.
-              </span>
-              <br />
-              On Chain.
+            <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold text-gray-900 dark:text-white leading-tight tracking-tight whitespace-pre-line">
+              {t.hero.headline}
             </h1>
 
             {/* Sub */}
             <p className="text-lg sm:text-xl text-gray-600 dark:text-gray-400 max-w-2xl mx-auto leading-relaxed">
-              Register your portrait rights on the Ethereum blockchain (Sepolia testnet) with
-              immutable timestamps, IPFS storage, and smart-contract licensing. Own your image identity — once and for all.{/* beta */}
+              {t.hero.sub}
               <span className="ml-2 inline-flex items-center rounded bg-yellow-100 dark:bg-yellow-900/30 px-1.5 py-0.5 text-xs font-medium text-yellow-700 dark:text-yellow-300 align-middle">Beta</span>
             </p>
 
@@ -75,21 +74,21 @@ export default function HomePage() {
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <Link href="/register"
                 className="w-full sm:w-auto inline-flex items-center justify-center px-8 py-3.5 text-base font-semibold text-white bg-blue-600 rounded-xl hover:bg-blue-700 transition-all shadow-lg shadow-blue-600/25 hover:shadow-blue-600/40 hover:-translate-y-0.5">
-                Start Free — Register Now
+                {t.hero.cta1}
                 <svg className="ml-2 w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
                 </svg>
               </Link>
               <Link href="#how-it-works"
                 className="w-full sm:w-auto inline-flex items-center justify-center px-8 py-3.5 text-base font-semibold text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 transition-all border border-gray-200 dark:border-gray-700 hover:-translate-y-0.5">
-                See How It Works
+                {t.hero.cta2}
               </Link>
             </div>
 
             {/* Social proof */}
             <div className="flex flex-col items-center gap-3 pt-4">
               <div className="flex -space-x-2">
-                {["JD", "MW", "SK", "AL", "RK"].map(( initials, i) => (
+                {["JD", "MW", "SK", "AL", "RK"].map((initials, i) => (
                   <div key={i}
                     className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white text-xs font-bold border-2 border-white dark:border-gray-950">
                     {initials}
@@ -97,7 +96,7 @@ export default function HomePage() {
                 ))}
               </div>
               <p className="text-sm text-gray-500 dark:text-gray-400">
-                <span className="font-semibold text-gray-900 dark:text-white">2,400+</span> artists and creators registered
+                <span className="font-semibold text-gray-900 dark:text-white">2,400+</span> {t.hero.socialProof}
               </p>
             </div>
           </div>
@@ -109,14 +108,14 @@ export default function HomePage() {
                 <div className="w-3 h-3 rounded-full bg-red-400" />
                 <div className="w-3 h-3 rounded-full bg-yellow-400" />
                 <div className="w-3 h-3 rounded-full bg-green-400" />
-                <div className="flex-1 text-center text-xs text-gray-400">PortraitPay Dashboard</div>
+                <div className="flex-1 text-center text-xs text-gray-400">{t.dashboard.title}</div>
               </div>
               <div className="p-6 grid grid-cols-2 md:grid-cols-4 gap-4">
                 {[
-                  { label: "Portraits Certified", value: "24", delta: "+3" },
-                  { label: "Total Earnings", value: "¥12,840", delta: "+¥1,200" },
-                  { label: "Pending Authorizations", value: "5", delta: "" },
-                  { label: "Blockchain Status", value: "✅ Live", delta: "" },
+                  { label: t.dashboard.certified, value: "24", delta: "+3" },
+                  { label: t.dashboard.earnings, value: "¥12,840", delta: "+¥1,200" },
+                  { label: t.dashboard.pending, value: "5", delta: "" },
+                  { label: t.dashboard.blockchain, value: t.dashboard.live, delta: "" },
                 ].map((stat) => (
                   <div key={stat.label} className="bg-white dark:bg-gray-900 rounded-xl p-4 text-center border border-gray-100 dark:border-gray-800">
                     <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">{stat.label}</p>
@@ -127,9 +126,9 @@ export default function HomePage() {
               </div>
               <div className="p-6 pt-0 grid grid-cols-3 gap-4">
                 {[
-                  { title: "Portrait of Jane D.", status: "✅ Certified On-chain", tx: "0x7a3f...c9e2" },
-                  { title: "Artist Portrait — M.W.", status: "🔍 Under Review", tx: "" },
-                  { title: "Celebrity Portrait — S.K.", status: "✅ Certified On-chain", tx: "0xb2d1...f8a0" },
+                  { title: t.dashboard.sample1, status: t.dashboard.certifiedOnchain, tx: "0x7a3f...c9e2" },
+                  { title: t.dashboard.sample2, status: t.dashboard.review, tx: "" },
+                  { title: t.dashboard.sample3, status: t.dashboard.certifiedOnchain, tx: "0xb2d1...f8a0" },
                 ].map((card) => (
                   <div key={card.title} className="rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
                     <div className="h-24 bg-gradient-to-br from-blue-100 to-purple-100 dark:from-blue-900/20 dark:to-purple-900/20 flex items-center justify-center text-3xl">👤</div>
@@ -151,11 +150,10 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto">
           <div className="text-center max-w-2xl mx-auto mb-16">
             <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white mb-4">
-              Everything you need to protect your portrait rights
+              {t.features.title}
             </h2>
             <p className="text-gray-600 dark:text-gray-400 text-lg">
-              From upload to on-chain certification in minutes. Fully automated,
-              cryptographically secure.
+              {t.features.sub}
             </p>
           </div>
 
@@ -163,46 +161,46 @@ export default function HomePage() {
             {[
               {
                 icon: "🔗",
-                title: "Blockchain Certification",
-                desc: "Mint your portrait as an on-chain asset on Ethereum Sepolia testnet. Immutable timestamps, tamper-proof records.",
+                title: t.features.blockchain,
+                desc: t.features.blockchainDesc,
                 color: "from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20",
                 border: "border-purple-200 dark:border-purple-800",
               },
               {
                 icon: "🖼️",
-                title: "IPFS Storage",
-                desc: "Your portrait and metadata stored on IPFS via Pinata — decentralized and redundant. Beta feature.",
+                title: t.features.ipfs,
+                desc: t.features.ipfsDesc,
                 color: "from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20",
                 border: "border-blue-200 dark:border-blue-800",
               },
               {
                 icon: "📋",
-                title: "Smart Licensing",
-                desc: "Define usage terms — who can use your portrait, for how long, and at what price. Coming soon.",
+                title: t.features.smartLicensing,
+                desc: t.features.smartLicensingDesc,
                 color: "from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20",
                 border: "border-green-200 dark:border-green-800",
               },
               {
                 icon: "💰",
-                title: "Royalty Collection",
-                desc: "Earn automatically when your portrait is licensed. 99% of licensing revenue goes to you, 1% platform fee.",
+                title: t.features.royalty,
+                desc: t.features.royaltyDesc,
                 color: "from-yellow-50 to-yellow-100 dark:from-yellow-900/20 dark:to-yellow-800/20",
                 border: "border-yellow-200 dark:border-yellow-800",
               },
               {
                 icon: "👁️",
-                title: "Infringement Detection",
-                desc: "AI-powered image scanning monitors the web for unauthorized use of your certified portraits. Beta — platforms in development.",
+                title: t.features.infringement,
+                desc: t.features.infringementDesc,
                 color: "from-red-50 to-red-100 dark:from-red-900/20 dark:to-red-800/20",
                 border: "border-red-200 dark:border-red-800",
               },
               {
                 icon: "🔐",
-                title: "KYC Verified Profiles",
-                desc: "Enterprise-grade identity verification for celebrities, artists, and public figures. Beta feature.",
+                title: t.features.kyc,
+                desc: t.features.kycDesc,
                 color: "from-indigo-50 to-indigo-100 dark:from-indigo-900/20 dark:to-indigo-800/20",
                 border: "border-indigo-200 dark:border-indigo-800",
-                cta: "Get Verified",
+                cta: t.features.kycLink,
                 ctaHref: "/kyc",
               },
             ].map((feature) => (
@@ -228,19 +226,19 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto">
           <div className="text-center max-w-2xl mx-auto mb-16">
             <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white mb-4">
-              From portrait to protected asset in 4 steps
+              {t.howItWorks.title}
             </h2>
             <p className="text-gray-600 dark:text-gray-400 text-lg">
-              No crypto expertise required. We handle the blockchain complexity — you keep control.
+              {t.howItWorks.sub}
             </p>
           </div>
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
             {[
-              { step: "01", icon: "📤", title: "Upload Portrait", desc: "Upload a clear, high-resolution portrait. We detect faces automatically and crop for you." },
-              { step: "02", icon: "🔍", title: "Complete KYC", desc: "Verify your identity to unlock enterprise licensing and increase your profile trust score." },
-              { step: "03", icon: "🔗", title: "Certify On-Chain", desc: "One click to mint on Ethereum Sepolia testnet (Beta). Your portrait hash, metadata, and timestamp permanently recorded." },
-              { step: "04", icon: "💎", title: "License & Earn", desc: "Set your licensing terms. Accept requests, collect royalties, withdraw earnings — all from your dashboard." },
+              { step: "01", icon: "📤", title: t.howItWorks.upload, desc: t.howItWorks.uploadDesc },
+              { step: "02", icon: "🔍", title: t.howItWorks.kyc, desc: t.howItWorks.kycDesc },
+              { step: "03", icon: "🔗", title: t.howItWorks.certify, desc: t.howItWorks.certifyDesc },
+              { step: "04", icon: "💎", title: t.howItWorks.license, desc: t.howItWorks.licenseDesc },
             ].map((item, i) => (
               <div key={item.step} className="relative">
                 {i < 3 && (
@@ -269,40 +267,40 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto">
           <div className="text-center max-w-2xl mx-auto mb-16">
             <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white mb-4">
-              Simple, transparent pricing
+              {t.pricing.title}
             </h2>
             <p className="text-gray-600 dark:text-gray-400 text-lg">
-              Start free. Scale as you grow. No hidden fees.
+              {t.pricing.sub}
             </p>
           </div>
 
           <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
             {[
               {
-                name: "Free",
-                price: "¥0",
-                period: "forever",
-                desc: "For individual creators getting started",
-                features: ["5 portrait uploads", "Basic KYC (self-attested)", "Community support", "Standard licensing"],
-                cta: "Get Started",
+                name: t.pricing.free,
+                price: t.pricing.freePrice,
+                period: t.pricing.forever,
+                desc: t.pricing.freeDesc,
+                features: [t.pricing.f1, t.pricing.f2, t.pricing.f3, t.pricing.f4],
+                cta: t.pricing.getStarted,
                 highlight: false,
               },
               {
-                name: "Pro",
-                price: "¥99",
-                period: "/ month",
-                desc: "For professional artists and influencers",
-                features: ["Unlimited portraits", "Full KYC verification", "Priority support", "Smart contract licensing", "Real-time earnings dashboard", "IPFS permanent storage"],
-                cta: "Start Pro Trial",
+                name: t.pricing.pro,
+                price: t.pricing.proPrice,
+                period: t.pricing.perMonth,
+                desc: t.pricing.proDesc,
+                features: [t.pricing.f5, t.pricing.f6, t.pricing.f7, t.pricing.f8, t.pricing.f9, t.pricing.f10],
+                cta: t.pricing.proTrial,
                 highlight: true,
               },
               {
-                name: "Enterprise",
-                price: "Custom",
+                name: t.pricing.enterprise,
+                price: t.pricing.custom,
                 period: "",
-                desc: "For agencies and entertainment companies",
-                features: ["Everything in Pro", "Multi-artist management", "White-label certificates", "Dedicated account manager", "Custom licensing terms", "API access"],
-                cta: "Contact Sales",
+                desc: t.pricing.enterpriseDesc,
+                features: [t.pricing.f11, t.pricing.f12, t.pricing.f13, t.pricing.f14, t.pricing.f15, t.pricing.f16],
+                cta: t.pricing.contactSales,
                 highlight: false,
               },
             ].map((plan) => (
@@ -314,7 +312,7 @@ export default function HomePage() {
                   }`}>
                 {plan.highlight && (
                   <span className="inline-block px-3 py-1 text-xs font-semibold bg-blue-600 text-white rounded-full mb-4">
-                    Most Popular
+                    {t.pricing.popular}
                   </span>
                 )}
                 <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-1">{plan.name}</h3>
@@ -333,7 +331,7 @@ export default function HomePage() {
                     </li>
                   ))}
                 </ul>
-                <Link href={plan.name === "Enterprise" ? "/contact" : "/register"}
+                <Link href={plan.name === t.pricing.enterprise ? "/contact" : "/register"}
                   className={`block w-full text-center px-6 py-3 rounded-xl font-semibold transition-all
                     ${plan.highlight
                       ? "bg-blue-600 text-white hover:bg-blue-700 shadow-lg shadow-blue-600/25"
@@ -352,33 +350,18 @@ export default function HomePage() {
         <div className="max-w-3xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white">
-              Frequently Asked Questions
+              {t.faq.title}
             </h2>
           </div>
           <div className="space-y-4">
             {[
-              {
-                q: "What is portrait rights certification?",
-                a: "Portrait rights certification records your portrait's existence, authorship, and timestamp on the Ethereum blockchain. This creates an immutable, legally admissible proof of when and by whom the portrait was created.",
-              },
-              {
-                q: "Do I need cryptocurrency to use PortraitPay?",
-                a: "No. We handle all gas fees for certification. You can link a Chinese bank account or Alipay/WeChat Pay for withdrawals. No wallet setup required.",
-              },
-              {
-                q: "How does the AI infringement detection work?",
-                a: "Our AI scanning infrastructure uses face recognition + visual similarity to detect potential unauthorized use. Platform coverage is being expanded. When a match is found above your threshold, you receive an alert and evidence package. Beta.",
-              },
-              {
-                q: "What is KYC and why do I need it?",
-                a: "KYC (Know Your Customer) verifies your identity to prevent fraud. For public figures and celebrities, full KYC is required to certify portraits and access enterprise licensing features.",
-              },
-              {
-                q: "Can enterprises bulk-register their artists?",
-                a: "Yes. Enterprise plans include agency dashboards for managing multiple artists, batch portrait uploads, and group licensing agreements.",
-              },
-            ].map((faq) => (
-              <details key={faq.q} className="group bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+              { q: t.faq.q1, a: t.faq.q1Ans },
+              { q: t.faq.q2, a: t.faq.q2Ans },
+              { q: t.faq.q3, a: t.faq.q3Ans },
+              { q: t.faq.q4, a: t.faq.q4Ans },
+              { q: t.faq.q5, a: t.faq.q5Ans },
+            ].map((faq, idx) => (
+              <details key={idx} className="group bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
                 <summary className="flex items-center justify-between px-6 py-4 cursor-pointer text-gray-900 dark:text-white font-medium">
                   {faq.q}
                   <svg className="w-5 h-5 text-gray-400 group-open:rotate-180 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -402,18 +385,18 @@ export default function HomePage() {
             <div className="absolute bottom-0 left-0 w-48 h-48 rounded-full bg-white" />
           </div>
           <div className="relative">
-            <h2 className="text-3xl sm:text-4xl font-bold mb-4">Ready to own your portrait rights?</h2>
+            <h2 className="text-3xl sm:text-4xl font-bold mb-4">{t.cta.title}</h2>
             <p className="text-blue-100 text-lg mb-8 max-w-xl mx-auto">
-              Join creators protecting their image identity on the blockchain. Beta — your feedback shapes the product.
+              {t.cta.sub}
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link href="/register"
                 className="inline-flex items-center justify-center px-8 py-3.5 bg-white text-blue-600 font-semibold rounded-xl hover:bg-blue-50 transition-colors shadow-lg">
-                Start Free Today
+                {t.cta.cta1}
               </Link>
               <Link href="/login"
                 className="inline-flex items-center justify-center px-8 py-3.5 text-white font-semibold rounded-xl border-2 border-white/30 hover:bg-white/10 transition-colors">
-                Sign In
+                {t.nav.signIn}
               </Link>
             </div>
           </div>
@@ -424,21 +407,22 @@ export default function HomePage() {
       <footer className="border-t border-gray-100 dark:border-gray-800 py-12 px-4">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-6">
           <div className="flex items-center gap-3">
-            <img src="/logo.png" alt="PortraitPay AI" className="w-7 h-7 rounded-lg" />
-            <span className="text-gray-500 dark:text-gray-400 text-sm">© 2026 PortraitPay AI. All rights reserved.</span>
+            <img src="/logo-light.svg" alt="PortraitPay AI" className="block dark:hidden w-auto h-7" />
+            <img src="/logo-dark.svg" alt="PortraitPay AI" className="hidden dark:block w-auto h-7" />
+            <span className="text-gray-500 dark:text-gray-400 text-sm">{t.footer.copyright}</span>
           </div>
           <div className="flex items-center gap-6">
             <Link href="/privacy"
               className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">
-              Privacy Policy
+              {t.footer.privacy}
             </Link>
             <Link href="/terms"
               className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">
-              Terms of Service
+              {t.footer.terms}
             </Link>
             <Link href="/contact"
               className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">
-              Contact
+              {t.footer.contact}
             </Link>
           </div>
         </div>
