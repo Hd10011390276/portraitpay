@@ -21,7 +21,7 @@ export interface ContactEmailData {
   company?: string;
   subject?: string;
   message: string;
-  type: "GENERAL" | "ENTERPRISE";
+  type: "GENERAL" | "ENTERPRISE" | "CELEBRITY";
   // Enterprise extra
   enterpriseName?: string;
   intendedUse?: string;
@@ -112,22 +112,35 @@ async function sendViaAliyun(opts: EmailOptions): Promise<void> {
 // ============================================================
 function buildContactNotificationEmail(data: ContactEmailData): { subject: string; html: string; text: string } {
   const isEnterprise = data.type === "ENTERPRISE";
+  const isCelebrity = data.type === "CELEBRITY";
   const subject = isEnterprise
     ? `【企业入驻咨询】${data.name} - ${data.enterpriseName ?? data.company ?? ""}`
+    : isCelebrity
+    ? `【艺人入驻申请】${data.name} - ${data.subject ?? ""}（${data.enterpriseName ?? ""}）`
     : `【联系表单】${data.name} - ${data.subject ?? ""}`;
 
   const rows = [
     ["姓名", data.name],
     ["邮箱", data.email],
-    ["公司", data.company ?? "—"],
-    ...(isEnterprise
+    ...(isCelebrity
       ? [
-          ["企业名称", data.enterpriseName ?? "—"],
+          ["艺名/舞台名", data.subject ?? "—"],
+          ["艺人类型", data.enterpriseName ?? "—"],
           ["联系电话", data.contactPhone ?? "—"],
-          ["预期规模", data.expectedScale ?? "—"],
-          ["用途说明", data.intendedUse ?? "—"],
+          ["社交媒体", data.intendedUse ?? "—"],
+          ["所属机构", data.company ?? "—"],
         ]
-      : []),
+      : [
+          ["公司", data.company ?? "—"],
+          ...(isEnterprise
+            ? [
+                ["企业名称", data.enterpriseName ?? "—"],
+                ["联系电话", data.contactPhone ?? "—"],
+                ["预期规模", data.expectedScale ?? "—"],
+                ["用途说明", data.intendedUse ?? "—"],
+              ]
+            : []),
+        ]),
     ["留言内容", data.message],
   ]
     .map(([k, v]) => `<tr><td style="padding:8px 12px;font-weight:bold;color:#666;white-space:nowrap">${k}</td><td style="padding:8px 12px">${v}</td></tr>`)
@@ -140,7 +153,7 @@ function buildContactNotificationEmail(data: ContactEmailData): { subject: strin
 <body style="font-family:Arial,sans-serif;background:#f4f4f4;margin:0;padding:20px">
 <div style="max-width:600px;margin:0 auto;background:#fff;border-radius:8px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.08)">
   <div style="background:#7c3aed;padding:20px 24px">
-    <h2 style="margin:0;color:#fff;font-size:18px">${isEnterprise ? "🏢 企业入驻咨询" : "📋 联系表单通知"}</h2>
+    <h2 style="margin:0;color:#fff;font-size:18px">${isEnterprise ? "🏢 企业入驻咨询" : isCelebrity ? "🌟 艺人入驻申请" : "📋 联系表单通知"}</h2>
     <p style="margin:4px 0 0;color:#e9d5ff;font-size:13px">PortraitPay AI · 新消息</p>
   </div>
   <div style="padding:24px">
@@ -155,7 +168,7 @@ function buildContactNotificationEmail(data: ContactEmailData): { subject: strin
 </html>`;
 
   const text = [
-    `${isEnterprise ? "企业入驻咨询" : "联系表单通知"}`,
+    `${isEnterprise ? "企业入驻咨询" : isCelebrity ? "艺人入驻申请" : "联系表单通知"}`,
     ...rows.replace(/<[^>]+>/g, "").split("\n").filter(Boolean),
     `提交时间: ${new Date().toLocaleString("zh-CN", { timeZone: "Asia/Shanghai" })}`,
     `管理后台: ${process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"}/admin/contacts`,
