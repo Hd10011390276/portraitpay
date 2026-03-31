@@ -204,7 +204,7 @@ export default function HomePage() {
               {
                 icon: "🔐",
                 title: "KYC Verified Profiles",
-                desc: "Enterprise-grade identity verification for celebrities, artists, and public figures. Beta feature.",
+                desc: t.features.kycDesc,
                 color: "from-indigo-50 to-indigo-100 dark:from-indigo-900/20 dark:to-indigo-800/20",
                 border: "border-indigo-200 dark:border-indigo-800",
                 cta: "Get Verified",
@@ -242,10 +242,10 @@ export default function HomePage() {
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
             {[
-              { step: "01", icon: "📤", title: "Upload Portrait", desc: "Upload a clear, high-resolution portrait. We detect faces automatically and crop for you." },
-              { step: "02", icon: "🔍", title: "Complete KYC", desc: "Verify your identity to unlock enterprise licensing and increase your profile trust score." },
-              { step: "03", icon: "🔗", title: "Certify On-Chain", desc: "One click to mint on Ethereum Sepolia testnet (Beta). Your portrait hash, metadata, and timestamp permanently recorded." },
-              { step: "04", icon: "💎", title: "License & Earn", desc: "Set your licensing terms. Accept requests, collect royalties, withdraw earnings — all from your dashboard." },
+              { step: "01", icon: "📤", title: t.steps.upload, desc: t.steps.uploadDesc },
+              { step: "02", icon: "🔍", title: t.steps.kyc, desc: t.steps.kycDesc },
+              { step: "03", icon: "🔗", title: t.steps.certify, desc: t.steps.certifyDesc },
+              { step: "04", icon: "💎", title: t.steps.license, desc: t.steps.licenseDesc },
             ].map((item, i) => (
               <div key={item.step} className="relative">
                 {i < 3 && (
@@ -301,7 +301,7 @@ export default function HomePage() {
               },
               {
                 name: t.pricing.enterprise,
-                price: "Custom",
+                price: t.pricing.custom,
                 period: "",
                 desc: t.pricing.enterpriseDesc,
                 features: [t.pricing.f11, t.pricing.f12, t.pricing.f13, t.pricing.f14, t.pricing.f15, t.pricing.f16],
@@ -317,7 +317,7 @@ export default function HomePage() {
                   }`}>
                 {plan.highlight && (
                   <span className="inline-block px-3 py-1 text-xs font-semibold bg-blue-600 text-white rounded-full mb-4">
-                    Most Popular
+                    {t.pricing.popular}
                   </span>
                 )}
                 <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-1">{plan.name}</h3>
