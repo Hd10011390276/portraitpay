@@ -20,7 +20,7 @@ export default function HomePage() {
               <img src="/logo-light.svg" alt="PortraitPay AI" className="block dark:hidden w-auto h-8" style={{minHeight:'24px'}} />
             </div>
             <nav className="hidden md:flex items-center gap-8">
-              {["Features", "How it Works", "Pricing", "FAQ"].map((item) => (
+              {Object.values(t.nav).map((item) => (
                 <a key={item} href={`#${item.toLowerCase().replace(" ", "-")}`}
                   className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">
                   {item}
@@ -365,24 +365,24 @@ export default function HomePage() {
           <div className="space-y-4">
             {[
               {
-                q: "What is portrait rights certification?",
+                q: t.faq.q1,
                 a: "t.faq.q1Ans",
               },
               {
-                q: "Do I need cryptocurrency to use PortraitPay?",
-                a: "No. We handle all gas fees for certification. You can link a Chinese bank account or Alipay/WeChat Pay for withdrawals. No wallet setup required.",
+                q: t.faq.q2,
+                a: t.faq.q2Ans,
               },
               {
-                q: "How does the AI infringement detection work?",
-                a: "Our AI scanning infrastructure uses face recognition + visual similarity to detect potential unauthorized use. Platform coverage is being expanded. When a match is found above your threshold, you receive an alert and evidence package. Beta.",
+                q: t.faq.q3,
+                a: t.faq.q3Ans,
               },
               {
-                q: "What is KYC and why do I need it?",
-                a: "KYC (Know Your Customer) verifies your identity to prevent fraud. For public figures and celebrities, full KYC is required to certify portraits and access enterprise licensing features.",
+                q: t.faq.q4,
+                a: t.faq.q4Ans,
               },
               {
-                q: "Can enterprises bulk-register their artists?",
-                a: "Yes. Enterprise plans include agency dashboards for managing multiple artists, batch portrait uploads, and group licensing agreements.",
+                q: t.faq.q5,
+                a: t.faq.q5Ans,
               },
             ].map((faq) => (
               <details key={faq.q} className="group bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
