@@ -4,6 +4,7 @@
  */
 import { prisma } from "@/lib/prisma";
 import type { EntAuthStatus, LicenseType } from "@/types/enums";
+import { ENT_AUTH_STATUSES, LICENSE_TYPES } from "@/types/enums";
 import { addDays } from "date-fns";
 import { generateAuthorizationContract } from "./contract";
 import { generateCertificatePDF } from "./certificate";
@@ -69,7 +70,7 @@ export async function createEnterpriseAuthApplication(
       usageDuration: input.usageDuration,
       proposedFee: input.proposedFee,
       currency: input.currency ?? "CNY",
-      status: EntAuthStatus.PENDING_PORTRAIT_OWNER,
+      status: ENT_AUTH_STATUSES.PENDING_PORTRAIT_OWNER,
     },
   });
 
@@ -82,18 +83,18 @@ export async function createEnterpriseAuthApplication(
 export async function confirmByPortraitOwner(applicationId: string, ownerId: string) {
   const application = await prisma.entAuthApplication.findUnique({
     where: { id: applicationId },
-    include: { portrait: true },
   });
   if (!application) throw new Error("申请不存在");
-  if (application.portrait.ownerId !== ownerId) throw new Error("您不是该肖像的所有者");
-  if (application.status !== EntAuthStatus.PENDING_PORTRAIT_OWNER) {
+  const portrait = await prisma.portrait.findUnique({ where: { id: application.portraitId }, select: { ownerId: true } });
+  if (portrait?.ownerId !== ownerId) throw new Error("您不是该肖像的所有者");
+  if (application.status !== ENT_AUTH_STATUSES.PENDING_PORTRAIT_OWNER) {
     throw new Error("当前状态不允许此操作");
   }
 
   return prisma.entAuthApplication.update({
     where: { id: applicationId },
     data: {
-      status: EntAuthStatus.PENDING_PLATFORM_REVIEW,
+      status: ENT_AUTH_STATUSES.PENDING_PLATFORM_REVIEW,
       portraitOwnerConfirmed: true,
       portraitOwnerConfirmedAt: new Date(),
     },
@@ -106,18 +107,18 @@ export async function confirmByPortraitOwner(applicationId: string, ownerId: str
 export async function rejectByPortraitOwner(applicationId: string, ownerId: string, reason?: string) {
   const application = await prisma.entAuthApplication.findUnique({
     where: { id: applicationId },
-    include: { portrait: true },
   });
   if (!application) throw new Error("申请不存在");
-  if (application.portrait.ownerId !== ownerId) throw new Error("您不是该肖像的所有者");
-  if (application.status !== EntAuthStatus.PENDING_PORTRAIT_OWNER) {
+  const portrait = await prisma.portrait.findUnique({ where: { id: application.portraitId }, select: { ownerId: true } });
+  if (portrait?.ownerId !== ownerId) throw new Error("您不是该肖像的所有者");
+  if (application.status !== ENT_AUTH_STATUSES.PENDING_PORTRAIT_OWNER) {
     throw new Error("当前状态不允许此操作");
   }
 
   return prisma.entAuthApplication.update({
     where: { id: applicationId },
     data: {
-      status: EntAuthStatus.REJECTED,
+      status: ENT_AUTH_STATUSES.REJECTED,
     },
   });
 }
@@ -132,23 +133,25 @@ export async function approveByPlatform(
 ) {
   const application = await prisma.entAuthApplication.findUnique({
     where: { id: applicationId },
-    include: {
-      portrait: { include: { owner: true } },
-    },
   });
   if (!application) throw new Error("申请不存在");
-  if (application.status !== EntAuthStatus.PENDING_PLATFORM_REVIEW) {
+  if (application.status !== ENT_AUTH_STATUSES.PENDING_PLATFORM_REVIEW) {
     throw new Error("当前状态不允许此操作");
   }
+
+  const portrait = await prisma.portrait.findUnique({
+    where: { id: application.portraitId },
+    select: { ownerId: true },
+  });
 
   // 创建正式的 Authorization 记录
   const endDate = addDays(new Date(), application.usageDuration);
   const authorization = await prisma.authorization.create({
     data: {
       portraitId: application.portraitId,
-      granterId: application.portrait.ownerId,
+      granterId: portrait?.ownerId ?? application.portraitId,
       granteeId: (await prisma.enterprise.findUnique({ where: { id: application.enterpriseId } }))!.userId,
-      licenseType: application.exclusivity ? LicenseType.EXCLUSIVE : LicenseType.NON_EXCLUSIVE,
+      licenseType: application.exclusivity ? LICENSE_TYPES.EXCLUSIVE : LICENSE_TYPES.NON_EXCLUSIVE,
       usageScope: application.usageScope,
       exclusivity: application.exclusivity,
       territorialScope: application.territorialScope,
@@ -169,7 +172,7 @@ export async function approveByPlatform(
   const updated = await prisma.entAuthApplication.update({
     where: { id: applicationId },
     data: {
-      status: EntAuthStatus.APPROVED,
+      status: ENT_AUTH_STATUSES.APPROVED,
       authorizationId: authorization.id,
       platformReviewerId: reviewerId,
       platformReviewedAt: new Date(),
@@ -197,14 +200,14 @@ export async function rejectByPlatform(
     where: { id: applicationId },
   });
   if (!application) throw new Error("申请不存在");
-  if (application.status !== EntAuthStatus.PENDING_PLATFORM_REVIEW) {
+  if (application.status !== ENT_AUTH_STATUSES.PENDING_PLATFORM_REVIEW) {
     throw new Error("当前状态不允许此操作");
   }
 
   return prisma.entAuthApplication.update({
     where: { id: applicationId },
     data: {
-      status: EntAuthStatus.REJECTED,
+      status: ENT_AUTH_STATUSES.REJECTED,
       platformReviewerId: reviewerId,
       platformReviewedAt: new Date(),
       platformRejectionReason: reason,
@@ -278,7 +281,7 @@ export async function listPendingPlatformReview(page = 1, limit = 20) {
   const skip = (page - 1) * limit;
   const [applications, total] = await Promise.all([
     prisma.entAuthApplication.findMany({
-      where: { status: EntAuthStatus.PENDING_PLATFORM_REVIEW },
+      where: { status: ENT_AUTH_STATUSES.PENDING_PLATFORM_REVIEW },
       include: {
         portrait: {
           include: { owner: { select: { displayName: true, email: true } } },
@@ -289,7 +292,7 @@ export async function listPendingPlatformReview(page = 1, limit = 20) {
       take: limit,
     }),
     prisma.entAuthApplication.count({
-      where: { status: EntAuthStatus.PENDING_PLATFORM_REVIEW },
+      where: { status: ENT_AUTH_STATUSES.PENDING_PLATFORM_REVIEW },
     }),
   ]);
   return { applications, total, page, limit };
@@ -302,7 +305,7 @@ export async function listActiveAuthorizations(enterpriseId: string) {
   const applications = await prisma.entAuthApplication.findMany({
     where: {
       enterpriseId,
-      status: EntAuthStatus.APPROVED,
+      status: ENT_AUTH_STATUSES.APPROVED,
     },
     include: {
       portrait: {
@@ -323,16 +326,15 @@ export async function listActiveAuthorizations(enterpriseId: string) {
 export async function revokeAuthorization(applicationId: string, revokerId: string) {
   const application = await prisma.entAuthApplication.findUnique({
     where: { id: applicationId },
-    include: { authorization: true },
   });
   if (!application) throw new Error("申请不存在");
-  if (application.status !== EntAuthStatus.APPROVED) {
+  if (application.status !== ENT_AUTH_STATUSES.APPROVED) {
     throw new Error("当前状态不允许撤销");
   }
 
   await prisma.entAuthApplication.update({
     where: { id: applicationId },
-    data: { status: EntAuthStatus.REVOKED },
+    data: { status: ENT_AUTH_STATUSES.REVOKED },
   });
 
   if (application.authorizationId) {

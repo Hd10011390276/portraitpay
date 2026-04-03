@@ -3,7 +3,6 @@
  */
 
 import type { NextAuthConfig } from "next-auth";
-import type { Session } from "@auth/core/types";
 import NextAuth from "next-auth";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import GoogleProvider from "next-auth/providers/google";
@@ -53,10 +52,10 @@ const credentialsOptions = {
       }
       return token;
     },
-    async session({ session, token }: { session: Session; token: { id?: string; role?: string } }) {
+    async session({ session, token }) {
       if (session.user) {
-        (session.user as { id?: string; role?: string }).id = token.id;
-        if (token.role) (session.user as { role?: string }).role = token.role;
+        (session.user as { id?: string; role?: string }).id = token.id as string;
+        if (token.role) (session.user as { role?: string }).role = token.role as string;
       }
       return session;
     },

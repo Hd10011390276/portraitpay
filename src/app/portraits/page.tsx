@@ -7,12 +7,14 @@ import PortraitCard from "@/components/portrait/PortraitCard";
 import { DashboardShell } from "@/components/layout/DashboardShell";
 import { SkeletonGrid, Skeleton } from "@/components/ui/Skeleton";
 
+type PortraitStatus = "DRAFT" | "UNDER_REVIEW" | "ACTIVE" | "SUSPENDED" | "ARCHIVED";
+
 interface Portrait {
   id: string;
   title: string;
   description?: string | null;
   category: string;
-  status: string;
+  status: PortraitStatus;
   thumbnailUrl?: string | null;
   originalImageUrl?: string | null;
   imageHash?: string | null;

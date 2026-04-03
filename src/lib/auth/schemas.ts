@@ -22,7 +22,7 @@ export const RegisterSchema = z.object({
   confirmPassword: z.string().min(1, "请确认密码"),
   name: z.string().min(1, "姓名不能为空").max(50, "姓名最多50字符"),
   role: z.enum(["USER", "ARTIST", "AGENCY", "ENTERPRISE"], {
-    errorMap: () => ({ message: "请选择角色" }),
+    error: "请选择角色",
   }),
   phone: z.string().optional(),
 }).refine((data) => data.password === data.confirmPassword, {

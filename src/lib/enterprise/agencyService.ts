@@ -4,6 +4,7 @@
  */
 import { prisma } from "@/lib/prisma";
 import type { EntAuthStatus, LicenseType } from "@/types/enums";
+import { ENT_AUTH_STATUSES } from "@/types/enums";
 import { addDays } from "date-fns";
 
 export interface AddArtistInput {
@@ -69,9 +70,6 @@ export async function addArtistToAgency(input: AddArtistInput) {
 export async function listAgencyArtists(agencyId: string) {
   const artists = await prisma.agencyArtist.findMany({
     where: { agencyId, proxyStatus: "ACTIVE" },
-    include: {
-      // artist relation via raw query since prisma doesn't auto-link
-    },
   });
 
   const artistIds = artists.map(a => a.artistId);
@@ -162,7 +160,7 @@ export async function batchCreateAuthorization(input: BatchAuthorizationInput) {
           usageDuration: input.usageDuration,
           proposedFee: input.proposedFee,
           currency: input.currency ?? "CNY",
-          status: EntAuthStatus.PENDING_PORTRAIT_OWNER,
+          status: ENT_AUTH_STATUSES.PENDING_PORTRAIT_OWNER,
         },
       });
 
@@ -189,28 +187,33 @@ export async function batchConfirmByAgency(
     try {
       const application = await prisma.entAuthApplication.findUnique({
         where: { id: appId },
-        include: { portrait: true },
       });
       if (!application) throw new Error("申请不存在");
+
+      // Fetch the portrait to get ownerId
+      const portrait = await prisma.portrait.findUnique({
+        where: { id: application.portraitId },
+        select: { ownerId: true },
+      });
 
       // 检查该肖像 owner 是否在 agency 的代理列表中
       const relation = await prisma.agencyArtist.findUnique({
         where: {
-          agencyId_artistId: { agencyId, artistId: application.portrait.ownerId },
+          agencyId_artistId: { agencyId, artistId: portrait?.ownerId ?? application.portraitId },
         },
       });
       if (!relation || relation.proxyStatus !== "ACTIVE") {
         throw new Error("无权代理该肖像");
       }
 
-      if (application.status !== EntAuthStatus.PENDING_PORTRAIT_OWNER) {
+      if (application.status !== ENT_AUTH_STATUSES.PENDING_PORTRAIT_OWNER) {
         throw new Error("状态不允许此操作");
       }
 
       const updated = await prisma.entAuthApplication.update({
         where: { id: appId },
         data: {
-          status: EntAuthStatus.PENDING_PLATFORM_REVIEW,
+          status: ENT_AUTH_STATUSES.PENDING_PLATFORM_REVIEW,
           portraitOwnerConfirmed: true,
           portraitOwnerConfirmedAt: new Date(),
         },
@@ -244,16 +247,23 @@ export async function listAgencyApplications(agencyId: string, status?: EntAuthS
   });
   const portraitIds = portraits.map(p => p.id);
 
-  return prisma.entAuthApplication.findMany({
+  const applications = await prisma.entAuthApplication.findMany({
     where: {
       portraitId: { in: portraitIds },
       ...(status ? { status } : {}),
     },
-    include: {
-      portrait: {
-        select: { id: true, title: true, thumbnailUrl: true },
-      },
-    },
     orderBy: { createdAt: "desc" },
   });
+
+  const portraitIdSet = Array.from(new Set(applications.map(a => a.portraitId)));
+  const portraitDetails = await prisma.portrait.findMany({
+    where: { id: { in: portraitIdSet } },
+    select: { id: true, title: true, thumbnailUrl: true },
+  });
+  const portraitMap = Object.fromEntries(portraitDetails.map(p => [p.id, p]));
+
+  return applications.map(app => ({
+    ...app,
+    portrait: portraitMap[app.portraitId],
+  }));
 }
