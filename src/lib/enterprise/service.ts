@@ -3,7 +3,7 @@
  * 企业认证与资质管理
  */
 import { prisma } from "@/lib/prisma";
-import type { EnterpriseStatus } from "@/types/enums";
+import { ENTERPRISE_STATUSES } from "@/types/enums";
 import { addYears } from "date-fns";
 
 export interface EnterpriseProfile {
@@ -87,7 +87,7 @@ export async function registerEnterprise(
       contactEmail: input.contactEmail,
       isAgency: input.isAgency ?? false,
       agencyLicenseUrl: input.agencyLicenseUrl,
-      status: EnterpriseStatus.PENDING,
+      status: ENTERPRISE_STATUSES.PENDING,
     },
   });
 
@@ -104,7 +104,7 @@ export async function updateEnterprise(
   if (!enterprise) {
     throw new Error("企业认证记录不存在");
   }
-  if (enterprise.status === EnterpriseStatus.APPROVED) {
+  if (enterprise.status === ENTERPRISE_STATUSES.APPROVED) {
     // 已认证的企业信息修改需要重新审核
     const updated = await prisma.enterprise.update({
       where: { id: enterprise.id },
@@ -115,7 +115,7 @@ export async function updateEnterprise(
         contactEmail: input.contactEmail ?? enterprise.contactEmail,
         // 修改营业执照信息需要重新审核
         licenseImageUrl: input.licenseImageUrl ?? enterprise.licenseImageUrl,
-        status: input.licenseImageUrl ? EnterpriseStatus.PENDING : enterprise.status,
+        status: input.licenseImageUrl ? ENTERPRISE_STATUSES.PENDING : enterprise.status,
       },
     });
     return updated as EnterpriseProfile;
@@ -164,12 +164,12 @@ export async function listPendingEnterprises(page = 1, limit = 20) {
   const skip = (page - 1) * limit;
   const [enterprises, total] = await Promise.all([
     prisma.enterprise.findMany({
-      where: { status: EnterpriseStatus.PENDING },
+      where: { status: ENTERPRISE_STATUSES.PENDING },
       orderBy: { createdAt: "asc" },
       skip,
       take: limit,
     }),
-    prisma.enterprise.count({ where: { status: EnterpriseStatus.PENDING } }),
+    prisma.enterprise.count({ where: { status: ENTERPRISE_STATUSES.PENDING } }),
   ]);
   return { enterprises, total, page, limit };
 }
@@ -184,11 +184,11 @@ export async function reviewEnterprise(
     where: { id: enterpriseId },
   });
   if (!enterprise) throw new Error("企业记录不存在");
-  if (enterprise.status !== EnterpriseStatus.PENDING) {
+  if (enterprise.status !== ENTERPRISE_STATUSES.PENDING) {
     throw new Error("该企业不在待审核状态");
   }
 
-  const newStatus = action === "APPROVE" ? EnterpriseStatus.APPROVED : EnterpriseStatus.REJECTED;
+  const newStatus = action === "APPROVE" ? ENTERPRISE_STATUSES.APPROVED : ENTERPRISE_STATUSES.REJECTED;
   const validUntil = action === "APPROVE" ? addYears(new Date(), 1) : null;
 
   const updated = await prisma.enterprise.update({

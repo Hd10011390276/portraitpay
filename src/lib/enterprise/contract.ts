@@ -12,6 +12,7 @@ export async function generateAuthorizationContract(authorizationId: string): Pr
     include: {
       portrait: { include: { owner: true } },
       grantee: true,
+      granter: true,
     },
   });
   if (!auth) throw new Error("Authorization not found");
@@ -93,6 +94,7 @@ export async function getContractContent(authorizationId: string) {
     include: {
       portrait: { include: { owner: true } },
       grantee: true,
+      granter: true,
     },
   });
   if (!auth) throw new Error("Authorization not found");

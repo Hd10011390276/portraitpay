@@ -78,6 +78,13 @@ export const ENT_AUTH_STATUSES = {
   REVOKED: "REVOKED",
 } as const;
 
+export const ENTERPRISE_STATUSES = {
+  PENDING: "PENDING",
+  APPROVED: "APPROVED",
+  REJECTED: "REJECTED",
+  EXPIRED: "EXPIRED",
+} as const;
+
 export const USER_AUDIT_ACTIONS = {
   LOGIN: "LOGIN",
   LOGIN_FAILED: "LOGIN_FAILED",
