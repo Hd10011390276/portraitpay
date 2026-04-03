@@ -111,6 +111,7 @@ model Portrait {
   authorizations Authorization[]
   licenses       License[]
   reports        InfringementReport[]
+  entAuthApplications EntAuthApplication[]
 
   @@index([ownerId])
   @@index([status])
@@ -157,6 +158,7 @@ model Authorization {
 
   licenses    License[]
   transaction Transaction?
+  entAuthApplication EntAuthApplication?
 
   @@index([portraitId])
   @@index([granteeId])
@@ -543,6 +545,7 @@ model Enterprise {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  entAuthApplications EntAuthApplication[]
 
   @@index([userId])
   @@index([status])
@@ -580,7 +583,10 @@ model EntAuthApplication {
   id String @id @default(cuid())
 
   enterpriseId String
-  portraitId   String
+  enterprise   Enterprise @relation(fields: [enterpriseId], references: [id])
+
+  portraitId String
+  portrait   Portrait   @relation(fields: [portraitId], references: [id])
 
   purpose          String   @db.Text
   usageScope       String[] @default([])
@@ -601,7 +607,8 @@ model EntAuthApplication {
   platformReviewedAt      DateTime?
   platformRejectionReason String?   @db.Text
 
-  authorizationId String? @unique
+  authorizationId String?   @unique
+  authorization  Authorization? @relation(fields: [authorizationId], references: [id])
 
   contractHash    String? @unique
   contractIpfsCid String?
