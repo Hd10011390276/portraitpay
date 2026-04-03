@@ -2,9 +2,9 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useToast } from "@/components/ui/Toast";
+import { useToast, ToastProvider } from "@/components/ui/Toast";
 
-export default function SettingsPage() {
+function SettingsContent() {
   const { toast } = useToast();
   const [saving, setSaving] = useState(false);
   const [emailNotifications, setEmailNotifications] = useState(true);
@@ -152,5 +152,13 @@ export default function SettingsPage() {
         </form>
       </main>
     </div>
+  );
+}
+
+export default function SettingsPage() {
+  return (
+    <ToastProvider>
+      <SettingsContent />
+    </ToastProvider>
   );
 }
