@@ -9,12 +9,12 @@ export const metadata: Metadata = {
   title: "PortraitPay AI — Portrait Rights on Blockchain",
   description:
     "AI驱动的肖像权保护平台。区块链认证 + IPFS存储 + 智能合约授权。保护你的数字身份。",
+  icons: {
+    icon: "/favicon.png",
+    shortcut: "/favicon.png",
+  },
 };
 
-export const icons = {
-  icon: "/favicon.png",
-  shortcut: "/favicon.png",
-};
 
 export default function RootLayout({
   children,
