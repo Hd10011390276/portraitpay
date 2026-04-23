@@ -28,7 +28,8 @@ export async function middleware(req: NextRequest) {
     pathname.startsWith("/api/auth/otp/") ||
     pathname.startsWith("/api/auth/forgot-password") ||
     pathname.startsWith("/api/auth/verify-email") ||
-    pathname.startsWith("/api/auth/refresh")
+    pathname.startsWith("/api/auth/refresh") ||
+    pathname.startsWith("/api/lawyers/apply")
   ) {
     return NextResponse.next();
   }
