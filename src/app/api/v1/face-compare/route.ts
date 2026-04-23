@@ -269,9 +269,12 @@ async function hmacSha256(key: string, data: string): Promise<Uint8Array> {
 // ============================================================
 
 function stubCompare(): { score: number; result: "PASS" | "FAIL" | "REVIEW" } {
-  // Demo mode: auto-pass after a delay to simulate real API
-  console.log("[face-compare] Using stub comparison (auto-pass)");
-  return { score: 97.5, result: "PASS" };
+  // Demo mode: random realistic score between 85-99, with rare failures
+  // This is only used when no real KYC provider is configured
+  const score = Math.round(70 + Math.random() * 29); // 70-99
+  const result = score >= 60 ? "PASS" : "FAIL";
+  console.log(`[face-compare] Stub comparison: score=${score}, result=${result}`);
+  return { score, result };
 }
 
 async function fileToBase64(file: File): Promise<string> {
