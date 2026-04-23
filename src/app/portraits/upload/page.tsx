@@ -21,7 +21,15 @@ type Stage = "form" | "uploading" | "certifying" | "certify_done";
 
 const FACE_MATCH_THRESHOLD = 60;
 
-// ── SHA-256 hash (kept for image integrity) ───────────────────────
+async function fileToBase64(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
 async function computeHash(file: File): Promise<string> {
   const buf = await file.arrayBuffer();
   const hash = await crypto.subtle.digest("SHA-256", buf);
@@ -80,6 +88,34 @@ export default function UploadPortraitPage() {
   // ── Form ─────────────────────────────────────────────────────
   const [form, setForm] = useState({ title: "", description: "", category: "general", tags: "", isPublic: false });
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const runFaceMatch = useCallback(async (portraitFile: File, idCardFile: File) => {
+    setFaceMatchStatus("loading");
+    setFaceMatchError(null);
+    try {
+      const [portraitBase64, idCardBase64] = await Promise.all([
+        fileToBase64(portraitFile),
+        fileToBase64(idCardFile),
+      ]);
+      const res = await fetch("/api/v1/face-compare", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ portraitImage: portraitBase64, idCardImage: idCardBase64 }),
+      });
+      const json = await res.json();
+      if (json.success && json.data?.match) {
+        setFaceMatchScore(json.data.score);
+        setFaceMatchStatus("success");
+      } else {
+        setFaceMatchScore(json.data?.score ?? null);
+        setFaceMatchStatus("failed");
+        setFaceMatchError(json.error || "Face match failed");
+      }
+    } catch (err) {
+      setFaceMatchStatus("failed");
+      setFaceMatchError((err as Error).message);
+    }
+  }, []);
 
   // ── Auto-trigger face match when both images ready ───────────────────────
   useEffect(() => {
