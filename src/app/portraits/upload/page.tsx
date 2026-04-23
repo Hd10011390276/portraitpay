@@ -21,15 +21,6 @@ type Stage = "form" | "uploading" | "certifying" | "certify_done";
 
 const FACE_MATCH_THRESHOLD = 60;
 
-async function fileToBase64(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result as string);
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
-}
-
 async function computeHash(file: File): Promise<string> {
   const buf = await file.arrayBuffer();
   const hash = await crypto.subtle.digest("SHA-256", buf);
@@ -93,23 +84,21 @@ export default function UploadPortraitPage() {
     setFaceMatchStatus("loading");
     setFaceMatchError(null);
     try {
-      const [portraitBase64, idCardBase64] = await Promise.all([
-        fileToBase64(portraitFile),
-        fileToBase64(idCardFile),
-      ]);
+      const formData = new FormData();
+      formData.append("portrait", portraitFile);
+      formData.append("idCard", idCardFile);
       const res = await fetch("/api/v1/face-compare", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ portraitImage: portraitBase64, idCardImage: idCardBase64 }),
+        body: formData,
       });
       const json = await res.json();
-      if (json.success && json.data?.match) {
-        setFaceMatchScore(json.data.score);
+      if (json.success && json.score >= FACE_MATCH_THRESHOLD) {
+        setFaceMatchScore(json.score);
         setFaceMatchStatus("success");
       } else {
-        setFaceMatchScore(json.data?.score ?? null);
+        setFaceMatchScore(json.score ?? null);
         setFaceMatchStatus("failed");
-        setFaceMatchError(json.error || "Face match failed");
+        setFaceMatchError(json.error || `比对未通过（${json.score ?? 0}%）`);
       }
     } catch (err) {
       setFaceMatchStatus("failed");
