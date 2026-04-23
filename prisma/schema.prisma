@@ -1193,3 +1193,34 @@ model CelebrityIntake {
   @@index([status])
   @@index([createdAt])
 }
+
+// ============================================================
+// LawyerRegistration — Lawyer/Firm Onboarding
+// ============================================================
+
+model LawyerRegistration {
+  id String @id @default(cuid())
+
+  companyName String
+  region      String   // e.g. "北京市", "上海市", "广东省"
+  contactName String
+  contactEmail String
+  contactPhone String
+
+  // URL to business license or bar association certificate
+  licenseUrl String?
+
+  // Status: PENDING, REVIEWING, APPROVED, REJECTED
+  status String @default("PENDING")
+
+  reviewerId      String?
+  reviewedAt      DateTime?
+  rejectionReason String?   @db.Text
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status])
+  @@index([region])
+  @@index([createdAt])
+}

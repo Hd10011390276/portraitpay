@@ -10,6 +10,7 @@ const PUBLIC_PATHS = [
   "/contact",
 "/celebrity",
   "/enterprise/authorization/apply",
+  "/enterprise/lawyer-registration",
 ];
 
 export async function middleware(req: NextRequest) {
