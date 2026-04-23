@@ -173,19 +173,17 @@ export default function UploadPortraitPage() {
       if (!createJson.success) throw new Error(createJson.error);
       const id = createJson.data.id as string;
 
-      // 2. Upload to S3
+      // 2. Upload to R2 via server proxy (avoids CORS)
       setProgress(t.upload?.uploadingToStorage || "上传到存储...");
-      const presignedRes = await fetch(`/api/portraits/${id}/upload`);
-      if (!presignedRes.ok) throw new Error("Failed to get upload URL");
-      const { data: uploadUrls } = await presignedRes.json();
-
-      const s3Res = await fetch(uploadUrls.original.uploadUrl, {
-        method: "PUT",
-        body: croppedFile,
-        headers: { "Content-Type": "image/jpeg" },
+      const uploadFormData = new FormData();
+      uploadFormData.append("image", croppedFile);
+      const s3Res = await fetch(`/api/portraits/${id}/upload/direct`, {
+        method: "POST",
+        body: uploadFormData,
       });
-      if (!s3Res.ok) throw new Error("S3 upload failed");
-      const originalImageUrl = uploadUrls.original.objectUrl;
+      const s3Json = await s3Res.json();
+      if (!s3Res.ok || !s3Json.success) throw new Error(s3Json.error || "S3 upload failed");
+      const originalImageUrl = s3Json.data.originalImageUrl;
 
       await savePortraitLocally(id, croppedFile);
 
