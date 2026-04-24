@@ -20,6 +20,13 @@ export const translations = {
       getStarted: "免费开始",
       lawyer: "律师楼入驻",
     },
+    // Common UI labels
+    common: {
+      lightMode: "日间",
+      darkMode: "夜间",
+      switchToLight: "切换到日间模式",
+      switchToDark: "切换到夜间模式",
+    },
     // Hero
     hero: {
       badge: "已上线 Base 主网",
@@ -1031,6 +1038,9 @@ export const translations = {
       certificate: "证书",
       status: "状态",
       type: "类型",
+      remove: "移除",
+      dragDropUpload: "拖拽文件到此处，或点击选择",
+      supportedFormats: "支持 JPG、PNG、WebP，单个文件最大 10MB",
     },
     // Tags (for IP register)
     tags: {
@@ -1297,6 +1307,13 @@ export const translations = {
       faq: "FAQ",
       signIn: "Sign In",
       getStarted: "Get Started Free",
+    },
+    // Common UI labels
+    common: {
+      lightMode: "Light",
+      darkMode: "Dark",
+      switchToLight: "Switch to light mode",
+      switchToDark: "Switch to dark mode",
     },
     // Hero
     hero: {
@@ -2277,6 +2294,9 @@ export const translations = {
       certificate: "Certificate",
       status: "Status",
       type: "Type",
+      remove: "Remove",
+      dragDropUpload: "Drag file here, or click to select",
+      supportedFormats: "JPG, PNG, WebP supported, max 10MB per file",
     },
     // Tags (for IP register)
     tags: {

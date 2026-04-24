@@ -218,7 +218,7 @@ export function Sidebar({ onClose }: SidebarProps) {
         {/* Developer section */}
         <div className="pt-4 pb-2">
           <div className="border-t border-gray-100 dark:border-gray-800 mb-2" />
-          <p className="px-3 mb-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">开发者</p>
+          <p className="px-3 mb-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">{t.sidebar.developers}</p>
         </div>
 
         {[
