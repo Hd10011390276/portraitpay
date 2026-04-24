@@ -242,7 +242,8 @@ export default function PortraitDetailPage() {
   const ipfsGatewayUrl = portrait.ipfsCid ? getIpfsGatewayUrl(portrait.ipfsCid) : null;
   const tc = t.portraits.detail; // Define tc early so it's available in handlers
 
-  const hasImage = !!portrait.originalImageUrl;
+  const [hasImageError, setHasImageError] = useState(false);
+  const hasImage = !!portrait.originalImageUrl && !hasImageError;
 
   return (
     <DashboardShell
@@ -265,6 +266,7 @@ export default function PortraitDetailPage() {
                   src={portrait.originalImageUrl!}
                   alt={portrait.title}
                   className="w-full h-full object-contain bg-gray-50 dark:bg-gray-800"
+                  onError={() => setHasImageError(true)}
                 />
               ) : (
                 <div className="absolute inset-0 flex items-center justify-center bg-gray-100 dark:bg-gray-800">
