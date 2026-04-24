@@ -25,7 +25,7 @@ interface FieldError {
   category?: string;
 }
 
-const CATEGORY_OPTIONS = [
+const CATEGORY_OPTIONS: { value: string; icon: string }[] = [
   { value: "star", icon: "⭐" },
   { value: "actor", icon: "🎬" },
   { value: "singer", icon: "🎤" },

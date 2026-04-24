@@ -69,9 +69,7 @@ export function isValidApiKeyFormat(apiKey: string): boolean {
  * @param apiKey - raw API key from request
  * @returns API key record with user if valid, null otherwise
  */
-export async function verifyApiKey(
-  apiKey: string
-): Promise<{ apiKeyRecord: Awaited<ReturnType<typeof prisma.apiKey.findUnique>>; user: Awaited<ReturnType<typeof prisma.user.findUnique>> } | null> {
+export async function verifyApiKey(apiKey: string) {
   if (!apiKey || !isValidApiKeyFormat(apiKey)) {
     return null;
   }

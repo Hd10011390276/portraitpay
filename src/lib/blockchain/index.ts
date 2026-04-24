@@ -90,7 +90,7 @@ export async function certifyPortrait(
 
   // Estimate gas with 20% buffer to avoid revert (actual gas ~230783)
   const estimatedGas = await contract.certifyPortrait.estimateGas(ipfsCid, imageHashBytes32);
-  const gasLimit = (estimatedGas * 120n) / 100n;
+  const gasLimit = (estimatedGas * BigInt(120)) / BigInt(100);
 
   // Send transaction
   const tx = await contract.certifyPortrait(ipfsCid, imageHashBytes32, {

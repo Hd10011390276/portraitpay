@@ -90,7 +90,7 @@ export default function EarningsPage() {
   const [filter, setFilter] = useState<{ startDate?: string; endDate?: string }>({});
   const [activeTab, setActiveTab] = useState<"all" | "royalty" | "license">("all");
   const [chartToggle, setChartToggle] = useState<"月" | "周" | "日">("月");
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -180,7 +180,7 @@ export default function EarningsPage() {
   // 6-month chart mock data (months use locale-appropriate abbreviations)
   const getMonthLabel = (month: number) => {
     const d = new Date(2024, month - 1, 1);
-    return d.toLocaleDateString(t.locale === "en-US" ? "en-US" : "zh-CN", { month: "short" });
+    return d.toLocaleDateString(locale === "en-US" ? "en-US" : "zh-CN", { month: "short" });
   };
   const chartData = [
     { label: getMonthLabel(10), value: 2800 },

@@ -86,7 +86,9 @@ export function Sidebar({ onClose }: SidebarProps) {
   const isActive = (href: string) =>
     pathname === href || pathname.startsWith(href + "/");
 
-  const navItems = [
+  interface NavItem { label: string; href: string; icon: React.ReactNode; badge?: string; }
+
+  const navItems: NavItem[] = [
     {
       label: t.sidebar.dashboard,
       href: "/dashboard",

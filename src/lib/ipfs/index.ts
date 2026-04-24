@@ -42,8 +42,8 @@ export async function uploadToIpfs(
   }
 
   const formData = new FormData();
-  const uint8 = data instanceof Buffer ? new Uint8Array(data) : data;
-  const blob = new Blob([uint8], { type: mimeType });
+  const uint8Data = Buffer.isBuffer(data) ? new Uint8Array(data.buffer, data.byteOffset, data.byteLength) : data;
+  const blob = new Blob([uint8Data], { type: mimeType });
   formData.append("file", blob, fileName);
 
   // Pinata metadata
