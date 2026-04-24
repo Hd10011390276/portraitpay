@@ -683,6 +683,11 @@ export const translations = {
       page: "第 {page} 页，共 {totalPages} 页",
       prevPage: "上一页",
       nextPage: "下一页",
+      chartMonth: "月",
+      chartWeek: "周",
+      chartDay: "日",
+      popupBlocked: "请允许弹出窗口",
+      withdrawAnytime: "随时可提",
     },
     // Report
     report: {
@@ -1991,6 +1996,11 @@ export const translations = {
       page: "Page {page} of {totalPages}",
       prevPage: "Previous",
       nextPage: "Next",
+      chartMonth: "Month",
+      chartWeek: "Week",
+      chartDay: "Day",
+      popupBlocked: "Please allow popups",
+      withdrawAnytime: "Available anytime",
     },
     // Report
     report: {

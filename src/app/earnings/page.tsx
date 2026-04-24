@@ -89,7 +89,7 @@ export default function EarningsPage() {
   const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState<{ startDate?: string; endDate?: string }>({});
   const [activeTab, setActiveTab] = useState<"all" | "royalty" | "license">("all");
-  const [chartToggle, setChartToggle] = useState<"月" | "周" | "日">("月");
+  const [chartToggle, setChartToggle] = useState<"month" | "week" | "day">("month");
   const { t, locale } = useLanguage();
 
   useEffect(() => {
@@ -208,7 +208,7 @@ export default function EarningsPage() {
           <button
             onClick={async () => {
               const win = window.open("/api/v1/export/earnings?currency=CNY", "_blank");
-              if (!win) alert("请允许弹出窗口");
+              if (!win) alert(t.earnings.popupBlocked);
             }}
             className="inline-flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 text-sm font-medium rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors shadow-sm">
             📤 CSV
@@ -236,7 +236,7 @@ export default function EarningsPage() {
               <>
                 <StatCard label={t.earnings.historyTotalRevenue} value={formatCurrency(summary.totalRevenue)} color="text-green-600" />
                 <StatCard label={t.earnings.thisMonthRevenue} value={formatCurrency(summary.monthRevenue)} color="text-blue-600" delta="+12.5%" />
-                <StatCard label={t.earnings.availableBalance} value={formatCurrency(summary.availableBalance)} color="text-purple-600" highlight delta="随时可提" />
+                <StatCard label={t.earnings.availableBalance} value={formatCurrency(summary.availableBalance)} color="text-purple-600" highlight delta={t.earnings.withdrawAnytime} />
                 <StatCard label={t.earnings.withdrawnTotal} value={formatCurrency(summary.totalWithdrawals)} color="text-gray-600" />
               </>
             )}
@@ -252,11 +252,11 @@ export default function EarningsPage() {
                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{t.earnings.last6Months}</p>
               </div>
               <div className="flex gap-1">
-                {(["月", "周", "日"] as const).map((toggle) => (
+                {(["month", "week", "day"] as const).map((toggle) => (
                   <button key={toggle}
                     onClick={() => setChartToggle(toggle)}
                     className={`px-3 py-1 text-xs rounded-lg transition-colors ${chartToggle === toggle ? "bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300" : "text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"}`}>
-                    {toggle}
+                    {toggle === "month" ? t.earnings.chartMonth : toggle === "week" ? t.earnings.chartWeek : t.earnings.chartDay}
                   </button>
                 ))}
               </div>
