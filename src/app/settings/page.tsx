@@ -141,34 +141,34 @@ function SettingsContent() {
           {/* Admin Settings - only for ADMIN role */}
           {user?.role === "ADMIN" && (
             <div className="bg-white dark:bg-gray-900 rounded-2xl border border-orange-200 dark:border-orange-800/50 p-6">
-              <h2 className="text-base font-semibold text-orange-600 dark:text-orange-400 mb-1">管理员设置</h2>
-              <p className="text-xs text-gray-500 dark:text-gray-400 mb-5">系统管理功能，仅限管理员操作</p>
+              <h2 className="text-base font-semibold text-orange-600 dark:text-orange-400 mb-1">{t.settings.adminSettings}</h2>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mb-5">{t.settings.adminSettingsDesc}</p>
               <div className="space-y-4">
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                   <div className="flex-1">
-                    <p className="text-sm font-medium text-gray-900 dark:text-white">用户管理</p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">查看和管理所有注册用户</p>
+                    <p className="text-sm font-medium text-gray-900 dark:text-white">{t.settings.userManagement}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{t.settings.userManagementDesc}</p>
                   </div>
                   <Link href="/admin/users" className="px-4 py-2 text-sm font-medium text-orange-600 dark:text-orange-400 border border-orange-200 dark:border-orange-800 rounded-xl hover:bg-orange-50 dark:hover:bg-orange-950/30 transition">
-                    管理用户
+                    {t.settings.manageUsers}
                   </Link>
                 </div>
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                   <div className="flex-1">
-                    <p className="text-sm font-medium text-gray-900 dark:text-white">企业审核</p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">审核和处理企业用户申请</p>
+                    <p className="text-sm font-medium text-gray-900 dark:text-white">{t.settings.enterpriseReview}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{t.settings.enterpriseReviewDesc}</p>
                   </div>
                   <Link href="/admin/enterprise" className="px-4 py-2 text-sm font-medium text-orange-600 dark:text-orange-400 border border-orange-200 dark:border-orange-800 rounded-xl hover:bg-orange-50 dark:hover:bg-orange-950/30 transition">
-                    处理审核
+                    {t.settings.processReview}
                   </Link>
                 </div>
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                   <div className="flex-1">
-                    <p className="text-sm font-medium text-gray-900 dark:text-white">系统设置</p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">配置站点名称、联系邮箱、维护模式</p>
+                    <p className="text-sm font-medium text-gray-900 dark:text-white">{t.settings.systemSettings}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{t.settings.systemSettingsDesc}</p>
                   </div>
                   <Link href="/admin/settings" className="px-4 py-2 text-sm font-medium text-orange-600 dark:text-orange-400 border border-orange-200 dark:border-orange-800 rounded-xl hover:bg-orange-50 dark:hover:bg-orange-950/30 transition">
-                    系统配置
+                    {t.settings.systemConfiguration}
                   </Link>
                 </div>
               </div>
