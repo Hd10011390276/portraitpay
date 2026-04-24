@@ -102,7 +102,7 @@ export async function POST(request: NextRequest) {
     }
 
     const expiresAtDate = expiresAt ? new Date(expiresAt) : undefined;
-    if (expiresAt && isNaN(expiresAtDate.getTime())) {
+    if (expiresAtDate && isNaN(expiresAtDate.getTime())) {
       return NextResponse.json({ success: false, error: "Invalid expiresAt date" }, { status: 400 });
     }
 

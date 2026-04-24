@@ -11,9 +11,12 @@ export const dynamic = "force-dynamic";
 
 export async function GET(req: NextRequest) {
   try {
-    const session = await getSessionFromRequest(request);
+    const session = await getSessionFromRequest(req);
     if (!session?.userId) {
       return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
+    }
+    if (session.role !== "ADMIN" && session.role !== "VERIFIER") {
+      return NextResponse.json({ success: false, error: "Forbidden" }, { status: 403 });
     }
 
     const { searchParams } = new URL(req.url);

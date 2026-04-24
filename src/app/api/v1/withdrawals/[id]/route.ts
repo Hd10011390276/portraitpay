@@ -19,10 +19,10 @@ const UpdateWithdrawalSchema = z.object({
 
 type Params = { params: Promise<{ id: string }> };
 
-export async function GET(_request: NextRequest, { params }: Params) {
+export async function GET(req: NextRequest, { params }: Params) {
   try {
     const { id } = await params;
-    const session = await getSessionFromRequest(request);
+    const session = await getSessionFromRequest(req);
     if (!session) {
       return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
     }
@@ -47,15 +47,15 @@ export async function GET(_request: NextRequest, { params }: Params) {
   }
 }
 
-export async function PATCH(request: NextRequest, { params }: Params) {
+export async function PATCH(req: NextRequest, { params }: Params) {
   try {
     const { id } = await params;
-    const session = await getSessionFromRequest(request);
+    const session = await getSessionFromRequest(req);
     if (!session) {
       return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
     }
 
-    const body = await request.json();
+    const body = await req.json();
     const parsed = UpdateWithdrawalSchema.safeParse(body);
 
     if (!parsed.success) {

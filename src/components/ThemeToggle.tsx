@@ -2,33 +2,37 @@
 
 import { useEffect, useState, useCallback } from 'react'
 
+const STORAGE_KEY = 'theme'
+
 export default function ThemeToggle() {
-  const [theme, setTheme] = useState('light')
+  const [theme, setTheme] = useState<'light'|'dark'>('light')
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
     setMounted(true)
-    const saved = localStorage.getItem('theme') || 'light'
-    setTheme(saved)
+    const saved = localStorage.getItem(STORAGE_KEY) || 'light'
+    setTheme(saved as 'light'|'dark')
     document.documentElement.setAttribute('data-theme', saved)
-    if (saved === 'dark') {
-      document.documentElement.classList.add('dark')
-    } else {
-      document.documentElement.classList.remove('dark')
+    document.documentElement.classList.toggle('dark', saved === 'dark')
+
+    // Keep in sync when other ThemeToggle instances or DashboardShell update the theme
+    const handleThemeChange = (e: Event) => {
+      const next = (e as CustomEvent<{theme:string}>).detail.theme as 'light'|'dark'
+      setTheme(next)
+      localStorage.setItem(STORAGE_KEY, next)
+      document.documentElement.setAttribute('data-theme', next)
+      document.documentElement.classList.toggle('dark', next === 'dark')
     }
+    window.addEventListener('theme-change', handleThemeChange)
+    return () => window.removeEventListener('theme-change', handleThemeChange)
   }, [])
 
   const toggle = useCallback(() => {
     const next = theme === 'light' ? 'dark' : 'light'
     setTheme(next)
-    localStorage.setItem('theme', next)
+    localStorage.setItem(STORAGE_KEY, next)
     document.documentElement.setAttribute('data-theme', next)
-    if (next === 'dark') {
-      document.documentElement.classList.add('dark')
-    } else {
-      document.documentElement.classList.remove('dark')
-    }
-    // Dispatch custom event so other components can subscribe
+    document.documentElement.classList.toggle('dark', next === 'dark')
     window.dispatchEvent(new CustomEvent('theme-change', { detail: { theme: next } }))
   }, [theme])
 

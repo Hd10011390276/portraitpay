@@ -59,9 +59,9 @@ async function getReport(id: string, userId: string, role: string) {
 // GET
 // ─────────────────────────────────────────────────────────────────────────────
 
-export async function GET(_req: NextRequest, context: RouteContext) {
+export async function GET(req: NextRequest, context: RouteContext) {
   try {
-    const session = await getSessionFromRequest(request);
+    const session = await getSessionFromRequest(req);
     if (!session?.userId) {
       return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
     }
@@ -84,9 +84,9 @@ export async function GET(_req: NextRequest, context: RouteContext) {
 // PATCH — Update report (only if still PENDING_REVIEW)
 // ─────────────────────────────────────────────────────────────────────────────
 
-export async function PATCH(request: NextRequest, context: RouteContext) {
+export async function PATCH(req: NextRequest, context: RouteContext) {
   try {
-    const session = await getSessionFromRequest(request);
+    const session = await getSessionFromRequest(req);
     if (!session?.userId) {
       return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
     }
@@ -113,7 +113,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       );
     }
 
-    const body = await request.json();
+    const body = await req.json();
     const parsed = UpdateInfringementSchema.safeParse(body);
     if (!parsed.success) {
       return NextResponse.json(
@@ -142,9 +142,9 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
 // DELETE — Soft-delete (only reporter, only PENDING_REVIEW)
 // ─────────────────────────────────────────────────────────────────────────────
 
-export async function DELETE(_req: NextRequest, context: RouteContext) {
+export async function DELETE(req: NextRequest, context: RouteContext) {
   try {
-    const session = await getSessionFromRequest(request);
+    const session = await getSessionFromRequest(req);
     if (!session?.userId) {
       return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
     }

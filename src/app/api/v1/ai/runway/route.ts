@@ -34,8 +34,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "API key required" }, { status: 401 });
     }
 
-    const keyRecord = await verifyApiKey(apiKey);
-    if (!keyRecord) {
+    const { user: apiKeyUser } = (await verifyApiKey(apiKey)) ?? {};
+    if (!apiKeyUser) {
       return NextResponse.json({ error: "Invalid API key" }, { status: 401 });
     }
 
@@ -83,7 +83,7 @@ export async function POST(req: NextRequest) {
     // Create on-chain license
     const licenseResult = await createOnChainLicense(
       portraitId,
-      keyRecord.userId, // licensee
+      apiKeyUser.id, // licensee
       feeCents,
       "AI_VIDEO_GENERATION"
     );
@@ -98,7 +98,7 @@ export async function POST(req: NextRequest) {
     // Create database transaction record
     await createAIGenerationRecord(
       {
-        userId: keyRecord.userId,
+        userId: apiKeyUser.id,
         portraitId,
         platform: "runway",
         prompt,

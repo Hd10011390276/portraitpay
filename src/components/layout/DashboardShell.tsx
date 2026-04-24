@@ -35,6 +35,14 @@ export function DashboardShell({ children, title, subtitle, action, forceLight }
     const saved = localStorage.getItem("theme");
     const isDark = saved === "dark" || (!saved && window.matchMedia("(prefers-color-scheme: dark)").matches);
     setTheme(isDark ? "dark" : "light");
+
+    // Listen for theme changes from ThemeToggle
+    const handleThemeChange = (e: Event) => {
+      const customEvent = e as CustomEvent<{ theme: string }>;
+      setTheme(customEvent.detail.theme as "light" | "dark");
+    };
+    window.addEventListener("theme-change", handleThemeChange);
+    return () => window.removeEventListener("theme-change", handleThemeChange);
   }, []);
 
   useEffect(() => {

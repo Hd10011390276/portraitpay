@@ -44,9 +44,9 @@ const CreateNoticeSchema = z.object({
 type RouteContext = { params: Promise<{ id: string }> };
 
 // GET — List notices
-export async function GET(_req: NextRequest, context: RouteContext) {
+export async function GET(req: NextRequest, context: RouteContext) {
   try {
-    const session = await getSessionFromRequest(request);
+    const session = await getSessionFromRequest(req);
     if (!session?.userId) {
       return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
     }
@@ -65,9 +65,9 @@ export async function GET(_req: NextRequest, context: RouteContext) {
 }
 
 // POST — Generate & send notice
-export async function POST(request: NextRequest, context: RouteContext) {
+export async function POST(req: NextRequest, context: RouteContext) {
   try {
-    const session = await getSessionFromRequest(request);
+    const session = await getSessionFromRequest(req);
     if (!session?.userId) {
       return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
     }
@@ -92,7 +92,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
       return NextResponse.json({ success: false, error: "Forbidden" }, { status: 403 });
     }
 
-    const body = await request.json();
+    const body = await req.json();
     const parsed = CreateNoticeSchema.safeParse(body);
     if (!parsed.success) {
       return NextResponse.json(

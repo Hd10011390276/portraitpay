@@ -28,9 +28,9 @@ const MonitorConfigSchema = z.object({
 
 // ─────────────────────────────────────────────────────────────────────────────
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
-    const session = await getSessionFromRequest(request);
+    const session = await getSessionFromRequest(req);
     if (!session?.userId) {
       return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
     }
@@ -46,14 +46,14 @@ export async function GET() {
   }
 }
 
-export async function PUT(request: NextRequest) {
+export async function PUT(req: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.id) {
+    const session = await getSessionFromRequest(req);
+    if (!session?.userId) {
       return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
     }
 
-    const body = await request.json();
+    const body = await req.json();
     const parsed = MonitorConfigSchema.safeParse(body);
     if (!parsed.success) {
       return NextResponse.json(
@@ -65,7 +65,7 @@ export async function PUT(request: NextRequest) {
     const config = await prisma.infringementMonitorConfig.upsert({
       where: { userId: session.userId },
       create: {
-        userId: session.user.id,
+        userId: session.userId,
         ...parsed.data,
       },
       update: parsed.data,

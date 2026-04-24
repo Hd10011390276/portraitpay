@@ -17,7 +17,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getSessionFromRequest } from "@/lib/auth/session";
-import { writeKYLog } from "@/lib/kyc/service";
 import { verifyToken } from "@/lib/auth/jwt";
 import type { Prisma } from "@prisma/client";
 export const dynamic = "force-dynamic";
