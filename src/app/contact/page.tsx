@@ -66,10 +66,10 @@ export default function ContactPage() {
       if (json.success) {
         setSuccess(true);
       } else {
-        setServerError(json.error ?? "提交失败，请稍后重试");
+        setServerError(json.error ?? t.contact.submitFailed);
       }
     } catch {
-      setServerError("网络错误，请检查网络连接");
+      setServerError(t.contact.networkError);
     } finally {
       setSubmitting(false);
     }

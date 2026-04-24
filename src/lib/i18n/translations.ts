@@ -319,6 +319,8 @@ export const translations = {
         messageRequired: "请填写留言内容",
         messageTooShort: "留言至少10个字符",
       },
+      submitFailed: "提交失败，请稍后重试",
+      networkError: "网络错误，请检查网络连接",
     },
     // Auth / Login
     auth: {
@@ -865,6 +867,11 @@ export const translations = {
         certifyFailed: "❌ 认证失败：",
         certifyNetworkError: "❌ 网络错误，请重试。",
         archiveConfirm: "归档此肖像？它将被隐藏但不会永久删除。",
+        download: "下载",
+        localStorage: "本地存储",
+        portraitNotFound: "未找到本地图片",
+        savedToDownloads: "照片已保存到下载文件夹",
+        downloadFailed: "下载失败，请稍后重试",
       },
     },
     // KYC
@@ -1620,6 +1627,8 @@ export const translations = {
         messageRequired: "Please enter your message",
         messageTooShort: "Message must be at least 10 characters",
       },
+      submitFailed: "Submission failed, please try again",
+      networkError: "Network error, please check your connection",
     },
     // Auth / Login
     auth: {
@@ -2111,6 +2120,11 @@ export const translations = {
       blockchainTraceDesc: "Trace the image's registration record on IPFS/Base chain",
       reservedInterface: "This feature is coming soon",
       productionReady: "Production Ready",
+      download: "Download",
+      localStorage: "Local Storage",
+      portraitNotFound: "Portrait image not found",
+      savedToDownloads: "Photo saved to downloads folder",
+      downloadFailed: "Download failed, please try again",
     },
     // Portraits
     portraits: {
