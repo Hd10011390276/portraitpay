@@ -23,7 +23,7 @@ export interface TokenPair {
 }
 
 export async function signAccessToken(payload: Omit<JwtPayload, "iat" | "exp">): Promise<string> {
-  return new SignJWT(payload as JWTPayload)
+  return new SignJWT(payload as JwtPayload)
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()
     .setExpirationTime("15m")
@@ -31,7 +31,7 @@ export async function signAccessToken(payload: Omit<JwtPayload, "iat" | "exp">):
 }
 
 export async function signRefreshToken(payload: Omit<JwtPayload, "iat" | "exp">): Promise<string> {
-  return new SignJWT(payload as JWTPayload)
+  return new SignJWT(payload as JwtPayload)
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()
     .setExpirationTime("7d")

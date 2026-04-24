@@ -175,7 +175,7 @@ export default function ContactPage() {
             <LanguageToggle />
             <ThemeToggle />
             <Link href="/" style={{ fontSize: "14px", color: "var(--text-secondary)", textDecoration: "none" }}>
-              ← {t.nav?.home || "返回首页"}
+              ← {t.contact.home || "返回首页"}
             </Link>
           </div>
         </div>
