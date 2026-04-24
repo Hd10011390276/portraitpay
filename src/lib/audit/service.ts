@@ -49,19 +49,24 @@ export async function logAudit(input: LogAuditInput) {
     }
   }
 
-  return prisma.userAuditLog.create({
-    data: {
-      userId,
-      action,
-      targetType,
-      targetId,
-      success,
-      detail,
-      ipAddress: ip ?? null,
-      userAgent: userAgent ?? null,
-      meta: meta ? JSON.parse(JSON.stringify(meta)) : undefined,
-    },
-  });
+  try {
+    await prisma.userAuditLog.create({
+      data: {
+        userId,
+        action,
+        targetType,
+        targetId,
+        success,
+        detail,
+        ipAddress: ip ?? null,
+        userAgent: userAgent ?? null,
+        meta: meta ? JSON.parse(JSON.stringify(meta)) : undefined,
+      },
+    });
+  } catch (err) {
+    // Audit logging failure must never break the main business flow
+    console.error("[logAudit] Failed to write audit log:", err);
+  }
 }
 
 // ─── List Audit Logs (for user or admin) ─────────────────────────────────────
