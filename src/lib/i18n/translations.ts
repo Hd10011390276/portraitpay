@@ -18,6 +18,7 @@ export const translations = {
       faq: "常见问题",
       signIn: "登录",
       getStarted: "免费开始",
+      lawyer: "律师楼入驻",
     },
     // Hero
     hero: {

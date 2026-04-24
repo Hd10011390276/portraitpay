@@ -266,6 +266,9 @@ export default function HomePage() {
             <a href="#faq" style={{ fontSize: "14px", fontWeight: 500, color: "var(--text-secondary)", textDecoration: "none" }}
                onMouseEnter={e => (e.currentTarget.style.color = "var(--text-primary)")}
                onMouseLeave={e => (e.currentTarget.style.color = "var(--text-secondary)")}>{t.nav.faq}</a>
+            <a href="/enterprise/lawyer-registration" style={{ fontSize: "14px", fontWeight: 600, color: "var(--accent-primary)", textDecoration: "none", padding: "6px 14px", borderRadius: "var(--radius-md)", border: "1px solid var(--accent-primary)", transition: "all 150ms" }}
+               onMouseEnter={e => { e.currentTarget.style.background = "var(--accent-primary)"; e.currentTarget.style.color = "white"; }}
+               onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "var(--accent-primary)"; }}>{t.nav.lawyer}</a>
           </nav>
 
           {/* Right side */}
@@ -482,6 +485,57 @@ export default function HomePage() {
                 highlighted
               />
             </div>
+          </div>
+        </section>
+
+        {/* ── Lawyer Section ─────────────────────────────────────── */}
+        <section style={{
+          background: "linear-gradient(135deg, #1e3a5f 0%, #2d5a87 50%, #1a3a5c 100%)",
+          padding: "80px 0",
+        }}>
+          <div className="container" style={{ display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", gap: "24px" }}>
+            <div style={{ fontSize: "48px", marginBottom: "8px" }}>🏛️</div>
+            <h2 style={{ fontSize: "var(--text-h2)", fontWeight: 700, color: "white", letterSpacing: "-0.02em" }}>
+              律师楼入驻通道
+            </h2>
+            <p style={{ fontSize: "17px", color: "rgba(255,255,255,0.75)", maxWidth: "540px", lineHeight: 1.65 }}>
+              作为平台认证的肖像权保护机构，为用户提供法律咨询、维权代理、侵权处理等服务。所有用户授权通过平台统一管理，避免私下交易。
+            </p>
+            <div style={{ display: "flex", gap: "12px", flexWrap: "wrap", justifyContent: "center" }}>
+              <a href="/enterprise/lawyer-registration" className="btn btn-lg" style={{
+                background: "white",
+                color: "#1e3a5f",
+                fontWeight: 700,
+                borderRadius: "var(--radius-lg)",
+                padding: "14px 32px",
+                fontSize: "15px",
+                textDecoration: "none",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "8px",
+                transition: "all 150ms",
+              }}>
+                立即申请入驻 →
+              </a>
+              <a href="/enterprise" className="btn btn-lg" style={{
+                background: "transparent",
+                color: "white",
+                fontWeight: 600,
+                borderRadius: "var(--radius-lg)",
+                padding: "14px 32px",
+                fontSize: "15px",
+                textDecoration: "none",
+                border: "1px solid rgba(255,255,255,0.4)",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "8px",
+              }}>
+                了解更多
+              </a>
+            </div>
+            <p style={{ fontSize: "13px", color: "rgba(255,255,255,0.5)", marginTop: "8px" }}>
+              入驻审核周期：3-5 个工作日 · 平台收取授权服务费
+            </p>
           </div>
         </section>
 
