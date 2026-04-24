@@ -102,9 +102,8 @@ export async function POST(req: NextRequest) {
     return response;
   } catch (error) {
     console.error("[LOGIN_ERROR]", error);
-    const message = error instanceof Error ? error.message : String(error);
     return NextResponse.json(
-      { success: false, message: "服务器错误，请稍后重试", detail: process.env.NODE_ENV === "development" ? message : undefined },
+      { success: false, message: "服务器错误，请稍后重试" },
       { status: 500 }
     );
   }
