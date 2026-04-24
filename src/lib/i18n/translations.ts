@@ -307,6 +307,7 @@ export const translations = {
         submitting: "提交中...",
         privacy: "提交即表示您同意我们的",
         privacyPolicy: "隐私政策",
+        optional: "可选",
       },
       validation: {
         nameRequired: "请填写姓名",
@@ -315,9 +316,6 @@ export const translations = {
         messageRequired: "请填写留言内容",
         messageTooShort: "留言至少10个字符",
       },
-    },
-    common: {
-      optional: "可选",
     },
     // Auth / Login
     auth: {
@@ -1109,7 +1107,6 @@ export const translations = {
       registerAssetDesc: "将 AI 生成的角色/内容注册为区块链上的 IP 资产",
       generationInfo: "创作信息",
       originalFile: "原始文件",
-      uploading: "上传中...",
       // Edit/Upload page keys
       editTitle: "编辑肖像",
       editSubtitle: "更新肖像详情",
@@ -1558,6 +1555,7 @@ export const translations = {
         submitting: "Submitting...",
         privacy: "By submitting, you agree to our",
         privacyPolicy: "Privacy Policy",
+        optional: "Optional",
       },
       validation: {
         nameRequired: "Please enter your name",
@@ -1566,9 +1564,6 @@ export const translations = {
         messageRequired: "Please enter your message",
         messageTooShort: "Message must be at least 10 characters",
       },
-    },
-    common: {
-      optional: "Optional",
     },
     // Auth / Login
     auth: {
@@ -2361,7 +2356,6 @@ export const translations = {
       registerAssetDesc: "Register AI-generated content as IP assets on blockchain",
       generationInfo: "Generation Info",
       originalFile: "Original File",
-      uploading: "Uploading...",
       // Edit/Upload page keys
       editTitle: "Edit Portrait",
       editSubtitle: "Update portrait details",

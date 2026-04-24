@@ -275,7 +275,7 @@ export default function ContactPage() {
             {/* Company */}
             <div>
               <label style={{ display: "block", fontSize: "14px", fontWeight: 500, color: "var(--text-primary)", marginBottom: "6px" }}>
-                {t.contact.form?.company || "公司 / 组织"} <span style={{ color: "var(--text-secondary)", fontWeight: 400 }}>({t.common?.optional || "可选"})</span>
+                {t.contact.form?.company || "公司 / 组织"} <span style={{ color: "var(--text-secondary)", fontWeight: 400 }}>({t.contact.form?.optional || "可选"})</span>
               </label>
               <input
                 type="text"
@@ -299,7 +299,7 @@ export default function ContactPage() {
             {/* Subject */}
             <div>
               <label style={{ display: "block", fontSize: "14px", fontWeight: 500, color: "var(--text-primary)", marginBottom: "6px" }}>
-                {t.contact.form?.subject || "主题"} <span style={{ color: "var(--text-secondary)", fontWeight: 400 }}>({t.common?.optional || "可选"})</span>
+                {t.contact.form?.subject || "主题"} <span style={{ color: "var(--text-secondary)", fontWeight: 400 }}>({t.contact.form?.optional || "可选"})</span>
               </label>
               <input
                 type="text"
