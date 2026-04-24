@@ -160,7 +160,7 @@ export default function UploadPortraitPage() {
     }
 
     setStage("uploading");
-    setProgress(t.upload?.creatingPortrait || "创建肖像记录...");
+    setProgress(t.ipRegister?.creatingPortrait || "创建肖像记录...");
 
     try {
       // 1. Create portrait record
@@ -174,7 +174,7 @@ export default function UploadPortraitPage() {
       const id = createJson.data.id as string;
 
       // 2. Upload to R2 via server proxy (avoids CORS)
-      setProgress(t.upload?.uploadingToStorage || "上传到存储...");
+      setProgress(t.ipRegister?.uploadingToStorage || "上传到存储...");
       const uploadFormData = new FormData();
       uploadFormData.append("image", croppedFile);
       const s3Res = await fetch(`/api/portraits/${id}/upload/direct`, {
@@ -188,7 +188,7 @@ export default function UploadPortraitPage() {
       await savePortraitLocally(id, croppedFile);
 
       // 3. Register URL
-      setProgress(t.upload?.saving || "保存中...");
+      setProgress(t.ipRegister?.saving || "保存中...");
       const updateRes = await fetch(`/api/portraits/${id}/upload`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -200,7 +200,7 @@ export default function UploadPortraitPage() {
       // 4. Blockchain certify
       setStage("certifying");
       setProgress(t.upload?.certifyingBlockchain || "区块链认证中...");
-      let result = { success: false, error: "unknown" };
+      let result: { success: boolean; error?: string; data?: any } = { success: false, error: "unknown" };
       try {
         const certifyRes = await fetch(`/api/portraits/${id}/certify`, { method: "POST" });
         result = await certifyRes.json();
@@ -327,7 +327,7 @@ export default function UploadPortraitPage() {
                   <div className="flex flex-col items-center justify-center py-10">
                     <div className="text-3xl mb-2">🪪</div>
                     <p className="text-sm text-gray-600 dark:text-gray-400">{t.upload?.clickToUploadID || "点击上传证件照片"}</p>
-                    <p className="text-xs text-gray-400 mt-1">{t.upload?.idDocHint || "支持身份证、护照、驾照等各国证件"}</p>
+                    <p className="text-xs text-gray-400 mt-1">{t.ipRegister?.idDocHint || "支持身份证、护照、驾照等各国证件"}</p>
                   </div>
                 </div>
               )}

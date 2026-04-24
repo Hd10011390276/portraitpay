@@ -1110,6 +1110,13 @@ export const translations = {
       generationInfo: "创作信息",
       originalFile: "原始文件",
       uploading: "上传中...",
+      // Edit/Upload page keys
+      editTitle: "编辑肖像",
+      editSubtitle: "更新肖像详情",
+      creatingPortrait: "创建肖像记录...",
+      uploadingToStorage: "上传到存储...",
+      saving: "保存中...",
+      idDocHint: "支持身份证、护照、驾照等各国证件",
     },
     // Hero stats
     heroStats: {
@@ -2355,6 +2362,13 @@ export const translations = {
       generationInfo: "Generation Info",
       originalFile: "Original File",
       uploading: "Uploading...",
+      // Edit/Upload page keys
+      editTitle: "Edit Portrait",
+      editSubtitle: "Update portrait details",
+      creatingPortrait: "Creating portrait record...",
+      uploadingToStorage: "Uploading to storage...",
+      saving: "Saving...",
+      idDocHint: "Supports ID cards, passports, driver's licenses and more",
     },
     // Hero stats
     heroStats: {

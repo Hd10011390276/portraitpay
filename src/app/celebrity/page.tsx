@@ -279,7 +279,7 @@ export default function CelebrityPage() {
                         }`}
                       >
                         <span>{cat.icon}</span>
-                        <span>{t.celebrity[cat.value as keyof typeof t.celebrity] ?? cat.value}</span>
+                        <span>{(t.celebrity[cat.value as keyof typeof t.celebrity]) as string ?? cat.value}</span>
                       </button>
                     ))}
                   </div>

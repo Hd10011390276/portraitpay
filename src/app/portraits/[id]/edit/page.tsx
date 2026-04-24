@@ -127,8 +127,8 @@ export default function EditPortraitPage() {
 
   return (
     <DashboardShell
-      title={t?.upload?.editTitle || "Edit Portrait"}
-      subtitle={t?.upload?.editSubtitle || "Update portrait details"}
+      title={t?.ipRegister?.editTitle || "Edit Portrait"}
+      subtitle={t?.ipRegister?.editSubtitle || "Update portrait details"}
     >
       <div className="max-w-3xl">
         <form onSubmit={handleSubmit} className="flex flex-col gap-8">
