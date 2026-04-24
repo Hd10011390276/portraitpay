@@ -21,19 +21,7 @@ interface Stat {
   bg: string;
 }
 
-const ROLE_LABELS_EN: Record<string, string> = {
-  USER: "Regular User",
-  ARTIST: "Artist",
-  AGENCY: "Agency",
-  ENTERPRISE: "Enterprise",
-};
 
-const ROLE_LABELS_ZH: Record<string, string> = {
-  USER: "普通用户",
-  ARTIST: "艺人",
-  AGENCY: "经纪公司",
-  ENTERPRISE: "企业",
-};
 
 function DashboardContent({ user }: { user: User }) {
   const { t, locale } = useLanguage();
@@ -44,7 +32,10 @@ function DashboardContent({ user }: { user: User }) {
   const [recentTransactions, setRecentTransactions] = useState<any[]>([]);
   const [lawyers, setLawyers] = useState<any[]>([]);
 
-  const roleLabels = isZh ? ROLE_LABELS_ZH : ROLE_LABELS_EN;
+  const getRoleLabel = (role: string) => {
+    const roleKey = role.toLowerCase() as keyof typeof t.dashboard.roleLabels;
+    return t.dashboard.roleLabels[roleKey] || role;
+  };
 
   useEffect(() => {
     async function fetchDashboardData() {
@@ -175,7 +166,7 @@ function DashboardContent({ user }: { user: User }) {
               </div>
             ) : recentPortraits.length === 0 ? (
               <div className="p-8 text-center text-gray-500 dark:text-gray-400 text-sm">
-                {isZh ? "暂无肖像" : "No portraits yet"}
+                {t.dashboard.noPortraits}
               </div>
             ) : (
               <div className="divide-y divide-gray-50 dark:divide-gray-800">
@@ -207,7 +198,7 @@ function DashboardContent({ user }: { user: User }) {
                       href={`/portraits/${p.id}`}
                       className="px-3 py-1.5 text-xs font-medium bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
                     >
-                      {isZh ? "查看" : "View"}
+                      {t.dashboard.view}
                     </Link>
                   </div>
                 ))}
@@ -237,7 +228,7 @@ function DashboardContent({ user }: { user: User }) {
               </div>
             ) : recentTransactions.length === 0 ? (
               <div className="p-8 text-center text-gray-500 dark:text-gray-400 text-sm">
-                {isZh ? "暂无交易记录" : "No transactions yet"}
+                {t.dashboard.noTransactions}
               </div>
             ) : (
               <div className="divide-y divide-gray-50 dark:divide-gray-800">
@@ -329,14 +320,14 @@ function DashboardContent({ user }: { user: User }) {
               <div className="flex items-center gap-2">
                 <span className="text-xl">🏛️</span>
                 <h2 className="font-semibold text-gray-900 dark:text-white">
-                  {isZh ? "认证律师楼" : "Verified Law Firms"}
+                  {t.dashboard.verifiedLawFirms}
                 </h2>
               </div>
               <Link
                 href="/lawyers"
                 className="text-sm text-blue-600 dark:text-blue-400 hover:underline"
               >
-                {isZh ? "查看全部" : "View All"}
+                {t.dashboard.viewAll}
               </Link>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x divide-gray-100 dark:divide-gray-800">
@@ -384,7 +375,7 @@ function DashboardContent({ user }: { user: User }) {
                   {user.name ?? t.dashboard.userCard.nameNotSet}
                 </h3>
                 <span className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300">
-                  {roleLabels[user.role] ?? user.role}
+                  {getRoleLabel(user.role)}
                 </span>
               </div>
               <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{user.email}</p>
@@ -393,7 +384,7 @@ function DashboardContent({ user }: { user: User }) {
                   href="/settings"
                   className="text-xs text-blue-600 dark:text-blue-400 font-medium hover:underline"
                 >
-                  {isZh ? "编辑资料" : "Edit Profile"}
+                  {t.dashboard.editProfile}
                 </Link>
               </div>
             </div>

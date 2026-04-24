@@ -26,6 +26,9 @@ export const translations = {
       darkMode: "夜间",
       switchToLight: "切换到日间模式",
       switchToDark: "切换到夜间模式",
+      language: "语言",
+      switchToChinese: "切换到中文",
+      switchToEnglish: "切换到英文",
     },
     // Hero
     hero: {
@@ -496,6 +499,17 @@ export const translations = {
         nameNotSet: "未设置姓名",
         completeKyc: "完成 KYC 认证",
         accountSettings: "账户设置",
+      },
+      noPortraits: "暂无肖像",
+      noTransactions: "暂无交易记录",
+      verifiedLawFirms: "认证律师楼",
+      editProfile: "编辑资料",
+      view: "查看",
+      roleLabels: {
+        user: "普通用户",
+        artist: "艺人",
+        agency: "经纪公司",
+        enterprise: "企业",
       },
     },
     // Settings
@@ -1307,6 +1321,9 @@ export const translations = {
       darkMode: "Dark",
       switchToLight: "Switch to light mode",
       switchToDark: "Switch to dark mode",
+      language: "Language",
+      switchToChinese: "Switch to Chinese",
+      switchToEnglish: "Switch to English",
     },
     // Hero
     hero: {
@@ -1744,6 +1761,17 @@ export const translations = {
         nameNotSet: "Name not set",
         completeKyc: "Complete KYC verification",
         accountSettings: "Account Settings",
+      },
+      noPortraits: "No portraits yet",
+      noTransactions: "No transactions yet",
+      verifiedLawFirms: "Verified Law Firms",
+      editProfile: "Edit Profile",
+      view: "View",
+      roleLabels: {
+        user: "Regular User",
+        artist: "Artist",
+        agency: "Agency",
+        enterprise: "Enterprise",
       },
     },
     // Settings
