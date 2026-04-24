@@ -237,12 +237,22 @@ export default function PortraitDetailPage() {
     );
   }
 
-  if (!portrait) return null;
-
-  const ipfsGatewayUrl = portrait.ipfsCid ? getIpfsGatewayUrl(portrait.ipfsCid) : null;
+  const ipfsGatewayUrl = portrait?.ipfsCid ? getIpfsGatewayUrl(portrait.ipfsCid) : null;
   const tc = t.portraits.detail; // Define tc early so it's available in handlers
 
   const [hasImageError, setHasImageError] = useState(false);
+
+  if (loading || !portrait) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
+        <div className="flex flex-col items-center gap-4">
+          <div className="animate-spin h-8 w-8 border-3 border-blue-500 border-t-transparent rounded-full" />
+          <p className="text-gray-500 dark:text-gray-400 text-sm">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
   const hasImage = !!portrait.originalImageUrl && !hasImageError;
 
   return (
