@@ -19,13 +19,23 @@ interface DashboardShellProps {
   title?: string;
   subtitle?: string;
   action?: React.ReactNode;
+  /** Forces light-mode white background, ignoring theme toggle. Use for pages that must always be white. */
+  forceLight?: boolean;
 }
 
-export function DashboardShell({ children, title, subtitle, action }: DashboardShellProps) {
+export function DashboardShell({ children, title, subtitle, action, forceLight }: DashboardShellProps) {
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [theme, setTheme] = useState<"light" | "dark">("light");
+
+  useEffect(() => {
+    // Read current theme from localStorage (matches ThemeToggle)
+    const saved = localStorage.getItem("theme");
+    const isDark = saved === "dark" || (!saved && window.matchMedia("(prefers-color-scheme: dark)").matches);
+    setTheme(isDark ? "dark" : "light");
+  }, []);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -58,7 +68,7 @@ export function DashboardShell({ children, title, subtitle, action }: DashboardS
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
+    <div className={`min-h-screen ${forceLight ? "bg-white" : theme === "dark" ? "bg-gray-950" : "bg-gray-50"}`}>
       {/* Sidebar - hidden on mobile, shown on desktop */}
       <div className="hidden sm:block fixed inset-y-0 left-0 z-40">
         <Sidebar />
@@ -80,7 +90,7 @@ export function DashboardShell({ children, title, subtitle, action }: DashboardS
       )}
 
       {/* Mobile top bar */}
-      <div className="sm:hidden fixed top-0 left-0 right-0 z-20 h-14 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 flex items-center px-4 gap-2 shrink-0">
+      <div className={`sm:hidden fixed top-0 left-0 right-0 z-20 h-14 ${forceLight ? "bg-white" : theme === "dark" ? "bg-gray-900" : "bg-white"} border-b ${forceLight ? "border-gray-200" : theme === "dark" ? "border-gray-700" : "border-gray-200"} flex items-center px-4 gap-2 shrink-0`}>
         <button
           onClick={() => setMobileMenuOpen(true)}
           className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
