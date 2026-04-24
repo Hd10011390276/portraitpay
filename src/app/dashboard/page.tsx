@@ -42,6 +42,7 @@ function DashboardContent({ user }: { user: User }) {
   const [stats, setStats] = useState<Stat[]>([]);
   const [recentPortraits, setRecentPortraits] = useState<any[]>([]);
   const [recentTransactions, setRecentTransactions] = useState<any[]>([]);
+  const [lawyers, setLawyers] = useState<any[]>([]);
 
   const roleLabels = isZh ? ROLE_LABELS_ZH : ROLE_LABELS_EN;
 
@@ -89,6 +90,17 @@ function DashboardContent({ user }: { user: User }) {
               bg: "bg-yellow-50 dark:bg-yellow-900/20",
             },
           ]);
+        }
+
+        // Fetch approved lawyers
+        try {
+          const lawyersRes = await fetch('/api/lawyers');
+          if (lawyersRes.ok) {
+            const lawyersData = await lawyersRes.json();
+            setLawyers(lawyersData.data?.slice(0, 6) || []);
+          }
+        } catch (e) {
+          console.error('Failed to fetch lawyers:', e);
         }
       } catch (error) {
         console.error("Failed to fetch dashboard data:", error);
@@ -309,6 +321,56 @@ function DashboardContent({ user }: { user: User }) {
             </Link>
           ))}
         </div>
+
+        {/* Lawyer Directory */}
+        {lawyers.length > 0 && (
+          <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+            <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 dark:border-gray-800">
+              <div className="flex items-center gap-2">
+                <span className="text-xl">🏛️</span>
+                <h2 className="font-semibold text-gray-900 dark:text-white">
+                  {isZh ? "认证律师楼" : "Verified Law Firms"}
+                </h2>
+              </div>
+              <Link
+                href="/lawyers"
+                className="text-sm text-blue-600 dark:text-blue-400 hover:underline"
+              >
+                {isZh ? "查看全部" : "View All"}
+              </Link>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x divide-gray-100 dark:divide-gray-800">
+              {lawyers.map((lawyer) => (
+                <div key={lawyer.id} className="p-4 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+                  <div className="flex items-start gap-3">
+                    <div className="w-10 h-10 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-lg flex-shrink-0">
+                      🏛️
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">
+                        {lawyer.companyName}
+                      </p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                        {lawyer.region}
+                      </p>
+                      <div className="mt-2 flex flex-col gap-1">
+                        <p className="text-xs text-gray-600 dark:text-gray-300">
+                          👤 {lawyer.contactName}
+                        </p>
+                        <p className="text-xs text-gray-600 dark:text-gray-300">
+                          📧 {lawyer.contactEmail}
+                        </p>
+                        <p className="text-xs text-gray-600 dark:text-gray-300">
+                          📞 {lawyer.contactPhone}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* User Card */}
         <div className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-950/30 dark:to-purple-950/30 rounded-xl border border-blue-100 dark:border-blue-900/50 p-6">
