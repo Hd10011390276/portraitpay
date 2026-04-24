@@ -113,222 +113,351 @@ export default function LawyerRegistrationPage() {
     if (errors[field]) setErrors((prev) => ({ ...prev, [field]: "" }));
   }
 
-  // Determine if dark mode is active
-  const isDark = theme === "dark";
-
   if (success) {
     return (
-      <div className={`min-h-screen ${isDark ? "bg-gray-950" : "bg-gray-50"}`}>
-        {/* Minimal Header - always white */}
-        <header className="bg-white border-b border-gray-200 sticky top-0 z-10">
-          <div className="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between">
-            <Link href="/" className="text-lg font-bold text-gray-900">PortraitPay AI</Link>
-            <div className="flex items-center gap-3">
+      <>
+        {/* ── Header ──────────────────────────────────────── */}
+        <header className="nav-glass" style={{ position: "sticky", top: 0, zIndex: 100 }}>
+          <div className="container" style={{ height: "var(--header-height)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <Link href="/" style={{ display: "flex", alignItems: "center", gap: "10px", textDecoration: "none" }}>
+              <img src="/logo.png" alt="Logo" className="logo-light" style={{ width: "32px", height: "32px", objectFit: "contain", borderRadius: "6px" }} />
+              <img src="/logo-dark.png" alt="Logo" className="logo-dark" style={{ width: "32px", height: "32px", objectFit: "contain", borderRadius: "6px" }} />
+              <span style={{ fontSize: "17px", fontWeight: 700, color: "var(--text-primary)", letterSpacing: "-0.02em" }}>PortraitPay AI</span>
+            </Link>
+            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
               <LanguageToggle />
               <ThemeToggle />
             </div>
           </div>
         </header>
 
-        <div className="max-w-2xl mx-auto px-4 py-16">
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8 text-center">
-            <div className="text-6xl mb-4">🏛️</div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">
-              {isZh ? "申请已提交！" : "Application Submitted!"}
-            </h2>
-            <p className="text-gray-600 mb-6">
-              {isZh
-                ? "感谢您的入驻申请。我们的审核团队会在 3-5 个工作日内完成审核，并通过邮件通知您结果。"
-                : "Thank you for your application. Our review team will complete the review within 3-5 business days and notify you via email."}
-            </p>
-            <Link
-              href="/"
-              className="inline-block px-6 py-2.5 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
-            >
-              {isZh ? "返回首页" : "Back to Home"}
-            </Link>
+        {/* ── Success Content ──────────────────────────────── */}
+        <main style={{ background: "var(--bg-primary)", minHeight: "calc(100vh - var(--header-height))", display: "flex", alignItems: "center", justifyContent: "center", padding: "48px 24px" }}>
+          <div className="container" style={{ maxWidth: "560px", width: "100%" }}>
+            <div className="card" style={{ textAlign: "center", padding: "48px 40px" }}>
+              <div style={{ fontSize: "64px", marginBottom: "20px" }}>🏛️</div>
+              <h2 style={{ fontSize: "var(--text-h2)", fontWeight: 700, color: "var(--text-primary)", letterSpacing: "-0.02em", marginBottom: "12px" }}>
+                {isZh ? "申请已提交！" : "Application Submitted!"}
+              </h2>
+              <p style={{ fontSize: "var(--text-body)", color: "var(--text-secondary)", lineHeight: 1.65, marginBottom: "32px" }}>
+                {isZh
+                  ? "感谢您的入驻申请。我们的审核团队会在 3-5 个工作日内完成审核，并通过邮件通知您结果。"
+                  : "Thank you for your application. Our review team will complete the review within 3-5 business days and notify you via email."}
+              </p>
+              <Link href="/" className="btn btn-primary" style={{ padding: "12px 32px" }}>
+                {isZh ? "返回首页" : "Back to Home"}
+              </Link>
+            </div>
           </div>
-        </div>
-      </div>
+        </main>
+      </>
     );
   }
 
   return (
-    <div className={`min-h-screen ${isDark ? "bg-gray-950" : "bg-gray-50"}`}>
-      {/* Minimal Header - always white */}
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-10">
-        <div className="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between">
-          <Link href="/" className="text-lg font-bold text-gray-900">PortraitPay AI</Link>
-          <div className="flex items-center gap-3">
+    <>
+      {/* ── Header ─────────────────────────────────────────── */}
+      <header className="nav-glass" style={{ position: "sticky", top: 0, zIndex: 100 }}>
+        <div className="container" style={{ height: "var(--header-height)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <Link href="/" style={{ display: "flex", alignItems: "center", gap: "10px", textDecoration: "none" }}>
+            <img src="/logo.png" alt="Logo" className="logo-light" style={{ width: "32px", height: "32px", objectFit: "contain", borderRadius: "6px" }} />
+            <img src="/logo-dark.png" alt="Logo" className="logo-dark" style={{ width: "32px", height: "32px", objectFit: "contain", borderRadius: "6px" }} />
+            <span style={{ fontSize: "17px", fontWeight: 700, color: "var(--text-primary)", letterSpacing: "-0.02em" }}>PortraitPay AI</span>
+          </Link>
+          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
             <LanguageToggle />
             <ThemeToggle />
           </div>
         </div>
       </header>
 
-      <div className="max-w-2xl mx-auto px-4 pb-16">
-        {/* Header Card */}
-        <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl p-8 text-white mt-8">
-          <div className="flex items-center gap-3 mb-3">
-            <span className="text-4xl">🏛️</span>
-            <div>
-              <h1 className="text-2xl font-bold">
-                {isZh ? "律师楼入驻申请" : "Law Firm Registration"}
-              </h1>
-              <p className="text-blue-100 text-sm mt-1">
-                {isZh ? "Join PortraitPay as a Verified Law Firm" : "Join PortraitPay as a Verified Law Firm"}
-              </p>
-            </div>
+      {/* ── Main Content ───────────────────────────────────── */}
+      <main style={{ background: "var(--bg-primary)", minHeight: "calc(100vh - var(--header-height))", paddingBottom: "64px" }}>
+        <div className="container" style={{ maxWidth: "640px" }}>
+
+          {/* ── Hero Banner ────────────────────────────────── */}
+          <div style={{
+            background: "linear-gradient(135deg, #1e3a5f 0%, #2d5a87 50%, #1a3a5c 100%)",
+            padding: "48px 32px",
+            borderRadius: "var(--radius-xl)",
+            textAlign: "center",
+            marginTop: "40px",
+            marginBottom: "40px",
+          }}>
+            <div style={{ fontSize: "48px", marginBottom: "16px" }}>🏛️</div>
+            <h1 style={{ fontSize: "var(--text-h2)", fontWeight: 700, color: "white", letterSpacing: "-0.02em", marginBottom: "12px" }}>
+              {isZh ? "律师楼入驻申请" : "Law Firm Registration"}
+            </h1>
+            <p style={{ fontSize: "var(--text-body)", color: "rgba(255,255,255,0.75)", maxWidth: "480px", margin: "0 auto", lineHeight: 1.65 }}>
+              {isZh
+                ? "入驻后，您的律所将作为平台授权的肖像权保护机构，为用户提供法律咨询、维权代理等服务。所有用户授权通过平台统一管理，避免私下交易。"
+                : "After joining, your firm will act as a platform-authorized portrait rights protection agency, providing users with legal consulting, rights protection, and infringement handling services."}
+            </p>
           </div>
-          <p className="text-blue-100 text-sm">
-            {isZh
-              ? "入驻后，您的律所将作为平台授权的肖像权保护机构，为用户提供法律咨询、维权代理等服务。所有用户授权通过平台统一管理，避免私下交易。"
-              : "After joining, your firm will act as a platform-authorized portrait rights protection agency, providing users with legal consulting, rights protection, and infringement handling services."}
-          </p>
-        </div>
 
-        {/* Form */}
-        <form
-          onSubmit={handleSubmit}
-          className={`rounded-2xl shadow-sm border p-8 mt-8 ${isDark ? "bg-gray-900 border-gray-800" : "bg-white border-gray-200"}`}
-        >
-          {serverError && (
-            <div className={`mb-6 p-4 rounded-lg text-sm ${isDark ? "bg-red-900/30 border border-red-800 text-red-400" : "bg-red-50 border border-red-200 text-red-700"}`}>
-              ❌ {serverError}
-            </div>
-          )}
+          {/* ── Form Card ──────────────────────────────────── */}
+          <form onSubmit={handleSubmit} className="card" style={{ padding: "40px" }}>
 
-          <div className="space-y-6">
-            {/* Company Name */}
-            <div>
-              <label className={`block text-sm font-medium mb-1.5 ${isDark ? "text-gray-300" : "text-gray-700"}`}>
-                {isZh ? "律所/公司名称" : "Law Firm / Company Name"} <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                value={form.companyName}
-                onChange={(e) => set("companyName", e.target.value)}
-                placeholder={isZh ? "例如：Smith & Associates Law Firm" : "e.g. Smith & Associates Law Firm"}
-                className={`w-full px-4 py-2.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.companyName ? "border-red-500" : isDark ? "border-gray-700 bg-gray-800 text-white placeholder-gray-500" : "border-gray-200 bg-white text-gray-900 placeholder-gray-400"}`}
-              />
-              {errors.companyName && <p className="mt-1 text-xs text-red-500">{errors.companyName}</p>}
-            </div>
+            {serverError && (
+              <div style={{
+                marginBottom: "24px",
+                padding: "14px 16px",
+                borderRadius: "var(--radius-md)",
+                background: "var(--error-light)",
+                border: "1px solid var(--error)",
+                fontSize: "var(--text-body-sm)",
+                color: "var(--error)",
+              }}>
+                ❌ {serverError}
+              </div>
+            )}
 
-            {/* Country */}
-            <div>
-              <label className={`block text-sm font-medium mb-1.5 ${isDark ? "text-gray-300" : "text-gray-700"}`}>
-                {isZh ? "国家/地区" : "Country / Region"} <span className="text-red-500">*</span>
-              </label>
-              <select
-                value={form.country}
-                onChange={(e) => set("country", e.target.value)}
-                className={`w-full px-4 py-2.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.country ? "border-red-500" : isDark ? "border-gray-700 bg-gray-800 text-white" : "border-gray-200 bg-white text-gray-900"}`}
-              >
-                <option value="">
-                  {isZh ? "请选择国家/地区" : "Select a country/region"}
-                </option>
-                {COUNTRIES.map((c) => (
-                  <option key={c.code} value={c.code} disabled={!c.available}>
-                    {c.name}
+            <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
+
+              {/* Company Name */}
+              <div>
+                <label style={{ display: "block", fontSize: "var(--text-body-sm)", fontWeight: 600, color: "var(--text-primary)", marginBottom: "8px" }}>
+                  {isZh ? "律所/公司名称" : "Law Firm / Company Name"}
+                  <span style={{ color: "var(--error)", marginLeft: "2px" }}>*</span>
+                </label>
+                <input
+                  type="text"
+                  value={form.companyName}
+                  onChange={(e) => set("companyName", e.target.value)}
+                  placeholder={isZh ? "例如：Smith & Associates Law Firm" : "e.g. Smith & Associates Law Firm"}
+                  style={{
+                    width: "100%",
+                    height: "44px",
+                    padding: "0 16px",
+                    background: "var(--surface)",
+                    border: `1px solid ${errors.companyName ? "var(--error)" : "var(--border-default)"}`,
+                    borderRadius: "var(--radius-md)",
+                    fontSize: "var(--text-body)",
+                    color: "var(--text-primary)",
+                    transition: "border-color 150ms ease-out, box-shadow 150ms ease-out",
+                    outline: "none",
+                  }}
+                  onFocus={(e) => { e.currentTarget.style.borderColor = "var(--accent-primary)"; e.currentTarget.style.boxShadow = "var(--shadow-focus)"; }}
+                  onBlur={(e) => { e.currentTarget.style.borderColor = errors.companyName ? "var(--error)" : "var(--border-default)"; e.currentTarget.style.boxShadow = "none"; }}
+                />
+                {errors.companyName && (
+                  <p style={{ marginTop: "6px", fontSize: "var(--text-caption)", color: "var(--error)" }}>{errors.companyName}</p>
+                )}
+              </div>
+
+              {/* Country */}
+              <div>
+                <label style={{ display: "block", fontSize: "var(--text-body-sm)", fontWeight: 600, color: "var(--text-primary)", marginBottom: "8px" }}>
+                  {isZh ? "国家/地区" : "Country / Region"}
+                  <span style={{ color: "var(--error)", marginLeft: "2px" }}>*</span>
+                </label>
+                <select
+                  value={form.country}
+                  onChange={(e) => set("country", e.target.value)}
+                  style={{
+                    width: "100%",
+                    height: "44px",
+                    padding: "0 16px",
+                    background: "var(--surface)",
+                    border: `1px solid ${errors.country ? "var(--error)" : "var(--border-default)"}`,
+                    borderRadius: "var(--radius-md)",
+                    fontSize: "var(--text-body)",
+                    color: "var(--text-primary)",
+                    transition: "border-color 150ms ease-out, box-shadow 150ms ease-out",
+                    outline: "none",
+                    appearance: "none",
+                    cursor: "pointer",
+                  }}
+                  onFocus={(e) => { e.currentTarget.style.borderColor = "var(--accent-primary)"; e.currentTarget.style.boxShadow = "var(--shadow-focus)"; }}
+                  onBlur={(e) => { e.currentTarget.style.borderColor = errors.country ? "var(--error)" : "var(--border-default)"; e.currentTarget.style.boxShadow = "none"; }}
+                >
+                  <option value="" style={{ color: "var(--text-tertiary)" }}>
+                    {isZh ? "请选择国家/地区" : "Select a country/region"}
                   </option>
-                ))}
-              </select>
-              {errors.country && <p className="mt-1 text-xs text-red-500">{errors.country}</p>}
-            </div>
+                  {COUNTRIES.map((c) => (
+                    <option key={c.code} value={c.code} disabled={!c.available} style={{ color: "var(--text-primary)" }}>
+                      {c.name}
+                    </option>
+                  ))}
+                </select>
+                {errors.country && (
+                  <p style={{ marginTop: "6px", fontSize: "var(--text-caption)", color: "var(--error)" }}>{errors.country}</p>
+                )}
+              </div>
 
-            {/* Contact Name */}
-            <div>
-              <label className={`block text-sm font-medium mb-1.5 ${isDark ? "text-gray-300" : "text-gray-700"}`}>
-                {isZh ? "联系人姓名" : "Contact Person"} <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                value={form.contactName}
-                onChange={(e) => set("contactName", e.target.value)}
-                placeholder={isZh ? "请输入联系人姓名" : "Enter contact name"}
-                className={`w-full px-4 py-2.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.contactName ? "border-red-500" : isDark ? "border-gray-700 bg-gray-800 text-white placeholder-gray-500" : "border-gray-200 bg-white text-gray-900 placeholder-gray-400"}`}
-              />
-              {errors.contactName && <p className="mt-1 text-xs text-red-500">{errors.contactName}</p>}
-            </div>
-
-            {/* Email & Phone */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {/* Contact Name */}
               <div>
-                <label className={`block text-sm font-medium mb-1.5 ${isDark ? "text-gray-300" : "text-gray-700"}`}>
-                  {isZh ? "邮箱" : "Email"} <span className="text-red-500">*</span>
+                <label style={{ display: "block", fontSize: "var(--text-body-sm)", fontWeight: 600, color: "var(--text-primary)", marginBottom: "8px" }}>
+                  {isZh ? "联系人姓名" : "Contact Person"}
+                  <span style={{ color: "var(--error)", marginLeft: "2px" }}>*</span>
                 </label>
                 <input
-                  type="email"
-                  value={form.contactEmail}
-                  onChange={(e) => set("contactEmail", e.target.value)}
-                  placeholder="lawfirm@example.com"
-                  className={`w-full px-4 py-2.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.contactEmail ? "border-red-500" : isDark ? "border-gray-700 bg-gray-800 text-white placeholder-gray-500" : "border-gray-200 bg-white text-gray-900 placeholder-gray-400"}`}
+                  type="text"
+                  value={form.contactName}
+                  onChange={(e) => set("contactName", e.target.value)}
+                  placeholder={isZh ? "请输入联系人姓名" : "Enter contact name"}
+                  style={{
+                    width: "100%",
+                    height: "44px",
+                    padding: "0 16px",
+                    background: "var(--surface)",
+                    border: `1px solid ${errors.contactName ? "var(--error)" : "var(--border-default)"}`,
+                    borderRadius: "var(--radius-md)",
+                    fontSize: "var(--text-body)",
+                    color: "var(--text-primary)",
+                    transition: "border-color 150ms ease-out, box-shadow 150ms ease-out",
+                    outline: "none",
+                  }}
+                  onFocus={(e) => { e.currentTarget.style.borderColor = "var(--accent-primary)"; e.currentTarget.style.boxShadow = "var(--shadow-focus)"; }}
+                  onBlur={(e) => { e.currentTarget.style.borderColor = errors.contactName ? "var(--error)" : "var(--border-default)"; e.currentTarget.style.boxShadow = "none"; }}
                 />
-                {errors.contactEmail && <p className="mt-1 text-xs text-red-500">{errors.contactEmail}</p>}
+                {errors.contactName && (
+                  <p style={{ marginTop: "6px", fontSize: "var(--text-caption)", color: "var(--error)" }}>{errors.contactName}</p>
+                )}
               </div>
+
+              {/* Email & Phone Row */}
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
+                <div>
+                  <label style={{ display: "block", fontSize: "var(--text-body-sm)", fontWeight: 600, color: "var(--text-primary)", marginBottom: "8px" }}>
+                    {isZh ? "邮箱" : "Email"}
+                    <span style={{ color: "var(--error)", marginLeft: "2px" }}>*</span>
+                  </label>
+                  <input
+                    type="email"
+                    value={form.contactEmail}
+                    onChange={(e) => set("contactEmail", e.target.value)}
+                    placeholder="lawfirm@example.com"
+                    style={{
+                      width: "100%",
+                      height: "44px",
+                      padding: "0 16px",
+                      background: "var(--surface)",
+                      border: `1px solid ${errors.contactEmail ? "var(--error)" : "var(--border-default)"}`,
+                      borderRadius: "var(--radius-md)",
+                      fontSize: "var(--text-body)",
+                      color: "var(--text-primary)",
+                      transition: "border-color 150ms ease-out, box-shadow 150ms ease-out",
+                      outline: "none",
+                    }}
+                    onFocus={(e) => { e.currentTarget.style.borderColor = "var(--accent-primary)"; e.currentTarget.style.boxShadow = "var(--shadow-focus)"; }}
+                    onBlur={(e) => { e.currentTarget.style.borderColor = errors.contactEmail ? "var(--error)" : "var(--border-default)"; e.currentTarget.style.boxShadow = "none"; }}
+                  />
+                  {errors.contactEmail && (
+                    <p style={{ marginTop: "6px", fontSize: "var(--text-caption)", color: "var(--error)" }}>{errors.contactEmail}</p>
+                  )}
+                </div>
+                <div>
+                  <label style={{ display: "block", fontSize: "var(--text-body-sm)", fontWeight: 600, color: "var(--text-primary)", marginBottom: "8px" }}>
+                    {isZh ? "联系电话" : "Phone"}
+                    <span style={{ color: "var(--error)", marginLeft: "2px" }}>*</span>
+                  </label>
+                  <input
+                    type="tel"
+                    value={form.contactPhone}
+                    onChange={(e) => set("contactPhone", e.target.value)}
+                    placeholder="+1 555 123 4567"
+                    style={{
+                      width: "100%",
+                      height: "44px",
+                      padding: "0 16px",
+                      background: "var(--surface)",
+                      border: `1px solid ${errors.contactPhone ? "var(--error)" : "var(--border-default)"}`,
+                      borderRadius: "var(--radius-md)",
+                      fontSize: "var(--text-body)",
+                      color: "var(--text-primary)",
+                      transition: "border-color 150ms ease-out, box-shadow 150ms ease-out",
+                      outline: "none",
+                    }}
+                    onFocus={(e) => { e.currentTarget.style.borderColor = "var(--accent-primary)"; e.currentTarget.style.boxShadow = "var(--shadow-focus)"; }}
+                    onBlur={(e) => { e.currentTarget.style.borderColor = errors.contactPhone ? "var(--error)" : "var(--border-default)"; e.currentTarget.style.boxShadow = "none"; }}
+                  />
+                  {errors.contactPhone && (
+                    <p style={{ marginTop: "6px", fontSize: "var(--text-caption)", color: "var(--error)" }}>{errors.contactPhone}</p>
+                  )}
+                </div>
+              </div>
+
+              {/* License URL */}
               <div>
-                <label className={`block text-sm font-medium mb-1.5 ${isDark ? "text-gray-300" : "text-gray-700"}`}>
-                  {isZh ? "联系电话" : "Phone"} <span className="text-red-500">*</span>
+                <label style={{ display: "block", fontSize: "var(--text-body-sm)", fontWeight: 600, color: "var(--text-primary)", marginBottom: "8px" }}>
+                  {isZh ? "资质证明链接" : "License / Certificate Link"}
+                  <span style={{ color: "var(--text-tertiary)", fontWeight: 400, fontSize: "var(--text-caption)", marginLeft: "6px" }}>
+                    ({isZh ? "选填" : "Optional"})
+                  </span>
                 </label>
                 <input
-                  type="tel"
-                  value={form.contactPhone}
-                  onChange={(e) => set("contactPhone", e.target.value)}
-                  placeholder={isZh ? "+1 555 123 4567" : "+1 555 123 4567"}
-                  className={`w-full px-4 py-2.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.contactPhone ? "border-red-500" : isDark ? "border-gray-700 bg-gray-800 text-white placeholder-gray-500" : "border-gray-200 bg-white text-gray-900 placeholder-gray-400"}`}
+                  type="url"
+                  value={form.licenseUrl}
+                  onChange={(e) => set("licenseUrl", e.target.value)}
+                  placeholder="https://"
+                  style={{
+                    width: "100%",
+                    height: "44px",
+                    padding: "0 16px",
+                    background: "var(--surface)",
+                    border: "1px solid var(--border-default)",
+                    borderRadius: "var(--radius-md)",
+                    fontSize: "var(--text-body)",
+                    color: "var(--text-primary)",
+                    transition: "border-color 150ms ease-out, box-shadow 150ms ease-out",
+                    outline: "none",
+                  }}
+                  onFocus={(e) => { e.currentTarget.style.borderColor = "var(--accent-primary)"; e.currentTarget.style.boxShadow = "var(--shadow-focus)"; }}
+                  onBlur={(e) => { e.currentTarget.style.borderColor = "var(--border-default)"; e.currentTarget.style.boxShadow = "none"; }}
                 />
-                {errors.contactPhone && <p className="mt-1 text-xs text-red-500">{errors.contactPhone}</p>}
+                <p style={{ marginTop: "6px", fontSize: "var(--text-caption)", color: "var(--text-tertiary)" }}>
+                  {isZh ? "可上传至云存储后粘贴链接，或留空后续补充" : "Upload to cloud storage and paste the link, or leave blank to add later"}
+                </p>
               </div>
-            </div>
 
-            {/* License URL */}
-            <div>
-              <label className={`block text-sm font-medium mb-1.5 ${isDark ? "text-gray-300" : "text-gray-700"}`}>
-                {isZh ? "资质证明链接" : "License / Certificate Link"} <span className="text-gray-400 text-xs">({isZh ? "选填" : "Optional"})</span>
-              </label>
-              <input
-                type="url"
-                value={form.licenseUrl}
-                onChange={(e) => set("licenseUrl", e.target.value)}
-                placeholder="https://"
-                className={`w-full px-4 py-2.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${isDark ? "border-gray-700 bg-gray-800 text-white placeholder-gray-500" : "border-gray-200 bg-white text-gray-900 placeholder-gray-400"}`}
-              />
-              <p className={`mt-1 text-xs ${isDark ? "text-gray-500" : "text-gray-400"}`}>
-                {isZh ? "可上传至云存储后粘贴链接，或留空后续补充" : "Upload to cloud storage and paste the link, or leave blank to add later"}
-              </p>
-            </div>
+              {/* Info Box */}
+              <div style={{
+                borderRadius: "var(--radius-md)",
+                padding: "16px 20px",
+                background: "var(--accent-light)",
+                border: "1px solid var(--accent-primary)",
+              }}>
+                <h3 style={{ fontSize: "var(--text-body-sm)", fontWeight: 600, color: "var(--accent-primary)", marginBottom: "10px" }}>
+                  {isZh ? "入驻须知" : "Notes"}
+                </h3>
+                <ul style={{ fontSize: "var(--text-body-sm)", color: "var(--text-secondary)", listStyle: "disc", listStylePosition: "inside", display: "flex", flexDirection: "column", gap: "6px", margin: 0, padding: 0 }}>
+                  <li>{isZh ? "审核周期：3-5 个工作日" : "Review period: 3-5 business days"}</li>
+                  <li>{isZh ? "需要提供有效的律师事务所营业执照" : "Valid law firm business license required"}</li>
+                  <li>{isZh ? "入驻后可在平台接单，提供肖像权保护服务" : "After approval, you can receive orders on the platform"}</li>
+                  <li>{isZh ? "平台收取一定比例的服务费，详情见协议" : "Platform charges a percentage service fee, see agreement for details"}</li>
+                </ul>
+              </div>
 
-            {/* Info Box */}
-            <div className={`rounded-lg p-4 ${isDark ? "bg-blue-900/20 border border-blue-800" : "bg-blue-50 border border-blue-100"}`}>
-              <h3 className={`text-sm font-medium mb-2 ${isDark ? "text-blue-400" : "text-blue-800"}`}>
-                {isZh ? "入驻须知" : "Notes"}
-              </h3>
-              <ul className={`text-xs space-y-1 list-disc list-inside ${isDark ? "text-blue-300" : "text-blue-700"}`}>
-                <li>{isZh ? "审核周期：3-5 个工作日" : "Review period: 3-5 business days"}</li>
-                <li>{isZh ? "需要提供有效的律师事务所营业执照" : "Valid law firm business license required"}</li>
-                <li>{isZh ? "入驻后可在平台接单，提供肖像权保护服务" : "After approval, you can receive orders on the platform"}</li>
-                <li>{isZh ? "平台收取一定比例的服务费，详情见协议" : "Platform charges a percentage service fee, see agreement for details"}</li>
-              </ul>
-            </div>
+              {/* Submit Button */}
+              <button
+                type="submit"
+                disabled={loading}
+                className="btn btn-primary"
+                style={{ width: "100%", height: "48px", fontSize: "var(--text-body)", marginTop: "8px" }}
+              >
+                {loading ? (
+                  <span style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                    <div style={{ width: "16px", height: "16px", border: "2px solid rgba(255,255,255,0.3)", borderTopColor: "white", borderRadius: "50%", animation: "spin 0.7s linear infinite" }} />
+                    {isZh ? "提交中..." : "Submitting..."}
+                  </span>
+                ) : (
+                  isZh ? "提交入驻申请" : "Submit Application"
+                )}
+              </button>
 
-            {/* Submit */}
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-medium rounded-lg transition-colors flex items-center justify-center gap-2"
-            >
-              {loading ? (
-                <>
-                  <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full" />
-                  {isZh ? "提交中..." : "Submitting..."}
-                </>
-              ) : (
-                isZh ? "提交入驻申请" : "Submit Application"
-              )}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+            </div>
+          </form>
+
+        </div>
+      </main>
+
+      <style>{`
+        @keyframes spin {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+      `}</style>
+    </>
   );
 }
