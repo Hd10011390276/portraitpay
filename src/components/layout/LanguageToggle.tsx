@@ -3,7 +3,7 @@
 import { useLanguage } from "@/context/LanguageContext";
 
 export function LanguageToggle() {
-  const { locale, setLocale } = useLanguage();
+  const { locale, setLocale, t } = useLanguage();
 
   return (
     <div className="inline-flex items-center rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
@@ -14,8 +14,8 @@ export function LanguageToggle() {
             ? "bg-blue-600 text-white"
             : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-800"
         }`}
-        title="English"
-        aria-label="Switch to English"
+        title={locale === "en-US" ? "English" : t.common.switchToEnglish}
+        aria-label={locale === "en-US" ? "English" : t.common.switchToEnglish}
       >
         EN
       </button>
@@ -26,8 +26,8 @@ export function LanguageToggle() {
             ? "bg-blue-600 text-white"
             : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-800"
         }`}
-        title="中文"
-        aria-label="切换到中文"
+        title={locale === "zh-CN" ? "中文" : t.common.switchToChinese}
+        aria-label={locale === "zh-CN" ? "中文" : t.common.switchToChinese}
       >
         中文
       </button>
