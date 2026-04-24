@@ -41,13 +41,13 @@ interface StripeAccountStatus {
   bankAccountConnected: boolean;
 }
 
-const STATUS_LABEL: Record<string, { text: string; color: string }> = {
-  PENDING: { text: "待处理", color: "text-yellow-600 bg-yellow-50" },
-  PROCESSING: { text: "处理中", color: "text-blue-600 bg-blue-50" },
-  APPROVED: { text: "已通过", color: "text-green-600 bg-green-50" },
-  REJECTED: { text: "已拒绝", color: "text-red-600 bg-red-50" },
-  COMPLETED: { text: "已完成", color: "text-gray-600 bg-gray-50" },
-  FAILED: { text: "失败", color: "text-red-600 bg-red-50" },
+const STATUS_COLOR: Record<string, string> = {
+  PENDING: "text-yellow-600 bg-yellow-50",
+  PROCESSING: "text-blue-600 bg-blue-50",
+  APPROVED: "text-green-600 bg-green-50",
+  REJECTED: "text-red-600 bg-red-50",
+  COMPLETED: "text-gray-600 bg-gray-50",
+  FAILED: "text-red-600 bg-red-50",
 };
 
 const MIN_WITHDRAWAL_CNY = 100;
@@ -56,12 +56,12 @@ const MIN_WITHDRAWAL_USD = 10;
 type PaymentMethod = "wechat" | "alipay" | "paypal" | "credit_card" | "bank";
 type Region = "CN" | "US" | "HK" | "TW" | "OTHER";
 
-const REGION_OPTIONS: { value: Region; label: string; labelEn: string; flag: string }[] = [
-  { value: "US", label: "美国", labelEn: "United States", flag: "🇺🇸" },
-  { value: "CN", label: "中国大陆", labelEn: "China", flag: "🇨🇳" },
-  { value: "HK", label: "中国香港", labelEn: "Hong Kong", flag: "🇭🇰" },
-  { value: "TW", label: "中国台湾", labelEn: "Taiwan", flag: "🇹🇼" },
-  { value: "OTHER", label: "其他地区", labelEn: "Other", flag: "🌍" },
+const REGION_OPTIONS: { value: Region; flag: string }[] = [
+  { value: "US", flag: "🇺🇸" },
+  { value: "CN", flag: "🇨🇳" },
+  { value: "HK", flag: "🇭🇰" },
+  { value: "TW", flag: "🇹🇼" },
+  { value: "OTHER", flag: "🌍" },
 ];
 
 function getPaymentMethodsForRegion(region: Region, t: Record<string, any>) {
@@ -355,7 +355,7 @@ function WithdrawPageContent() {
                   >
                     <span className="text-lg">{opt.flag}</span>
                     <p className="text-xs font-medium text-gray-700 dark:text-gray-300 mt-0.5 leading-tight">
-                      {locale === "zh-CN" ? opt.label : opt.labelEn}
+                      {opt.value === "US" ? t.withdraw.regionUS : opt.value === "CN" ? t.withdraw.regionCN : opt.value === "HK" ? t.withdraw.regionHK : opt.value === "TW" ? t.withdraw.regionTW : t.withdraw.regionOther}
                     </p>
                   </button>
                 ))}
@@ -577,7 +577,8 @@ function WithdrawPageContent() {
           ) : (
             <div className="divide-y divide-gray-50 dark:divide-gray-800">
               {history.map((w) => {
-                const status = STATUS_LABEL[w.status] ?? { text: w.status, color: "text-gray-600 bg-gray-50" };
+                const statusColor = STATUS_COLOR[w.status] ?? "text-gray-600 bg-gray-50";
+                const statusText = w.status === "PENDING" ? t.withdraw.statusPending : w.status === "PROCESSING" ? t.withdraw.statusProcessing : w.status === "APPROVED" ? t.withdraw.statusApproved : w.status === "REJECTED" ? t.withdraw.statusRejected : w.status === "COMPLETED" ? t.withdraw.statusCompleted : w.status === "FAILED" ? t.withdraw.statusFailed : w.status;
                 return (
                   <div key={w.id} className="px-5 py-4 flex items-center gap-4">
                     <div className="flex-1 min-w-0">
@@ -590,8 +591,8 @@ function WithdrawPageContent() {
                         <p className="text-xs text-red-500 dark:text-red-400 mt-0.5">{t.withdraw.rejectionReason.replace("{reason}", w.rejectionReason)}</p>
                       )}
                     </div>
-                    <span className={`text-xs font-medium px-2.5 py-1 rounded-full shrink-0 ${status.color}`}>
-                      {status.text}
+                    <span className={`text-xs font-medium px-2.5 py-1 rounded-full shrink-0 ${statusColor}`}>
+                      {statusText}
                     </span>
                   </div>
                 );
