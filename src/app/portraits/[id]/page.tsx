@@ -117,7 +117,7 @@ export default function PortraitDetailPage() {
         req.onsuccess = () => resolve(req.result as { imageBlob: Blob } | undefined);
         req.onerror = () => reject(req.error);
       });
-      if (!record?.imageBlob) { alert("未找到本地图片"); return; }
+      if (!record?.imageBlob) { alert(t.faceTrace.portraitNotFound); return; }
       const url = URL.createObjectURL(record.imageBlob);
       const a = document.createElement("a");
       a.href = url;
@@ -126,8 +126,8 @@ export default function PortraitDetailPage() {
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
-      alert("照片已保存到下载文件夹");
-    } catch { alert("下载失败，请稍后重试"); }
+      alert(t.faceTrace.savedToDownloads);
+    } catch { alert(t.faceTrace.downloadFailed); }
   };
 
   const handleCertify = async () => {
@@ -270,14 +270,14 @@ export default function PortraitDetailPage() {
                 <div className="absolute inset-0 flex items-center justify-center bg-gray-100 dark:bg-gray-800">
                   <div className="flex items-center gap-1.5 px-3 py-2 bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm">
                     <span className="text-base">🔒</span>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">本地存储</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">{t.faceTrace.localStorage}</p>
                     <button
                       type="button"
                       onClick={handleDownloadPortrait}
                       className="ml-1 px-2 py-1 bg-purple-600 hover:bg-purple-700 text-white text-xs rounded-md flex items-center gap-0.5 transition-colors"
                     >
                       <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
-                      下载
+                      {t.faceTrace.download}
                     </button>
                   </div>
                 </div>

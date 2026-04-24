@@ -1029,6 +1029,12 @@ export const translations = {
       logoutSuccess: "已成功退出",
       logoutFailed: "退出失败",
       pleaseRetry: "请重试",
+      markAllAsRead: "全部标为已读",
+      filterAll: "全部",
+      filterUnread: "未读",
+      noUnreadNotifications: "没有未读通知",
+      markAsRead: "标为已读",
+      unreadCount: "{count} 条未读",
     },
     // Login
     login: {
@@ -2343,6 +2349,12 @@ export const translations = {
       logoutSuccess: "Successfully signed out",
       logoutFailed: "Sign out failed",
       pleaseRetry: "Please try again",
+      markAllAsRead: "Mark all as read",
+      filterAll: "All",
+      filterUnread: "Unread",
+      noUnreadNotifications: "No unread notifications",
+      markAsRead: "Mark as read",
+      unreadCount: "{count} unread",
     },
     // Login
     login: {
