@@ -76,10 +76,10 @@ export default function NotificationsPage() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-              {t.header?.notifications || "通知"}
+              {t.header?.notifications}
             </h1>
             <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-              {unreadCount > 0 ? `${unreadCount} ${t.header?.noNotifications || "条未读"}` : t.header?.noNotifications || "没有新通知"}
+              {unreadCount > 0 ? t.header?.unreadCount?.replace("{count}", String(unreadCount)) : t.header?.noNotifications}
             </p>
           </div>
           {unreadCount > 0 && (
@@ -87,7 +87,7 @@ export default function NotificationsPage() {
               onClick={markAllAsRead}
               className="px-4 py-2 text-sm text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
             >
-              {t.header?.viewAll ? "全部标为已读" : "Mark all as read"}
+              {t.header?.markAllAsRead}
             </button>
           )}
         </div>
@@ -102,7 +102,7 @@ export default function NotificationsPage() {
                 : "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700"
             }`}
           >
-            全部
+            {t.header?.filterAll}
           </button>
           <button
             onClick={() => setFilter("unread")}
@@ -112,7 +112,7 @@ export default function NotificationsPage() {
                 : "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700"
             }`}
           >
-            未读 {unreadCount > 0 && `(${unreadCount})`}
+            {t.header?.filterUnread} {unreadCount > 0 && `(${unreadCount})`}
           </button>
         </div>
 
@@ -125,7 +125,7 @@ export default function NotificationsPage() {
           <div className="text-center py-12 bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700">
             <div className="text-4xl mb-4">🔔</div>
             <p className="text-gray-500 dark:text-gray-400">
-              {filter === "unread" ? "没有未读通知" : "暂无通知"}
+              {filter === "unread" ? t.header?.noUnreadNotifications : t.header?.noNotifications}
             </p>
           </div>
         ) : (
@@ -159,7 +159,7 @@ export default function NotificationsPage() {
                       onClick={() => markAsRead(notif.id)}
                       className="text-xs text-blue-600 dark:text-blue-400 hover:underline whitespace-nowrap"
                     >
-                      标为已读
+                      {t.header?.markAsRead}
                     </button>
                   )}
                 </div>
