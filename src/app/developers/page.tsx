@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import ThemeToggle from "@/components/ThemeToggle";
 import { LanguageToggle } from "@/components/layout/LanguageToggle";
+import { useLanguage } from "@/context/LanguageContext";
 
 const IconCode = ({ className }: { className?: string }) => (
   <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
@@ -63,6 +64,7 @@ function MethodBadge({ method }: { method: string }) {
 }
 
 export default function DevelopersPage() {
+  const { t } = useLanguage();
   const [activeTab, setActiveTab] = useState<"midjourney" | "runway">("midjourney");
 
   return (
@@ -89,19 +91,19 @@ export default function DevelopersPage() {
             API Documentation
           </div>
           <h1 style={{ fontSize: "32px", fontWeight: 700, color: "var(--text-primary)", marginBottom: "12px", letterSpacing: "-0.03em" }}>
-            AI 平台接入文档
+            {t.developers.pageTitle}
           </h1>
           <p style={{ fontSize: "15px", color: "var(--text-secondary)", maxWidth: "560px", margin: "0 auto", lineHeight: 1.7 }}>
-            让您的 AI 创作平台自动获得肖像授权。集成后，每次使用肖像创作都会自动计算版税并完成链上授权。
+            {t.developers.pageSubtitle}
           </p>
         </div>
 
         {/* How it works */}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "16px", marginBottom: "48px" }}>
           {[
-            { step: "1", title: "申请 API Key", desc: "在设置页面创建 AI Platform API Key，设置权限范围和限额" },
-            { step: "2", title: "集成 API", desc: "在请求时携带 X-API-Key 头，系统自动查询肖像授权状态" },
-            { step: "3", title: "自动授权", desc: "系统计算版税，创建链上授权记录，AI 平台直接返回结果" },
+            { step: "1", title: t.developers.step1Title, desc: t.developers.step1Desc },
+            { step: "2", title: t.developers.step2Title, desc: t.developers.step2Desc },
+            { step: "3", title: t.developers.step3Title, desc: t.developers.step3Desc },
           ].map((s) => (
             <div key={s.step} className="card" style={{ padding: "24px" }}>
               <div style={{ width: "32px", height: "32px", borderRadius: "8px", background: "var(--accent-primary)", color: "white", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "14px", fontWeight: 700, marginBottom: "12px" }}>
@@ -139,10 +141,10 @@ export default function DevelopersPage() {
                 {/* Auth */}
                 <div>
                   <h3 style={{ fontSize: "15px", fontWeight: 600, color: "var(--text-primary)", marginBottom: "12px", display: "flex", alignItems: "center", gap: "8px" }}>
-                    <IconKey className="w-4 h-4" /> 认证
+                    <IconKey className="w-4 h-4" /> {t.developers.authTitle}
                   </h3>
                   <p style={{ fontSize: "13px", color: "var(--text-secondary)", marginBottom: "12px" }}>
-                    所有请求需要在 Header 中携带 API Key：
+                    {t.developers.authDesc}
                   </p>
                   <CodeBlock code={`X-API-Key: pp_live_your_api_key_here`} label="Header" />
                 </div>
@@ -150,21 +152,21 @@ export default function DevelopersPage() {
                 {/* License check */}
                 <div>
                   <h3 style={{ fontSize: "15px", fontWeight: 600, color: "var(--text-primary)", marginBottom: "12px", display: "flex", alignItems: "center", gap: "8px" }}>
-                    <IconCheck className="w-4 h-4" /> 授权查询
+                    <IconCheck className="w-4 h-4" /> {t.developers.licenseCheckTitle}
                   </h3>
                   <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "12px" }}>
                     <MethodBadge method="GET" />
                     <code style={{ fontSize: "13px", color: "var(--text-primary)", fontFamily: "monospace" }}>/api/v1/ai/midjourney/portrait/:portraitId/license</code>
                   </div>
                   <p style={{ fontSize: "13px", color: "var(--text-secondary)", marginBottom: "12px" }}>
-                    查询指定肖像的授权状态和费用：
+                    {t.developers.licenseCheckDesc}
                   </p>
                   <CodeBlock
                     code={`curl -X GET "https://portraitpayai.com/api/v1/ai/midjourney/portrait/123/license" \\
   -H "X-API-Key: pp_live_your_key" \\
   -H "Content-Type: application/json"`}
                   />
-                  <p style={{ fontSize: "13px", color: "var(--text-secondary)", marginTop: "12px", marginBottom: "8px" }}>响应示例：</p>
+                  <p style={{ fontSize: "13px", color: "var(--text-secondary)", marginTop: "12px", marginBottom: "8px" }}>{t.developers.responseExample}</p>
                   <CodeBlock
                     code={`{
   "success": true,
@@ -186,7 +188,7 @@ export default function DevelopersPage() {
                 {/* Generate */}
                 <div>
                   <h3 style={{ fontSize: "15px", fontWeight: 600, color: "var(--text-primary)", marginBottom: "12px", display: "flex", alignItems: "center", gap: "8px" }}>
-                    <IconLink className="w-4 h-4" /> 生成请求
+                    <IconLink className="w-4 h-4" /> {t.developers.generateRequestTitle}
                   </h3>
                   <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "12px" }}>
                     <MethodBadge method="POST" />
@@ -204,7 +206,7 @@ export default function DevelopersPage() {
     "seed": 12345
   }'`}
                   />
-                  <p style={{ fontSize: "13px", color: "var(--text-secondary)", marginTop: "12px", marginBottom: "8px" }}>响应：</p>
+                  <p style={{ fontSize: "13px", color: "var(--text-secondary)", marginTop: "12px", marginBottom: "8px" }}>{t.developers.response}</p>
                   <CodeBlock
                     code={`{
   "success": true,
@@ -222,14 +224,14 @@ export default function DevelopersPage() {
 
                 {/* Error codes */}
                 <div>
-                  <h3 style={{ fontSize: "15px", fontWeight: 600, color: "var(--text-primary)", marginBottom: "12px" }}>错误代码</h3>
+                  <h3 style={{ fontSize: "15px", fontWeight: 600, color: "var(--text-primary)", marginBottom: "12px" }}>{t.developers.errorCodesTitle}</h3>
                   <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
                     {[
-                      { code: "PP-1001", msg: "肖像未授权 — 需要先获取授权", status: "402" },
-                      { code: "PP-1002", msg: "授权范围不包含此用途", status: "403" },
-                      { code: "PP-1003", msg: "超出使用地区范围", status: "403" },
-                      { code: "PP-2001", msg: "API Key 无效或已撤销", status: "401" },
-                      { code: "PP-2002", msg: "超出每分钟请求限额", status: "429" },
+                      { code: "PP-1001", msg: t.developers.errPP1001, status: "402" },
+                      { code: "PP-1002", msg: t.developers.errPP1002, status: "403" },
+                      { code: "PP-1003", msg: t.developers.errPP1003, status: "403" },
+                      { code: "PP-2001", msg: t.developers.errPP2001, status: "401" },
+                      { code: "PP-2002", msg: t.developers.errPP2002, status: "429" },
                     ].map((e) => (
                       <div key={e.code} style={{ display: "flex", gap: "12px", alignItems: "center", fontSize: "13px" }}>
                         <span style={{ fontFamily: "monospace", fontWeight: 600, color: "var(--accent-primary)", minWidth: "80px" }}>{e.code}</span>
@@ -245,11 +247,11 @@ export default function DevelopersPage() {
             {activeTab === "runway" && (
               <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
                 <p style={{ fontSize: "13px", color: "var(--text-secondary)" }}>
-                  Runway API 集成方式与 Midjourney 类似。请在 Header 中使用相同的 <code style={{ fontFamily: "monospace", background: "var(--bg-secondary)", padding: "2px 6px", borderRadius: "4px" }}>X-API-Key</code> 认证方式，接入地址为：
+                  {t.developers.runwayDesc}
                 </p>
                 <CodeBlock code={`POST https://portraitpayai.com/api/v1/ai/runway`} />
                 <p style={{ fontSize: "13px", color: "var(--text-tertiary)" }}>
-                  具体参数和响应格式请参考上方 Midjourney 文档，接口设计兼容。
+                  {t.developers.runwayNote}
                 </p>
               </div>
             )}
@@ -258,16 +260,16 @@ export default function DevelopersPage() {
 
         {/* SDK / Quick start */}
         <div className="card" style={{ padding: "32px", marginBottom: "32px" }}>
-          <h2 style={{ fontSize: "18px", fontWeight: 700, color: "var(--text-primary)", marginBottom: "16px" }}>快速开始</h2>
+          <h2 style={{ fontSize: "18px", fontWeight: 700, color: "var(--text-primary)", marginBottom: "16px" }}>{t.developers.quickStartTitle}</h2>
           <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
             <p style={{ fontSize: "14px", color: "var(--text-secondary)", lineHeight: 1.7 }}>
-              第一步：在 <Link href="/api-keys" style={{ color: "var(--accent-primary)", textDecoration: "none", fontWeight: 500 }}>API Keys 管理页面</Link>创建一个 AI Platform API Key
+              {t.developers.quickStartStep1}
             </p>
             <p style={{ fontSize: "14px", color: "var(--text-secondary)", lineHeight: 1.7 }}>
-              第二步：在您的 AI Platform 代码中，修改 HTTP 请求，添加 <code style={{ fontFamily: "monospace", fontSize: "13px", background: "var(--bg-secondary)", padding: "2px 6px", borderRadius: "4px" }}>X-API-Key</code> Header
+              {t.developers.quickStartStep2}
             </p>
             <p style={{ fontSize: "14px", color: "var(--text-secondary)", lineHeight: 1.7 }}>
-              第三步：PortraitPay 自动处理授权、版税计算和链上存证，您的平台无需任何额外集成费用
+              {t.developers.quickStartStep3}
             </p>
           </div>
         </div>
@@ -278,15 +280,15 @@ export default function DevelopersPage() {
           borderRadius: "var(--radius-xl)", padding: "32px 40px",
           textAlign: "center", color: "white",
         }}>
-          <h2 style={{ fontSize: "20px", fontWeight: 700, marginBottom: "8px" }}>准备好接入了？</h2>
-          <p style={{ fontSize: "14px", opacity: 0.85, marginBottom: "24px" }}>获取 API Key，立即开始集成</p>
+          <h2 style={{ fontSize: "20px", fontWeight: 700, marginBottom: "8px" }}>{t.developers.ctaTitle}</h2>
+          <p style={{ fontSize: "14px", opacity: 0.85, marginBottom: "24px" }}>{t.developers.ctaSubtitle}</p>
           <Link href="/api-keys" style={{
             display: "inline-block", padding: "12px 28px",
             background: "white", color: "var(--accent-primary)",
             borderRadius: "10px", fontWeight: 600, fontSize: "14px",
             textDecoration: "none",
           }}>
-            管理 API Keys
+            {t.developers.ctaButton}
           </Link>
         </div>
       </main>
