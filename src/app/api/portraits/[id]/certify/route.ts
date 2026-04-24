@@ -29,7 +29,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
     }
 
     const { id } = await context.params;
-    const network = "base" as const;
+    const network = "sepolia" as const;
 
     // ── Step 1: Fetch portrait ──────────────────────────────────
     const portrait = await prisma.portrait.findUnique({
