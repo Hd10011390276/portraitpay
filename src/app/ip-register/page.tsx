@@ -221,7 +221,7 @@ function UploadZone({ onFileSelected, accept = "image/*", maxSizeMB = 20, t }: U
               onClick={(e) => { e.stopPropagation(); setPreview(null); setFile(null); setHash(null); }}
               className="text-xs text-red-500 hover:underline"
             >
-              {t.remove || "移除"}
+              {t.remove}
             </button>
           </div>
         ) : (
@@ -358,12 +358,12 @@ function CertificateModal({ registration, onClose, t, statusConfig, certificateT
 
         {/* Footer */}
         <div className="px-6 py-4 bg-gray-50 border-t border-gray-100 flex items-center justify-between">
-          <p className="text-xs text-gray-400">{t.poweredBy || "Powered by"} PortraitPay AI</p>
+          <p className="text-xs text-gray-400">{t.poweredBy} PortraitPay AI</p>
           <button
             onClick={onClose}
             className="px-4 py-1.5 bg-purple-600 text-white text-sm font-medium rounded-lg hover:bg-purple-700 transition-colors"
           >
-            {t.close || "关闭"}
+            {t.close}
           </button>
         </div>
       </div>
