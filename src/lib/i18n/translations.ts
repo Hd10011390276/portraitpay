@@ -1191,6 +1191,8 @@ export const translations = {
           governingLawDesc: "本服务条款受中华人民共和国法律管辖。",
           changesToTerms: "条款变更",
           changesToTermsDesc: "我们保留随时修改这些条款的权利，修改后会在平台上公示。",
+          contactUs: "联系我们",
+          contactUsDesc: "如有问题，请通过以下方式联系我们：",
         },
       },
       privacy: {
@@ -1235,6 +1237,8 @@ export const translations = {
           yourRightsDesc: "你拥有以下权利：",
           yourRightsContact: "如要行使权利，请联系：",
           contactEmail: "contact@portraitpayai.com",
+          contactEuRep: "欧盟代表: eu-rep@portraitpayai.com",
+          contactWechat: "微信: PortraitPayAI",
           yourRightsList: {
             access: "访问你的数据",
             correct: "更正错误数据",
@@ -2479,6 +2483,8 @@ export const translations = {
           yourRightsDesc: "You have the following rights:",
           yourRightsContact: "To exercise your rights, contact:",
           contactEmail: "contact@portraitpayai.com",
+          contactEuRep: "EU Representative: eu-rep@portraitpayai.com",
+          contactWechat: "WeChat: PortraitPayAI",
           yourRightsList: {
             access: "Access your data",
             correct: "Correct inaccurate data",
