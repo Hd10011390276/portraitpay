@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 
 export default function ThemeToggle() {
   const [theme, setTheme] = useState('light')
@@ -18,7 +18,7 @@ export default function ThemeToggle() {
     }
   }, [])
 
-  const toggle = () => {
+  const toggle = useCallback(() => {
     const next = theme === 'light' ? 'dark' : 'light'
     setTheme(next)
     localStorage.setItem('theme', next)
@@ -28,7 +28,9 @@ export default function ThemeToggle() {
     } else {
       document.documentElement.classList.remove('dark')
     }
-  }
+    // Dispatch custom event so other components can subscribe
+    window.dispatchEvent(new CustomEvent('theme-change', { detail: { theme: next } }))
+  }, [theme])
 
   if (!mounted) return null
 

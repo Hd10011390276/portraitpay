@@ -58,6 +58,13 @@ export default function LawyerRegistrationPage() {
     const saved = localStorage.getItem("theme");
     const isDark = saved === "dark" || (!saved && window.matchMedia("(prefers-color-scheme: dark)").matches);
     setTheme(isDark ? "dark" : "light");
+
+    // Subscribe to theme changes from ThemeToggle
+    const handleThemeChange = (e: Event) => {
+      setTheme((e as CustomEvent<{ theme: "light" | "dark" }>).detail.theme);
+    };
+    window.addEventListener("theme-change", handleThemeChange);
+    return () => window.removeEventListener("theme-change", handleThemeChange);
   }, []);
 
   function validate() {
