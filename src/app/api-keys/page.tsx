@@ -8,6 +8,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { DashboardShell } from "@/components/layout/DashboardShell";
+import { useLanguage } from "@/context/LanguageContext";
 
 interface AiPlatformApiKey {
   id: string;
@@ -53,6 +54,7 @@ const PLATFORM_SUGGESTIONS = [
 ];
 
 export default function AdminApiKeysPage() {
+  const { t } = useLanguage();
   const router = useRouter();
   const [keys, setKeys] = useState<AiPlatformApiKey[]>([]);
   const [loading, setLoading] = useState(true);
@@ -236,9 +238,9 @@ export default function AdminApiKeysPage() {
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
             </svg>
           </div>
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">访问受限</h2>
-          <p className="text-gray-500 dark:text-gray-400 max-w-sm">此页面仅限管理员访问。请确认您使用的是管理员账号，或联系平台管理员获取权限。</p>
-          <button onClick={() => router.push("/dashboard")} className="mt-6 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 transition">返回控制台</button>
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">{t.apiKeys.accessDenied}</h2>
+          <p className="text-gray-500 dark:text-gray-400 max-w-sm">{t.apiKeys.accessDeniedMessage}</p>
+          <button onClick={() => router.push("/dashboard")} className="mt-6 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 transition">{t.apiKeys.backToConsole}</button>
         </div>
       </DashboardShell>
     );

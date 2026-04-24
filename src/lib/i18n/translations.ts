@@ -563,6 +563,12 @@ export const translations = {
       systemSettingsDesc: "配置站点名称、联系邮箱，维护模式",
       systemConfiguration: "系统配置",
     },
+    // API Keys
+    apiKeys: {
+      accessDenied: "访问受限",
+      accessDeniedMessage: "此页面仅限管理员访问。请确认您使用的是管理员账号，或联系平台管理员获取权限。",
+      backToConsole: "返回控制台",
+    },
     // Infringements
     infringements: {
       title: "侵权记录",
@@ -1824,6 +1830,12 @@ export const translations = {
       systemSettings: "System Settings",
       systemSettingsDesc: "Configure site name, contact email, maintenance mode",
       systemConfiguration: "System Config",
+    },
+    // API Keys
+    apiKeys: {
+      accessDenied: "Access Denied",
+      accessDeniedMessage: "This page is restricted to administrators only. Please ensure you are using an admin account, or contact the platform administrator for access.",
+      backToConsole: "Back to Console",
     },
     // Infringements
     infringements: {
