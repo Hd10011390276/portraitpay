@@ -4,25 +4,41 @@ import { useState } from "react";
 import Link from "next/link";
 import ThemeToggle from "@/components/ThemeToggle";
 import { LanguageToggle } from "@/components/layout/LanguageToggle";
-import { useLanguage } from "@/context/LanguageContext";
 
-const REGIONS = [
-  "华北地区（北京、天津、河北、山西、内蒙古）",
-  "东北地区（辽宁、吉林、黑龙江）",
-  "华东地区（上海、江苏、浙江、安徽、福建、江西、山东）",
-  "华中地区（河南、湖北、湖南）",
-  "华南地区（广东、广西、海南）",
-  "西南地区（重庆、四川、贵州、云南、西藏）",
-  "西北地区（陕西、甘肃、青海、宁夏、新疆）",
-  "港澳台地区",
-  "海外地区",
+const COUNTRIES = [
+  { code: "US", name: "🇺🇸 United States", available: true },
+  { code: "GB", name: "🇬🇧 United Kingdom", available: true },
+  { code: "CA", name: "🇨🇦 Canada", available: true },
+  { code: "AU", name: "🇦🇺 Australia", available: true },
+  { code: "JP", name: "🇯🇵 Japan", available: true },
+  { code: "KR", name: "🇰🇷 South Korea", available: true },
+  { code: "SG", name: "🇸🇬 Singapore", available: true },
+  { code: "HK", name: "🇭🇰 Hong Kong", available: true },
+  { code: "TW", name: "🇹🇼 Taiwan", available: true },
+  { code: "DE", name: "🇩🇪 Germany", available: true },
+  { code: "FR", name: "🇫🇷 France", available: true },
+  { code: "IT", name: "🇮🇹 Italy", available: true },
+  { code: "ES", name: "🇪🇸 Spain", available: true },
+  { code: "NL", name: "🇳🇱 Netherlands", available: true },
+  { code: "CH", name: "🇨🇭 Switzerland", available: true },
+  { code: "SE", name: "🇸🇪 Sweden", available: true },
+  { code: "NO", name: "🇳🇴 Norway", available: true },
+  { code: "DK", name: "🇩🇰 Denmark", available: true },
+  { code: "FI", name: "🇫🇮 Finland", available: true },
+  { code: "NZ", name: "🇳🇿 New Zealand", available: true },
+  { code: "AE", name: "🇦🇪 UAE", available: true },
+  { code: "SA", name: "🇸🇦 Saudi Arabia", available: true },
+  { code: "IN", name: "🇮🇳 India", available: true },
+  { code: "BR", name: "🇧🇷 Brazil", available: true },
+  { code: "MX", name: "🇲🇽 Mexico", available: true },
+  { code: "OTHER", name: "🌍 Other (Contact us)", available: true },
+  { code: "CN", name: "🇨🇳 China (待开发)", available: false },
 ];
 
 export default function LawyerRegistrationPage() {
-  const { t } = useLanguage();
   const [form, setForm] = useState({
     companyName: "",
-    region: "",
+    country: "",
     contactName: "",
     contactEmail: "",
     contactPhone: "",
@@ -36,7 +52,11 @@ export default function LawyerRegistrationPage() {
   function validate() {
     const errs: Record<string, string> = {};
     if (!form.companyName.trim()) errs.companyName = "请填写公司名称";
-    if (!form.region) errs.region = "请选择地区";
+    if (!form.country) errs.country = "请选择国家/地区";
+    const selected = COUNTRIES.find(c => c.code === form.country);
+    if (selected && !selected.available) {
+      errs.country = "该地区尚未开放，请选择其他地区";
+    }
     if (!form.contactName.trim()) errs.contactName = "请填写联系人姓名";
     if (!form.contactEmail.trim()) errs.contactEmail = "请填写邮箱";
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.contactEmail)) errs.contactEmail = "邮箱格式不正确";
@@ -77,11 +97,11 @@ export default function LawyerRegistrationPage() {
 
   if (success) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex items-center justify-center p-4">
-        <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-lg p-8 max-w-lg w-full text-center">
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+        <div className="bg-white rounded-2xl shadow-lg p-8 max-w-lg w-full text-center">
           <div className="text-6xl mb-4">🏛️</div>
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">申请已提交！</h2>
-          <p className="text-gray-600 dark:text-gray-400 mb-6">
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">申请已提交！</h2>
+          <p className="text-gray-600 mb-6">
             感谢您的入驻申请。我们的审核团队会在 <strong>3-5 个工作日</strong>内完成审核，并通过邮件通知您结果。
           </p>
           <a href="/" className="inline-block px-6 py-2.5 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors">
@@ -93,11 +113,11 @@ export default function LawyerRegistrationPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
-      {/* Header */}
-      <header className="bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800">
+    <div className="min-h-screen bg-gray-50">
+      {/* Header - always white */}
+      <header className="bg-white border-b border-gray-100">
         <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
-          <Link href="/" className="text-lg font-bold text-gray-900 dark:text-white">PortraitPay</Link>
+          <Link href="/" className="text-lg font-bold text-gray-900">PortraitPay</Link>
           <div className="flex items-center gap-3">
             <LanguageToggle />
             <ThemeToggle />
@@ -107,7 +127,7 @@ export default function LawyerRegistrationPage() {
 
       {/* Main */}
       <main className="max-w-2xl mx-auto px-4 py-10">
-        {/* Header Card */}
+        {/* Header Card - blue gradient */}
         <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl p-8 mb-8 text-white">
           <div className="flex items-center gap-3 mb-3">
             <span className="text-4xl">🏛️</span>
@@ -117,14 +137,14 @@ export default function LawyerRegistrationPage() {
             </div>
           </div>
           <p className="text-blue-100 text-sm">
-            入驻后，您的律所将作为平台授权的肖像权保护机构，为用户提供法律咨询、维权代理等服务。
+            入驻后，您的律所将作为平台授权的肖像权保护机构，为用户提供法律咨询、维权代理等服务。所有用户授权通过平台统一管理，避免私下交易。
           </p>
         </div>
 
-        {/* Form */}
-        <form onSubmit={handleSubmit} className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 p-8">
+        {/* Form - always white bg */}
+        <form onSubmit={handleSubmit} className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
           {serverError && (
-            <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-red-700 dark:text-red-400 text-sm">
+            <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
               ❌ {serverError}
             </div>
           )}
@@ -132,37 +152,50 @@ export default function LawyerRegistrationPage() {
           <div className="space-y-6">
             {/* Company Name */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">
                 律所/公司名称 <span className="text-red-500">*</span>
               </label>
-              <input type="text" value={form.companyName} onChange={(e) => set("companyName", e.target.value)}
-                placeholder="例如：北京君合律师事务所"
-                className={`w-full px-4 py-2.5 border rounded-lg text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.companyName ? "border-red-500" : "border-gray-200 dark:border-gray-700"}`}
+              <input
+                type="text"
+                value={form.companyName}
+                onChange={(e) => set("companyName", e.target.value)}
+                placeholder="例如：Smith & Associates Law Firm"
+                className={`w-full px-4 py-2.5 border rounded-lg text-sm bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.companyName ? "border-red-500" : "border-gray-200"}`}
               />
               {errors.companyName && <p className="mt-1 text-xs text-red-500">{errors.companyName}</p>}
             </div>
 
-            {/* Region */}
+            {/* Country */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-                所属地区 <span className="text-red-500">*</span>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                国家/地区 <span className="text-red-500">*</span>
               </label>
-              <select value={form.region} onChange={(e) => set("region", e.target.value)}
-                className={`w-full px-4 py-2.5 border rounded-lg text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.region ? "border-red-500" : "border-gray-200 dark:border-gray-700"}`}>
-                <option value="">请选择地区</option>
-                {REGIONS.map((r) => (<option key={r} value={r}>{r}</option>))}
+              <select
+                value={form.country}
+                onChange={(e) => set("country", e.target.value)}
+                className={`w-full px-4 py-2.5 border rounded-lg text-sm bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.country ? "border-red-500" : "border-gray-200"}`}
+              >
+                <option value="">请选择国家/地区</option>
+                {COUNTRIES.map((c) => (
+                  <option key={c.code} value={c.code} disabled={!c.available}>
+                    {c.name}
+                  </option>
+                ))}
               </select>
-              {errors.region && <p className="mt-1 text-xs text-red-500">{errors.region}</p>}
+              {errors.country && <p className="mt-1 text-xs text-red-500">{errors.country}</p>}
             </div>
 
             {/* Contact Name */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">
                 联系人姓名 <span className="text-red-500">*</span>
               </label>
-              <input type="text" value={form.contactName} onChange={(e) => set("contactName", e.target.value)}
+              <input
+                type="text"
+                value={form.contactName}
+                onChange={(e) => set("contactName", e.target.value)}
                 placeholder="请输入联系人姓名"
-                className={`w-full px-4 py-2.5 border rounded-lg text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.contactName ? "border-red-500" : "border-gray-200 dark:border-gray-700"}`}
+                className={`w-full px-4 py-2.5 border rounded-lg text-sm bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.contactName ? "border-red-500" : "border-gray-200"}`}
               />
               {errors.contactName && <p className="mt-1 text-xs text-red-500">{errors.contactName}</p>}
             </div>
@@ -170,22 +203,28 @@ export default function LawyerRegistrationPage() {
             {/* Email & Phone */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">
                   邮箱 <span className="text-red-500">*</span>
                 </label>
-                <input type="email" value={form.contactEmail} onChange={(e) => set("contactEmail", e.target.value)}
+                <input
+                  type="email"
+                  value={form.contactEmail}
+                  onChange={(e) => set("contactEmail", e.target.value)}
                   placeholder="lawfirm@example.com"
-                  className={`w-full px-4 py-2.5 border rounded-lg text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.contactEmail ? "border-red-500" : "border-gray-200 dark:border-gray-700"}`}
+                  className={`w-full px-4 py-2.5 border rounded-lg text-sm bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.contactEmail ? "border-red-500" : "border-gray-200"}`}
                 />
                 {errors.contactEmail && <p className="mt-1 text-xs text-red-500">{errors.contactEmail}</p>}
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">
                   联系电话 <span className="text-red-500">*</span>
                 </label>
-                <input type="tel" value={form.contactPhone} onChange={(e) => set("contactPhone", e.target.value)}
-                  placeholder="+86 10 1234 5678"
-                  className={`w-full px-4 py-2.5 border rounded-lg text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.contactPhone ? "border-red-500" : "border-gray-200 dark:border-gray-700"}`}
+                <input
+                  type="tel"
+                  value={form.contactPhone}
+                  onChange={(e) => set("contactPhone", e.target.value)}
+                  placeholder="+1 555 123 4567"
+                  className={`w-full px-4 py-2.5 border rounded-lg text-sm bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.contactPhone ? "border-red-500" : "border-gray-200"}`}
                 />
                 {errors.contactPhone && <p className="mt-1 text-xs text-red-500">{errors.contactPhone}</p>}
               </div>
@@ -193,20 +232,23 @@ export default function LawyerRegistrationPage() {
 
             {/* License URL */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">
                 资质证明链接 <span className="text-gray-400 text-xs">(选填)</span>
               </label>
-              <input type="url" value={form.licenseUrl} onChange={(e) => set("licenseUrl", e.target.value)}
+              <input
+                type="url"
+                value={form.licenseUrl}
+                onChange={(e) => set("licenseUrl", e.target.value)}
                 placeholder="https:// 营业执照或资质证明的链接"
-                className="w-full px-4 py-2.5 border border-gray-200 dark:border-gray-700 rounded-lg text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
               <p className="mt-1 text-xs text-gray-400">可上传至云存储后粘贴链接，或留空后续补充</p>
             </div>
 
             {/* Info Box */}
-            <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800 rounded-lg p-4">
-              <h3 className="text-sm font-medium text-blue-800 dark:text-blue-300 mb-2">入驻须知</h3>
-              <ul className="text-xs text-blue-700 dark:text-blue-400 space-y-1 list-disc list-inside">
+            <div className="bg-blue-50 border border-blue-100 rounded-lg p-4">
+              <h3 className="text-sm font-medium text-blue-800 mb-2">入驻须知</h3>
+              <ul className="text-xs text-blue-700 space-y-1 list-disc list-inside">
                 <li>审核周期：3-5 个工作日</li>
                 <li>需要提供有效的律师事务所营业执照</li>
                 <li>入驻后可在平台接单，提供肖像权保护服务</li>
@@ -215,9 +257,19 @@ export default function LawyerRegistrationPage() {
             </div>
 
             {/* Submit */}
-            <button type="submit" disabled={loading}
-              className="w-full py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-medium rounded-lg transition-colors flex items-center justify-center gap-2">
-              {loading ? (<><div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full" />提交中...</>) : "提交入驻申请"}
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-medium rounded-lg transition-colors flex items-center justify-center gap-2"
+            >
+              {loading ? (
+                <>
+                  <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full" />
+                  提交中...
+                </>
+              ) : (
+                "提交入驻申请"
+              )}
             </button>
           </div>
         </form>
