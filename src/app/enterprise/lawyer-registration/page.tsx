@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useLanguage } from "@/context/LanguageContext";
 import ThemeToggle from "@/components/ThemeToggle";
@@ -40,6 +40,7 @@ export default function LawyerRegistrationPage() {
   const { t, locale } = useLanguage();
   const isZh = locale === "zh-CN";
 
+  const [theme, setTheme] = useState<"light" | "dark">("light");
   const [form, setForm] = useState({
     companyName: "",
     country: "",
@@ -52,6 +53,12 @@ export default function LawyerRegistrationPage() {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [serverError, setServerError] = useState("");
+
+  useEffect(() => {
+    const saved = localStorage.getItem("theme");
+    const isDark = saved === "dark" || (!saved && window.matchMedia("(prefers-color-scheme: dark)").matches);
+    setTheme(isDark ? "dark" : "light");
+  }, []);
 
   function validate() {
     const errs: Record<string, string> = {};
@@ -99,10 +106,13 @@ export default function LawyerRegistrationPage() {
     if (errors[field]) setErrors((prev) => ({ ...prev, [field]: "" }));
   }
 
+  // Determine if dark mode is active
+  const isDark = theme === "dark";
+
   if (success) {
     return (
-      <div className="min-h-screen bg-white">
-        {/* Minimal Header */}
+      <div className={`min-h-screen ${isDark ? "bg-gray-950" : "bg-gray-50"}`}>
+        {/* Minimal Header - always white */}
         <header className="bg-white border-b border-gray-200 sticky top-0 z-10">
           <div className="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between">
             <Link href="/" className="text-lg font-bold text-gray-900">PortraitPay AI</Link>
@@ -137,8 +147,8 @@ export default function LawyerRegistrationPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white">
-      {/* Minimal Header - always white, always on top */}
+    <div className={`min-h-screen ${isDark ? "bg-gray-950" : "bg-gray-50"}`}>
+      {/* Minimal Header - always white */}
       <header className="bg-white border-b border-gray-200 sticky top-0 z-10">
         <div className="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between">
           <Link href="/" className="text-lg font-bold text-gray-900">PortraitPay AI</Link>
@@ -151,7 +161,7 @@ export default function LawyerRegistrationPage() {
 
       <div className="max-w-2xl mx-auto px-4 pb-16">
         {/* Header Card */}
-        <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl p-8 mb-8 text-white mt-8">
+        <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl p-8 text-white mt-8">
           <div className="flex items-center gap-3 mb-3">
             <span className="text-4xl">🏛️</span>
             <div>
@@ -170,13 +180,13 @@ export default function LawyerRegistrationPage() {
           </p>
         </div>
 
-        {/* Form - always white */}
+        {/* Form */}
         <form
           onSubmit={handleSubmit}
-          className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8"
+          className={`rounded-2xl shadow-sm border p-8 mt-8 ${isDark ? "bg-gray-900 border-gray-800" : "bg-white border-gray-200"}`}
         >
           {serverError && (
-            <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+            <div className={`mb-6 p-4 rounded-lg text-sm ${isDark ? "bg-red-900/30 border border-red-800 text-red-400" : "bg-red-50 border border-red-200 text-red-700"}`}>
               ❌ {serverError}
             </div>
           )}
@@ -184,7 +194,7 @@ export default function LawyerRegistrationPage() {
           <div className="space-y-6">
             {/* Company Name */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+              <label className={`block text-sm font-medium mb-1.5 ${isDark ? "text-gray-300" : "text-gray-700"}`}>
                 {isZh ? "律所/公司名称" : "Law Firm / Company Name"} <span className="text-red-500">*</span>
               </label>
               <input
@@ -192,20 +202,20 @@ export default function LawyerRegistrationPage() {
                 value={form.companyName}
                 onChange={(e) => set("companyName", e.target.value)}
                 placeholder={isZh ? "例如：Smith & Associates Law Firm" : "e.g. Smith & Associates Law Firm"}
-                className={`w-full px-4 py-2.5 border rounded-lg text-sm bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.companyName ? "border-red-500" : "border-gray-200"}`}
+                className={`w-full px-4 py-2.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.companyName ? "border-red-500" : isDark ? "border-gray-700 bg-gray-800 text-white placeholder-gray-500" : "border-gray-200 bg-white text-gray-900 placeholder-gray-400"}`}
               />
               {errors.companyName && <p className="mt-1 text-xs text-red-500">{errors.companyName}</p>}
             </div>
 
             {/* Country */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+              <label className={`block text-sm font-medium mb-1.5 ${isDark ? "text-gray-300" : "text-gray-700"}`}>
                 {isZh ? "国家/地区" : "Country / Region"} <span className="text-red-500">*</span>
               </label>
               <select
                 value={form.country}
                 onChange={(e) => set("country", e.target.value)}
-                className={`w-full px-4 py-2.5 border rounded-lg text-sm bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.country ? "border-red-500" : "border-gray-200"}`}
+                className={`w-full px-4 py-2.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.country ? "border-red-500" : isDark ? "border-gray-700 bg-gray-800 text-white" : "border-gray-200 bg-white text-gray-900"}`}
               >
                 <option value="">
                   {isZh ? "请选择国家/地区" : "Select a country/region"}
@@ -221,7 +231,7 @@ export default function LawyerRegistrationPage() {
 
             {/* Contact Name */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+              <label className={`block text-sm font-medium mb-1.5 ${isDark ? "text-gray-300" : "text-gray-700"}`}>
                 {isZh ? "联系人姓名" : "Contact Person"} <span className="text-red-500">*</span>
               </label>
               <input
@@ -229,7 +239,7 @@ export default function LawyerRegistrationPage() {
                 value={form.contactName}
                 onChange={(e) => set("contactName", e.target.value)}
                 placeholder={isZh ? "请输入联系人姓名" : "Enter contact name"}
-                className={`w-full px-4 py-2.5 border rounded-lg text-sm bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.contactName ? "border-red-500" : "border-gray-200"}`}
+                className={`w-full px-4 py-2.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.contactName ? "border-red-500" : isDark ? "border-gray-700 bg-gray-800 text-white placeholder-gray-500" : "border-gray-200 bg-white text-gray-900 placeholder-gray-400"}`}
               />
               {errors.contactName && <p className="mt-1 text-xs text-red-500">{errors.contactName}</p>}
             </div>
@@ -237,7 +247,7 @@ export default function LawyerRegistrationPage() {
             {/* Email & Phone */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                <label className={`block text-sm font-medium mb-1.5 ${isDark ? "text-gray-300" : "text-gray-700"}`}>
                   {isZh ? "邮箱" : "Email"} <span className="text-red-500">*</span>
                 </label>
                 <input
@@ -245,12 +255,12 @@ export default function LawyerRegistrationPage() {
                   value={form.contactEmail}
                   onChange={(e) => set("contactEmail", e.target.value)}
                   placeholder="lawfirm@example.com"
-                  className={`w-full px-4 py-2.5 border rounded-lg text-sm bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.contactEmail ? "border-red-500" : "border-gray-200"}`}
+                  className={`w-full px-4 py-2.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.contactEmail ? "border-red-500" : isDark ? "border-gray-700 bg-gray-800 text-white placeholder-gray-500" : "border-gray-200 bg-white text-gray-900 placeholder-gray-400"}`}
                 />
                 {errors.contactEmail && <p className="mt-1 text-xs text-red-500">{errors.contactEmail}</p>}
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                <label className={`block text-sm font-medium mb-1.5 ${isDark ? "text-gray-300" : "text-gray-700"}`}>
                   {isZh ? "联系电话" : "Phone"} <span className="text-red-500">*</span>
                 </label>
                 <input
@@ -258,7 +268,7 @@ export default function LawyerRegistrationPage() {
                   value={form.contactPhone}
                   onChange={(e) => set("contactPhone", e.target.value)}
                   placeholder={isZh ? "+1 555 123 4567" : "+1 555 123 4567"}
-                  className={`w-full px-4 py-2.5 border rounded-lg text-sm bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.contactPhone ? "border-red-500" : "border-gray-200"}`}
+                  className={`w-full px-4 py-2.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.contactPhone ? "border-red-500" : isDark ? "border-gray-700 bg-gray-800 text-white placeholder-gray-500" : "border-gray-200 bg-white text-gray-900 placeholder-gray-400"}`}
                 />
                 {errors.contactPhone && <p className="mt-1 text-xs text-red-500">{errors.contactPhone}</p>}
               </div>
@@ -266,7 +276,7 @@ export default function LawyerRegistrationPage() {
 
             {/* License URL */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+              <label className={`block text-sm font-medium mb-1.5 ${isDark ? "text-gray-300" : "text-gray-700"}`}>
                 {isZh ? "资质证明链接" : "License / Certificate Link"} <span className="text-gray-400 text-xs">({isZh ? "选填" : "Optional"})</span>
               </label>
               <input
@@ -274,19 +284,19 @@ export default function LawyerRegistrationPage() {
                 value={form.licenseUrl}
                 onChange={(e) => set("licenseUrl", e.target.value)}
                 placeholder="https://"
-                className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className={`w-full px-4 py-2.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${isDark ? "border-gray-700 bg-gray-800 text-white placeholder-gray-500" : "border-gray-200 bg-white text-gray-900 placeholder-gray-400"}`}
               />
-              <p className="mt-1 text-xs text-gray-400">
+              <p className={`mt-1 text-xs ${isDark ? "text-gray-500" : "text-gray-400"}`}>
                 {isZh ? "可上传至云存储后粘贴链接，或留空后续补充" : "Upload to cloud storage and paste the link, or leave blank to add later"}
               </p>
             </div>
 
             {/* Info Box */}
-            <div className="bg-blue-50 border border-blue-100 rounded-lg p-4">
-              <h3 className="text-sm font-medium text-blue-800 mb-2">
+            <div className={`rounded-lg p-4 ${isDark ? "bg-blue-900/20 border border-blue-800" : "bg-blue-50 border border-blue-100"}`}>
+              <h3 className={`text-sm font-medium mb-2 ${isDark ? "text-blue-400" : "text-blue-800"}`}>
                 {isZh ? "入驻须知" : "Notes"}
               </h3>
-              <ul className="text-xs text-blue-700 space-y-1 list-disc list-inside">
+              <ul className={`text-xs space-y-1 list-disc list-inside ${isDark ? "text-blue-300" : "text-blue-700"}`}>
                 <li>{isZh ? "审核周期：3-5 个工作日" : "Review period: 3-5 business days"}</li>
                 <li>{isZh ? "需要提供有效的律师事务所营业执照" : "Valid law firm business license required"}</li>
                 <li>{isZh ? "入驻后可在平台接单，提供肖像权保护服务" : "After approval, you can receive orders on the platform"}</li>
