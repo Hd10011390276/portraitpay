@@ -56,7 +56,6 @@ async function saveFaceEmbedding(portraitId: string, embedding: number[]) {
   if (!json.success) console.error("[face-embedding] Save failed:", json.error);
   return json.success;
 }
-const FACE_EMBEDDING_MODEL_URL = "/models";
 
 async function computeHash(file: File): Promise<string> {
   const buf = await file.arrayBuffer();
