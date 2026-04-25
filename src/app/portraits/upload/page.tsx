@@ -16,10 +16,47 @@ import UploadZone from "@/components/portrait/UploadZone";
 import { DashboardShell } from "@/components/layout/DashboardShell";
 import { useLanguage } from "@/context/LanguageContext";
 import ImageCropper from "@/components/portrait/ImageCropper";
+import { descriptorToArray } from "@/lib/face";
 
 type Stage = "form" | "uploading" | "certifying" | "certify_done";
 
 const FACE_MATCH_THRESHOLD = 60;
+const FACE_EMBEDDING_MODEL_URL = "/models";
+
+// ── Face embedding helpers ─────────────────────────────────────────────
+async function extractFaceEmbedding(file: File): Promise<number[]> {
+  const faceapi = await import("@vladmandic/face-api");
+  await Promise.all([
+    faceapi.nets.tinyFaceDetector.loadFromUri(FACE_EMBEDDING_MODEL_URL),
+    faceapi.nets.faceLandmark68Net.loadFromUri(FACE_EMBEDDING_MODEL_URL),
+    faceapi.nets.faceRecognitionNet.loadFromUri(FACE_EMBEDDING_MODEL_URL),
+  ]);
+  const img = await createImageBitmap(file);
+  const canvas = document.createElement("canvas");
+  canvas.width = img.width;
+  canvas.height = img.height;
+  const ctx = canvas.getContext("2d")!;
+  ctx.drawImage(img, 0, 0);
+  const tinyOptions = new faceapi.TinyFaceDetectorOptions();
+  const detections = await faceapi.detectAllFaces(canvas, tinyOptions);
+  if (detections.length === 0) throw new Error("No face detected");
+  const withDescriptor = await faceapi.detectSingleFace(canvas, tinyOptions).withFaceDescriptor();
+  if (!withDescriptor?.descriptor) throw new Error("Could not extract face embedding");
+  return descriptorToArray(withDescriptor.descriptor);
+}
+
+
+async function saveFaceEmbedding(portraitId: string, embedding: number[]) {
+  const res = await fetch(`/api/portraits/${portraitId}/embedding`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ embedding }),
+  });
+  const json = await res.json();
+  if (!json.success) console.error("[face-embedding] Save failed:", json.error);
+  return json.success;
+}
+const FACE_EMBEDDING_MODEL_URL = "/models";
 
 async function computeHash(file: File): Promise<string> {
   const buf = await file.arrayBuffer();
@@ -196,6 +233,15 @@ export default function UploadPortraitPage() {
       });
       const updateJson = await updateRes.json();
       if (!updateJson.success) throw new Error(updateJson.error);
+
+      // 3.5 Save face embedding
+      try {
+        setProgress(t.upload?.extractingFaceEmbedding || "\xe6\x8f\x90\xe5\x8f\x96\xe4\xba\xba\xe8\x84\x96\xe7\x89\xb9\xe5\xbe\xb7...");
+        const embedding = await extractFaceEmbedding(croppedFile);
+        await saveFaceEmbedding(id, embedding);
+      } catch (embErr) {
+        console.error("[face-embedding] Failed to save:", embErr);
+      }
 
       // 4. Blockchain certify
       setStage("certifying");
