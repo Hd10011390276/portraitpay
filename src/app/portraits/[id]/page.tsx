@@ -73,6 +73,7 @@ export default function PortraitDetailPage() {
   const [editScopes, setEditScopes] = useState<string[]>([]);
   const [editProhibited, setEditProhibited] = useState<string[]>([]);
   const [editTerritory, setEditTerritory] = useState("");
+  const [hasImageError, setHasImageError] = useState(false);
 
   useEffect(() => {
     fetch(`/api/portraits/${id}`)
@@ -240,7 +241,7 @@ export default function PortraitDetailPage() {
   const ipfsGatewayUrl = portrait?.ipfsCid ? getIpfsGatewayUrl(portrait.ipfsCid) : null;
   const tc = t.portraits.detail; // Define tc early so it's available in handlers
 
-  const [hasImageError, setHasImageError] = useState(false);
+  // this useState was moved above to fix React #310 error
 
   if (loading || !portrait) {
     return (
