@@ -219,7 +219,7 @@ export default function MintPage() {
         <div className="max-w-lg mx-auto mt-8 p-8 bg-white dark:bg-gray-900 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-800 text-center">
           <div className="text-6xl mb-4">🎉</div>
           <h2 className="text-2xl font-bold mb-2">{tc.certifySuccess}</h2>
-          <p className="text-gray-500 mb-6">{t.portraits.certifySuccessDesc}</p>
+          <p className="text-gray-500 mb-6">{(t.upload as Record<string, string>).certifySuccessDesc ?? "Your portrait is now permanently certified on the blockchain."}</p>
 
           <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-4 mb-6 text-left space-y-3">
             <MintField label={tc.network} value={getNetworkLabel(mintResult.network)} />
@@ -441,7 +441,8 @@ function MintField({ label, value }: { label: string; value: React.ReactNode }) 
   );
 }
 
-function MintAlreadyDone({ portrait, tc, t }: { portrait: PortraitDetail; tc: typeof t.portraits.detail; t: typeof t }) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function MintAlreadyDone({ portrait, tc, t }: { portrait: PortraitDetail; tc: typeof t.portraits.detail; t: any }) {
   const ipfsUrl = portrait.ipfsCid ? `https://ipfs.io/ipfs/${portrait.ipfsCid}` : null;
   const etherscanUrl = portrait.blockchainTxHash
     ? `https://sepolia.etherscan.io/tx/${portrait.blockchainTxHash}`
@@ -451,7 +452,7 @@ function MintAlreadyDone({ portrait, tc, t }: { portrait: PortraitDetail; tc: ty
     <div className="max-w-lg mx-auto mt-8 p-8 bg-white dark:bg-gray-900 rounded-2xl shadow-lg border border-green-200 dark:border-green-900 text-center">
       <div className="text-6xl mb-4">✅</div>
       <h2 className="text-2xl font-bold mb-2">{tc.certifySuccess}</h2>
-      <p className="text-gray-500 mb-6">{t.portraits.certifySuccessDesc}</p>
+      <p className="text-gray-500 mb-6">{(t.upload as Record<string, string>).certifySuccessDesc ?? "Your portrait is now permanently certified on the blockchain."}</p>
 
       {portrait.blockchainTxHash && (
         <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-4 mb-6 text-left space-y-3">
