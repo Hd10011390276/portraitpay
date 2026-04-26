@@ -12,7 +12,16 @@ declare module "@vladmandic/face-api" {
   }
 
   export interface IFaceLandmarks68Net {
-    predictAll: (input: CanvasImageSource | TFImage) => Promise<IFaceLandmark[]>;
+    loadFromUri: (url: string) => Promise<void>;
+  }
+
+  // Result of detectSingleFace — supports both direct .withFaceDescriptor()
+  // and the chained .withFaceLandmarks().withFaceDescriptor() pattern
+  export interface IFaceDetectionResult {
+    withFaceDescriptor: () => Promise<IFaceDetection & IFaceLandmark & { descriptor: Float32Array }>;
+    withFaceLandmarks: (net?: IFaceLandmarks68Net) => {
+      withFaceDescriptor: () => Promise<IFaceDetection & IFaceLandmark & { descriptor: Float32Array }>;
+    };
   }
 
   export interface IFaceLandmark {
@@ -56,11 +65,7 @@ declare module "@vladmandic/face-api" {
   export function detectSingleFace(
     img: CanvasImageSource,
     options?: TinyFaceDetectorOptions
-  ): {
-    withFaceLandmarks: () => {
-      withFaceDescriptor: () => Promise<IFaceDetection & IFaceLandmark & { descriptor: Float32Array }>;
-    };
-  };
+  ): IFaceDetectionResult;
 
   export function fetchImage(url: string): Promise<CanvasImageSource>;
 
