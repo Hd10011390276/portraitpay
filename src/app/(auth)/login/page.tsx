@@ -9,11 +9,13 @@ import ThemeToggle from "@/components/ThemeToggle";
 import { useLanguage } from "@/context/LanguageContext";
 
 type Tab = "email" | "phone";
+type LoginAs = "user" | "lawyer";
 
 export default function LoginPage() {
   const router = useRouter();
   const { locale, t } = useLanguage();
   const [tab, setTab] = useState<Tab>("email");
+  const [loginAs, setLoginAs] = useState<LoginAs>("user");
   const [loading, setLoading] = useState(false);
   const [globalError, setGlobalError] = useState("");
 
@@ -124,7 +126,13 @@ export default function LoginPage() {
         localStorage.setItem("pp_user", JSON.stringify(data.data.user));
       }
 
-      router.push("/dashboard");
+      // Redirect based on login type and user role
+      const userRole = data.data?.user?.role;
+      if (loginAs === "lawyer" || userRole === "LAWYER") {
+        router.push("/lawyer/dashboard");
+      } else {
+        router.push("/dashboard");
+      }
     } catch {
       setGlobalError(t.login.errors.networkError);
     } finally {
@@ -176,6 +184,34 @@ export default function LoginPage() {
                 {t.label}
               </button>
             ))}
+          </div>
+
+          {/* User Type Selector */}
+          <div className="px-4 sm:px-6 pt-4">
+            <div className="flex gap-2 p-1 bg-gray-100 dark:bg-gray-700 rounded-lg">
+              <button
+                type="button"
+                onClick={() => setLoginAs("user")}
+                className={`flex-1 py-2 px-3 rounded-md text-xs sm:text-sm font-medium transition-all ${
+                  loginAs === "user"
+                    ? "bg-white dark:bg-gray-600 text-blue-600 dark:text-blue-400 shadow-sm"
+                    : "text-gray-500 dark:text-gray-300 hover:text-gray-700 dark:hover:text-white"
+                }`}
+              >
+                👤 {isZh ? "普通用户" : "User"}
+              </button>
+              <button
+                type="button"
+                onClick={() => setLoginAs("lawyer")}
+                className={`flex-1 py-2 px-3 rounded-md text-xs sm:text-sm font-medium transition-all ${
+                  loginAs === "lawyer"
+                    ? "bg-white dark:bg-gray-600 text-blue-600 dark:text-blue-400 shadow-sm"
+                    : "text-gray-500 dark:text-gray-300 hover:text-gray-700 dark:hover:text-white"
+                }`}
+              >
+                ⚖️ {isZh ? "律师" : "Lawyer"}
+              </button>
+            </div>
           </div>
 
           {/* Form */}
