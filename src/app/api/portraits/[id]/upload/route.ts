@@ -11,6 +11,7 @@ import { prisma } from "@/lib/prisma";
 import { getSession, getSessionFromRequest } from "@/lib/auth/session";
 import { getPresignedUploadUrl, generateImageKey } from "@/lib/storage";
 import { computeImageHash } from "@/lib/blockchain";
+import { uploadToIpfs, getIpfsGatewayUrl } from "@/lib/ipfs/index";
 export const dynamic = "force-dynamic";
 
 
@@ -74,12 +75,40 @@ export async function POST(request: NextRequest, context: RouteContext) {
       },
     });
 
+    // ── Upload image to IPFS via Pinata ─────────────────────────
+    let ipfsCid: string | null = null;
+    if (originalImageUrl && process.env.PINATA_API_KEY && process.env.PINATA_SECRET_API_KEY) {
+      try {
+        console.log(`[IPFS] Fetching image from S3: ${originalImageUrl}`);
+        const s3Res = await fetch(originalImageUrl);
+        if (!s3Res.ok) throw new Error(`Failed to fetch image from S3: ${s3Res.status}`);
+        const imageBuffer = await s3Res.arrayBuffer();
+        const uint8 = new Uint8Array(imageBuffer);
+
+        console.log(`[IPFS] Uploading to Pinata for portrait ${id}`);
+        const ipfsResult = await uploadToIpfs(uint8, `portrait-${id}.jpg`, "image/jpeg");
+        ipfsCid = ipfsResult.cid;
+        console.log(`[IPFS] Uploaded successfully. CID: ${ipfsCid}`);
+
+        // Save IPFS CID to portrait record
+        await prisma.portrait.update({
+          where: { id },
+          data: { ipfsCid },
+        });
+      } catch (ipfsErr) {
+        // IPFS failure should not block the upload — log and continue
+        console.error(`[IPFS] Upload failed for portrait ${id}:`, ipfsErr);
+      }
+    }
+
     return NextResponse.json({
       success: true,
       data: {
         portraitId: updated.id,
         originalImageUrl: updated.originalImageUrl,
         thumbnailUrl: updated.thumbnailUrl,
+        ipfsCid,
+        ipfsGatewayUrl: ipfsCid ? getIpfsGatewayUrl(ipfsCid) : null,
       },
     });
   } catch (error) {
