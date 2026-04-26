@@ -20,7 +20,8 @@ interface SidebarProps {
 
 export function Sidebar({ onClose }: SidebarProps) {
   const pathname = usePathname();
-  const { t, isZh } = useLanguage();
+  const { t, locale } = useLanguage();
+  const isZh = locale === "zh-CN";
 
   const isActive = (href: string) =>
     pathname === href || pathname.startsWith(href + "/");

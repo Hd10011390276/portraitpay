@@ -22,7 +22,8 @@ function StatCard({ label, value, color }: { label: string; value: number; color
 }
 
 export default function LawyerDashboard() {
-  const { t, isZh } = useLanguage();
+  const { t, locale } = useLanguage();
+  const isZh = locale === "zh-CN";
   // In a real app, fetch from /api/lawyers/cases
   const cases: Case[] = [];
 
