@@ -37,8 +37,8 @@ export async function uploadToIpfs(
   const apiKey = process.env.PINATA_API_KEY;
   const secretKey = process.env.PINATA_SECRET_API_KEY;
 
-  if (!apiKey || !secretKey) {
-    throw new Error("Pinata API keys not configured. Set PINATA_API_KEY and PINATA_SECRET_API_KEY in .env");
+  if (!apiKey && !secretKey && !process.env.PINATA_JWT) {
+    throw new Error("Pinata credentials not configured.");
   }
 
   const formData = new FormData();
@@ -46,29 +46,29 @@ export async function uploadToIpfs(
   const blob = new Blob([uint8Data], { type: mimeType });
   formData.append("file", blob, fileName);
 
-  // Pinata metadata
-  const metadata = JSON.stringify({
-    name: fileName,
-  });
+  const metadata = JSON.stringify({ name: fileName });
   formData.append("pinataMetadata", metadata);
 
-  // Pinata options (optional: add custom duration)
-  const options = JSON.stringify({
-    cidVersion: 1, // Use CIDv1 for better compatibility
-  });
+  const options = JSON.stringify({ cidVersion: 1 });
   formData.append("pinataOptions", options);
+
+  const headers: Record<string, string> = {};
+  if (process.env.PINATA_JWT) {
+    headers["Authorization"] = `Bearer ${process.env.PINATA_JWT}`;
+  } else if (apiKey && secretKey) {
+    headers["pinata_api_key"] = apiKey;
+    headers["pinata_secret_api_key"] = secretKey;
+  }
 
   const response = await fetch("https://api.pinata.cloud/pinning/pinFileToIPFS", {
     method: "POST",
-    headers: {
-      pinata_api_key: apiKey,
-      pinata_secret_api_key: secretKey,
-    },
+    headers,
     body: formData,
   });
 
   if (!response.ok) {
     const error = await response.text();
+    console.error(`[IPFS] uploadToIpfs failed: ${response.status} ${error}`);
     throw new Error(`IPFS upload failed: ${response.status} ${error}`);
   }
 
@@ -94,18 +94,25 @@ export async function uploadJsonToIpfs(
   const apiKey = process.env.PINATA_API_KEY;
   const secretKey = process.env.PINATA_SECRET_API_KEY;
 
-  if (!apiKey || !secretKey) {
-    throw new Error("Pinata API keys not configured.");
+  if (!apiKey && !process.env.PINATA_JWT) {
+    throw new Error("Pinata credentials not configured. Set PINATA_API_KEY or PINATA_JWT in .env");
   }
 
-  // Use pinJSONToIPFS endpoint — simpler and works in Edge Runtime
+  // Try JWT Bearer token first, then fall back to API key/secret
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+  };
+  
+  if (process.env.PINATA_JWT) {
+    headers["Authorization"] = `Bearer ${process.env.PINATA_JWT}`;
+  } else if (apiKey && secretKey) {
+    headers["pinata_api_key"] = apiKey;
+    headers["pinata_secret_api_key"] = secretKey;
+  }
+
   const response = await fetch("https://api.pinata.cloud/pinning/pinJSONToIPFS", {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      pinata_api_key: apiKey,
-      pinata_secret_api_key: secretKey,
-    },
+    headers,
     body: JSON.stringify({
       pinataContent: metadata,
       pinataMetadata: { name: fileName },
@@ -114,6 +121,7 @@ export async function uploadJsonToIpfs(
 
   if (!response.ok) {
     const error = await response.text();
+    console.error(`[IPFS] uploadJsonToIpfs failed: ${response.status} ${error}`);
     throw new Error(`IPFS JSON upload failed: ${response.status} ${error}`);
   }
 
