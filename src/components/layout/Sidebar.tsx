@@ -18,75 +18,12 @@ interface SidebarProps {
   onClose?: () => void;
 }
 
-const navItems: NavItem[] = [
-  {
-    label: "Dashboard",
-    href: "/dashboard",
-    icon: (
-      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-      </svg>
-    ),
-  },
-  {
-    label: "My Portraits",
-    href: "/portraits",
-    icon: (
-      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-      </svg>
-    ),
-  },
-  // KYC merged into portrait upload — /kyc redirects to /portraits/upload
-  {
-    label: "Earnings",
-    href: "/earnings",
-    icon: (
-      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-      </svg>
-    ),
-  },
-  {
-    label: "Withdraw",
-    href: "/withdraw",
-    icon: (
-      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
-      </svg>
-    ),
-  },
-];
-
-const secondaryItems: NavItem[] = [
-  {
-    label: "Report Infringement",
-    href: "/report",
-    icon: (
-      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-      </svg>
-    ),
-  },
-  {
-    label: "Infringements",
-    href: "/infringements",
-    icon: (
-      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-      </svg>
-    ),
-  },
-];
-
 export function Sidebar({ onClose }: SidebarProps) {
   const pathname = usePathname();
-  const { t } = useLanguage();
+  const { t, isZh } = useLanguage();
 
   const isActive = (href: string) =>
     pathname === href || pathname.startsWith(href + "/");
-
-  interface NavItem { label: string; href: string; icon: React.ReactNode; badge?: string; }
 
   const navItems: NavItem[] = [
     {
@@ -127,7 +64,7 @@ export function Sidebar({ onClose }: SidebarProps) {
     },
   ];
 
-  const secondaryItems = [
+  const secondaryItems: NavItem[] = [
     {
       label: t.sidebar.reportInfringement,
       href: "/report",
@@ -148,6 +85,18 @@ export function Sidebar({ onClose }: SidebarProps) {
     },
   ];
 
+  const lawyerItems: NavItem[] = [
+    {
+      label: isZh ? "律师工作台" : "Lawyer Dashboard",
+      href: "/lawyer/dashboard",
+      icon: (
+        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+        </svg>
+      ),
+    },
+  ];
+
   return (
     <aside className="fixed inset-y-0 left-0 z-40 w-64 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700 flex flex-col">
       {/* Logo */}
@@ -157,7 +106,6 @@ export function Sidebar({ onClose }: SidebarProps) {
           <img src="/logo-dark.png" alt="Logo" className="logo-dark w-8 h-8 object-contain" style={{ borderRadius: "6px" }} />
           <span className="font-bold text-gray-900 dark:text-white text-sm" style={{ letterSpacing: "-0.02em" }}>PortraitPay AI</span>
         </Link>
-        {/* Mobile close button */}
         {onClose && (
           <button
             onClick={onClose}
@@ -193,6 +141,33 @@ export function Sidebar({ onClose }: SidebarProps) {
             )}
           </Link>
         ))}
+
+        {/* Lawyer section */}
+        {lawyerItems.some(item => isActive(item.href)) && (
+          <>
+            <div className="pt-4 pb-2">
+              <div className="border-t border-gray-100 dark:border-gray-800 mb-2" />
+              <p className="px-3 mb-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                {isZh ? "律师工具" : "Lawyer Tools"}
+              </p>
+            </div>
+            {lawyerItems.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                onClick={onClose}
+                className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all
+                  ${isActive(item.href)
+                    ? "bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300"
+                    : "text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white"
+                  }`}
+              >
+                <span className={isActive(item.href) ? "text-blue-600 dark:text-blue-400" : ""}>{item.icon}</span>
+                {item.label}
+              </Link>
+            ))}
+          </>
+        )}
 
         <div className="pt-4 pb-2">
           <div className="border-t border-gray-100 dark:border-gray-800 mb-2" />
