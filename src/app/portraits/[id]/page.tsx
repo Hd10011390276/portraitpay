@@ -343,11 +343,11 @@ export default function PortraitDetailPage() {
               <div className="space-y-2 text-sm">
                 <div className="flex gap-2">
                   <span className="text-gray-500 dark:text-gray-400 w-24 shrink-0">{tc.network}</span>
-                  <span className="text-gray-900 dark:text-white font-medium">{portrait.blockchainNetwork?.toUpperCase() ?? "BASE"}</span>
+                  <span className="text-gray-900 dark:text-white font-medium">{portrait.blockchainNetwork ? (portrait.blockchainNetwork.toLowerCase().includes('sepolia') ? 'Ethereum Sepolia' : portrait.blockchainNetwork.toUpperCase()) : 'Ethereum Sepolia'}</span>
                 </div>
                 <div className="flex gap-2">
                   <span className="text-gray-500 dark:text-gray-400 w-24 shrink-0">{tc.txHash}</span>
-                  <a href={`https://basescan.org/tx/${portrait.blockchainTxHash}`} target="_blank" rel="noopener noreferrer" className="text-blue-600 dark:text-blue-400 font-mono text-xs hover:underline break-all">{portrait.blockchainTxHash}</a>
+                  <a href={`https://sepolia.etherscan.io/tx/${portrait.blockchainTxHash}`} target="_blank" rel="noopener noreferrer" className="text-blue-600 dark:text-blue-400 font-mono text-xs hover:underline break-all">{portrait.blockchainTxHash}</a>
                 </div>
                 {portrait.ipfsCid && (
                   <div className="flex gap-2">

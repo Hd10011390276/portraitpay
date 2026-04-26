@@ -175,6 +175,62 @@ export default function EnterprisePage() {
           </div>
         </section>
 
+        {/* Enterprise Service Hub */}
+        <section className="py-12 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+          <div className="max-w-6xl mx-auto px-6">
+            <div className="text-center mb-10">
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+                {isZh ? "企业服务" : "Enterprise Services"}
+              </h2>
+              <p className="text-gray-500 dark:text-gray-400">
+                {isZh ? "一站式满足企业数字人授权和肖像权保护需求" : "All-in-one platform for digital avatar licensing and portrait rights protection"}
+              </p>
+            </div>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {[
+                {
+                  href: "/enterprise/authorization/apply",
+                  icon: "📄",
+                  title: isZh ? "申请授权" : "Apply for License",
+                  desc: isZh ? "申请数字人授权合同模板" : "Request digital avatar licensing contracts",
+                  color: "blue",
+                },
+                {
+                  href: "/enterprise/authorization/list",
+                  icon: "📋",
+                  title: isZh ? "授权查询" : "License Records",
+                  desc: isZh ? "查询已申请的数字人授权" : "Check your digital avatar license records",
+                  color: "purple",
+                },
+                {
+                  href: "/enterprise/certification",
+                  icon: "🏢",
+                  title: isZh ? "企业认证" : "Enterprise Cert",
+                  desc: isZh ? "企业级肖像批量认证服务" : "Enterprise-level portrait certification",
+                  color: "emerald",
+                },
+                {
+                  href: "/contact",
+                  icon: "📞",
+                  title: isZh ? "联系我们" : "Contact Us",
+                  desc: isZh ? "联系销售团队获取定制方案" : "Get a customized plan from sales",
+                  color: "amber",
+                },
+              ].map((service) => (
+                <a
+                  key={service.href}
+                  href={service.href}
+                  className="group flex flex-col items-start p-5 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl hover:border-blue-300 dark:hover:border-blue-700 hover:shadow-md transition-all"
+                >
+                  <span className="text-3xl mb-3">{service.icon}</span>
+                  <h3 className="font-semibold text-gray-900 dark:text-white mb-1 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">{service.title}</h3>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">{service.desc}</p>
+                </a>
+              ))}
+            </div>
+          </div>
+        </section>
+
         {/* Pricing Section */}
         <section className="py-16 sm:py-20 bg-white dark:bg-gray-800">
           <div className="max-w-6xl mx-auto px-6">
