@@ -1,8 +1,8 @@
 /**
- * POST /api/auth/verify-email — Verify email with token
- * Body: { token }
+ * POST /api/auth/verify-email — Verify email with 6-digit code + userId
+ * Body: { code: string, userId: string }
  *
- * Validates the token from the verification email and sets emailVerified on the user.
+ * Validates the code from the verification email and sets emailVerified on the user.
  */
 
 import { NextRequest, NextResponse } from "next/server";
@@ -11,72 +11,66 @@ import { prisma } from "@/lib/prisma";
 export const dynamic = "force-dynamic";
 
 const VerifyEmailSchema = z.object({
-  token: z.string().min(1, "Token is required"),
+  code: z.string().length(6, "验证码为6位数字"),
+  userId: z.string().min(1, "User ID is required"),
 });
 
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     const validatedData = VerifyEmailSchema.parse(body);
-    const { token } = validatedData;
+    const { code, userId } = validatedData;
 
-    // Find the verification token
-    const verificationToken = await prisma.verificationToken.findUnique({
-      where: { token },
-    });
-
-    if (!verificationToken) {
-      return NextResponse.json(
-        { success: false, error: "Invalid verification token." },
-        { status: 400 }
-      );
-    }
-
-    // Check if token is expired
-    if (verificationToken.expires < new Date()) {
-      // Delete expired token
-      await prisma.verificationToken.delete({ where: { token } });
-      return NextResponse.json(
-        { success: false, error: "Verification token has expired. Please request a new one." },
-        { status: 400 }
-      );
-    }
-
-    // Find user by email (identifier)
+    // Find user
     const user = await prisma.user.findUnique({
-      where: { email: verificationToken.identifier },
-      select: { id: true, emailVerified: true },
+      where: { id: userId },
+      select: { id: true, email: true, emailVerified: true, verificationCode: true, verificationExpires: true },
     });
 
     if (!user) {
       return NextResponse.json(
-        { success: false, error: "User not found." },
+        { success: false, error: "用户不存在" },
         { status: 404 }
       );
     }
 
-    // If already verified, delete token and return success
+    // If already verified
     if (user.emailVerified) {
-      await prisma.verificationToken.delete({ where: { token } }).catch(() => {});
       return NextResponse.json(
-        { success: true, message: "Email already verified." },
+        { success: true, message: "邮箱已验证" },
         { status: 200 }
       );
     }
 
-    // Mark email as verified
+    // Check code matches and not expired
+    if (user.verificationCode !== code) {
+      return NextResponse.json(
+        { success: false, error: "验证码错误" },
+        { status: 400 }
+      );
+    }
+
+    if (!user.verificationExpires || user.verificationExpires < new Date()) {
+      return NextResponse.json(
+        { success: false, error: "验证码已过期，请重新发送验证邮件" },
+        { status: 400 }
+      );
+    }
+
+    // Mark email as verified and clear code
     await prisma.user.update({
       where: { id: user.id },
-      data: { emailVerified: new Date() },
+      data: {
+        emailVerified: true,
+        verificationCode: null,
+        verificationExpires: null,
+      },
     });
-
-    // Delete the used token
-    await prisma.verificationToken.delete({ where: { token } }).catch(() => {});
 
     console.log(`[VERIFY_EMAIL] Email verified for user: ${user.id}`);
 
     return NextResponse.json(
-      { success: true, message: "Email verified successfully." },
+      { success: true, message: "邮箱验证成功" },
       { status: 200 }
     );
   } catch (err) {
@@ -86,7 +80,7 @@ export async function POST(req: NextRequest) {
     }
     console.error("[VERIFY_EMAIL] Unexpected error:", err);
     return NextResponse.json(
-      { success: false, error: "An unexpected error occurred." },
+      { success: false, error: "服务器错误，请稍后重试" },
       { status: 500 }
     );
   }

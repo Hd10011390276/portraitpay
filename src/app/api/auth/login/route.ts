@@ -28,7 +28,7 @@ export async function POST(req: NextRequest) {
 
     const user = await prisma.user.findUnique({
       where: { email },
-      select: { id: true, email: true, name: true, role: true, passwordHash: true },
+      select: { id: true, email: true, name: true, role: true, passwordHash: true, emailVerified: true },
     });
 
     if (!user || !user.passwordHash) {
@@ -55,6 +55,14 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(
         { success: false, message: "邮箱或密码错误" },
         { status: 401 }
+      );
+    }
+
+    // Check if email is verified
+    if (!user.emailVerified) {
+      return NextResponse.json(
+        { success: false, message: "请先验证邮箱", code: "EMAIL_NOT_VERIFIED" },
+        { status: 403 }
       );
     }
 
