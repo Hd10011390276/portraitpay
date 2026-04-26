@@ -11,12 +11,20 @@ export const dynamic = "force-dynamic";
 const LawyerApplySchema = z.object({
   lawyerType: z.enum(["firm", "personal"]).default("firm"),
   companyName: z.string().min(1, "公司名称不能为空").max(200),
-  region: z.string().min(1, "请选择地区").max(100),
+  country: z.string().min(1, "请选择地区").max(100),
   contactName: z.string().min(1, "联系人不能为空").max(100),
   contactEmail: z.string().email("请输入有效的邮箱地址"),
   contactPhone: z.string().min(1, "联系电话不能为空").max(30),
   licenseUrl: z.string().url("请输入有效的资质证明链接").optional().or(z.literal("")),
-});
+}).transform((data) => ({
+  lawyerType: data.lawyerType,
+  companyName: data.companyName,
+  region: data.country,
+  contactName: data.contactName,
+  contactEmail: data.contactEmail,
+  contactPhone: data.contactPhone,
+  licenseUrl: data.licenseUrl,
+}));
 
 export async function POST(req: NextRequest) {
   try {
