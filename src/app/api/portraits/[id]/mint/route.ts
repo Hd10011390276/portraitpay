@@ -1,0 +1,197 @@
+/**
+ * POST /api/portraits/[id]/mint
+ *
+ * Mint a portrait NFT on the Ethereum Sepolia testnet.
+ * This is the server-side API that:
+ *  1. Validates session and portrait ownership
+ *  2. Uploads metadata JSON to IPFS (Pinata)
+ *  3. Calls PortraitCert.certifyPortrait on Sepolia
+ *  4. Saves txHash + ipfsCid to the Portrait record in Prisma
+ *
+ * The client-side mint page calls this API rather than signing directly,
+ * so the burner wallet private key stays server-side.
+ */
+
+import { NextRequest, NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
+import { getSessionFromRequest } from "@/lib/auth/session";
+import { certifyPortrait, SUPPORTED_NETWORKS } from "@/lib/blockchain";
+import { uploadJsonToIpfs, buildPortraitMetadata } from "@/lib/ipfs";
+import { sendPortraitCertifiedEmail } from "@/lib/email";
+
+export const dynamic = "force-dynamic";
+
+type RouteContext = { params: Promise<{ id: string }> };
+
+/**
+ * POST /api/portraits/[id]/mint
+ *
+ * Body (optional fields, auto-detected if omitted):
+ *   { imageHash?: string; ipfsCid?: string }
+ *
+ * Returns:
+ *   { success: true, data: { portraitId, imageHash, ipfsCid, blockchainTxHash, blockNumber, network, certifiedAt } }
+ */
+export async function POST(request: NextRequest, context: RouteContext) {
+  try {
+    // ── Auth ───────────────────────────────────────────────────────────────
+    const session = await getSessionFromRequest(request);
+    if (!session?.userId) {
+      return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
+    }
+
+    const { id } = await context.params;
+
+    // ── Fetch portrait ─────────────────────────────────────────────────────
+    const portrait = await prisma.portrait.findUnique({
+      where: { id, deletedAt: null },
+      include: {
+        owner: { select: { walletAddress: true, email: true, name: true } },
+      },
+    });
+
+    if (!portrait) {
+      return NextResponse.json({ success: false, error: "Portrait not found" }, { status: 404 });
+    }
+
+    // Ownership check
+    if (portrait.ownerId !== session.userId && session.role !== "ADMIN") {
+      return NextResponse.json({ success: false, error: "Forbidden" }, { status: 403 });
+    }
+
+    // ── Pre-flight validation ─────────────────────────────────────────────
+    if (portrait.status !== "DRAFT" && portrait.status !== "UNDER_REVIEW") {
+      return NextResponse.json(
+        {
+          success: false,
+          error: `Portrait status '${portrait.status}' does not allow minting`,
+          code: "PP-2002",
+        },
+        { status: 400 }
+      );
+    }
+
+    if (portrait.blockchainTxHash) {
+      return NextResponse.json(
+        { success: false, error: "Portrait already minted on blockchain", code: "PP-3001" },
+        { status: 409 }
+      );
+    }
+
+    // ── Image hash (from DB or body) ──────────────────────────────────────
+    const body = await request.json().catch(() => ({}));
+    const imageHash = body.imageHash ?? portrait.imageHash;
+
+    if (!imageHash) {
+      return NextResponse.json(
+        { success: false, error: "No image hash found. Please upload a portrait first.", code: "PP-4001" },
+        { status: 400 }
+      );
+    }
+
+    // Check for duplicate hash across other portraits
+    const duplicate = await prisma.portrait.findFirst({
+      where: { imageHash, NOT: { id } },
+    });
+    if (duplicate) {
+      return NextResponse.json(
+        { success: false, error: "This image hash is already registered to another portrait", code: "PP-3002" },
+        { status: 409 }
+      );
+    }
+
+    const network = "sepolia" as const;
+    const contractAddress = SUPPORTED_NETWORKS[network].contractAddress;
+
+    // ── Build & upload metadata to IPFS ───────────────────────────────────
+    const metadata = buildPortraitMetadata(
+      {
+        ...portrait,
+        imageHash,
+        ipfsCid: null,
+        blockchainTxHash: null,
+        certifiedAt: null,
+      },
+      contractAddress,
+      network
+    );
+
+    let metadataIpfsResult;
+    try {
+      metadataIpfsResult = await uploadJsonToIpfs(
+        metadata,
+        `portrait-${portrait.id}/metadata.json`
+      );
+      console.log(`[Mint] Metadata uploaded to IPFS: ${metadataIpfsResult.cid}`);
+    } catch (err) {
+      console.error("[Mint] IPFS metadata upload failed:", err);
+      return NextResponse.json(
+        { success: false, error: "IPFS metadata upload failed", code: "PP-5002" },
+        { status: 503 }
+      );
+    }
+
+    // ── Mint on Sepolia ────────────────────────────────────────────────────
+    let certificationResult;
+    try {
+      certificationResult = await certifyPortrait(
+        metadataIpfsResult.cid,
+        imageHash,
+        network
+      );
+      console.log(`[Mint] ✅ Minted on Sepolia! Tx: ${certificationResult.txHash}`);
+    } catch (err) {
+      console.error("[Mint] Blockchain mint failed:", err);
+      return NextResponse.json(
+        { success: false, error: "Blockchain transaction failed. Please try again.", code: "PP-5001" },
+        { status: 503 }
+      );
+    }
+
+    // ── Update DB ─────────────────────────────────────────────────────────
+    const updated = await prisma.portrait.update({
+      where: { id },
+      data: {
+        imageHash,
+        ipfsCid: metadataIpfsResult.cid,
+        blockchainTxHash: certificationResult.txHash,
+        blockchainNetwork: network,
+        certifiedAt: certificationResult.certifiedAt,
+        status: "ACTIVE",
+      },
+    });
+
+    // ── Send email notification (non-blocking) ────────────────────────────
+    if (portrait.owner?.email) {
+      sendPortraitCertifiedEmail({
+        name: portrait.owner.name ?? portrait.owner.email.split("@")[0],
+        email: portrait.owner.email,
+        portraitTitle: updated.title ?? "Portrait",
+        imageHash,
+        blockchainTxHash: certificationResult.txHash,
+        ipfsCid: metadataIpfsResult.cid,
+        network,
+        certifiedAt: certificationResult.certifiedAt.toString(),
+      });
+    }
+
+    return NextResponse.json({
+      success: true,
+      data: {
+        portraitId: updated.id,
+        imageHash,
+        ipfsCid: metadataIpfsResult.cid,
+        blockchainTxHash: certificationResult.txHash,
+        blockNumber: certificationResult.blockNumber,
+        network,
+        certifiedAt: certificationResult.certifiedAt,
+      },
+    });
+  } catch (error) {
+    console.error("[POST /api/portraits/[id]/mint]", error);
+    return NextResponse.json(
+      { success: false, error: "Internal server error" },
+      { status: 500 }
+    );
+  }
+}

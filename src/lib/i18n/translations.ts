@@ -18,7 +18,8 @@ export const translations = {
       faq: "常见问题",
       signIn: "登录",
       getStarted: "免费开始",
-      lawyer: "律师楼入驻",
+      lawyer: "律师入驻",
+      findLawyer: "找律师",
     },
     // Common UI labels
     common: {
@@ -154,7 +155,7 @@ export const translations = {
       freeLi3: "社区支持",
       freeLi4: "标准授权许可",
       proTitle: "专业版",
-      proPrice: "¥99",
+      proPrice: "¥0",
       proPeriod: "/月",
       proDesc: "适合专业艺术家和网红",
       proLi1: "无限肖像上传",
@@ -191,7 +192,7 @@ export const translations = {
         },
         {
           name: "专业版",
-          price: "¥99",
+          price: "¥0",
           period: "/ 月",
           desc: "适合专业艺术家和网红",
           features: [
@@ -1381,7 +1382,8 @@ export const translations = {
       faq: "FAQ",
       signIn: "Sign In",
       getStarted: "Get Started Free",
-      lawyer: "Lawyer Portal",
+      lawyer: "Lawyer Registration",
+      findLawyer: "Find a Lawyer",
     },
     // Common UI labels
     common: {
@@ -1516,7 +1518,7 @@ export const translations = {
       freeLi2: "Basic KYC (self-attested)",
       freeLi3: "Community support",
       proTitle: "Pro",
-      proPrice: "¥99",
+      proPrice: "¥0",
       proDesc: "For professional artists and influencers",
       proLi1: "Unlimited portraits",
       proLi2: "Full KYC verification",
@@ -1535,7 +1537,7 @@ export const translations = {
         },
         {
           name: "Pro",
-          price: "¥99",
+          price: "¥0",
           period: "/ month",
           desc: "For professional artists and influencers",
           features: ["Unlimited portraits", "Full KYC verification", "Priority support", "Smart contract licensing", "Real-time earnings dashboard", "IPFS permanent storage"],

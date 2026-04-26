@@ -25,13 +25,23 @@ export async function GET(request: NextRequest) {
       select: {
         id: true,
         companyName: true,
+        lawyerType: true,
         region: true,
         contactName: true,
         contactEmail: true,
         contactPhone: true,
+        status: true,
         createdAt: true,
       },
     });
+
+    // Map region -> country for frontend compatibility
+    const mapped = lawyers.map((l) => ({
+      ...l,
+      country: l.region,
+    }));
+
+    return NextResponse.json({ success: true, data: mapped });
 
     return NextResponse.json({ success: true, data: lawyers });
   } catch (err) {

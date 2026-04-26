@@ -269,6 +269,9 @@ export default function HomePage() {
             <a href="/enterprise/lawyer-registration" style={{ fontSize: "14px", fontWeight: 600, color: "var(--accent-primary)", textDecoration: "none", padding: "6px 14px", borderRadius: "var(--radius-md)", border: "1px solid var(--accent-primary)", transition: "all 150ms" }}
                onMouseEnter={e => { e.currentTarget.style.background = "var(--accent-primary)"; e.currentTarget.style.color = "white"; }}
                onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "var(--accent-primary)"; }}>{t.nav.lawyer}</a>
+            <a href="/lawyers" style={{ fontSize: "14px", fontWeight: 500, color: "var(--text-secondary)", textDecoration: "none" }}
+               onMouseEnter={e => (e.currentTarget.style.color = "var(--text-primary)")}
+               onMouseLeave={e => (e.currentTarget.style.color = "var(--text-secondary)")}>{t.nav.findLawyer}</a>
           </nav>
 
           {/* Right side */}
@@ -496,10 +499,10 @@ export default function HomePage() {
           <div className="container" style={{ display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", gap: "24px" }}>
             <div style={{ fontSize: "48px", marginBottom: "8px" }}>🏛️</div>
             <h2 style={{ fontSize: "var(--text-h2)", fontWeight: 700, color: "white", letterSpacing: "-0.02em" }}>
-              律师楼入驻通道
+              律师入驻通道
             </h2>
             <p style={{ fontSize: "17px", color: "rgba(255,255,255,0.75)", maxWidth: "540px", lineHeight: 1.65 }}>
-              作为平台认证的肖像权保护机构，为用户提供法律咨询、维权代理、侵权处理等服务。所有用户授权通过平台统一管理，避免私下交易。
+              作为平台认证的肖像权保护机构（律师楼或个人律师），为用户提供法律咨询、维权代理、侵权处理等服务。所有用户授权通过平台统一管理，避免私下交易。
             </p>
             <div style={{ display: "flex", gap: "12px", flexWrap: "wrap", justifyContent: "center" }}>
               <a href="/enterprise/lawyer-registration" className="btn btn-lg" style={{

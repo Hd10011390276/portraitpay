@@ -4,11 +4,12 @@
  */
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
+import { getSessionFromRequest } from "@/lib/auth/request-context";
 import { prisma } from "@/lib/prisma";
-import { getSessionFromRequest } from "@/lib/auth/session";
 export const dynamic = "force-dynamic";
 
 const LawyerApplySchema = z.object({
+  lawyerType: z.enum(["firm", "personal"]).default("firm"),
   companyName: z.string().min(1, "公司名称不能为空").max(200),
   region: z.string().min(1, "请选择地区").max(100),
   contactName: z.string().min(1, "联系人不能为空").max(100),
@@ -19,13 +20,6 @@ const LawyerApplySchema = z.object({
 
 export async function POST(req: NextRequest) {
   try {
-    const session = await getSessionFromRequest(req);
-    // Allow unauthenticated submissions (lawyer may not have account yet)
-    // Optional: require auth by uncommenting below
-    // if (!session?.userId) {
-    //   return NextResponse.json({ success: false, error: "请先登录" }, { status: 401 });
-    // }
-
     const body = await req.json();
     const data = LawyerApplySchema.parse(body);
 
@@ -45,6 +39,7 @@ export async function POST(req: NextRequest) {
 
     const registration = await prisma.lawyerRegistration.create({
       data: {
+        lawyerType: data.lawyerType,
         companyName: data.companyName,
         region: data.region,
         contactName: data.contactName,

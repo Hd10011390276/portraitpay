@@ -42,6 +42,7 @@ export default function LawyerRegistrationPage() {
 
   const [theme, setTheme] = useState<"light" | "dark">("light");
   const [form, setForm] = useState({
+    lawyerType: "firm", // "firm" = 律师楼, "personal" = 个人律师
     companyName: "",
     country: "",
     contactName: "",
@@ -69,7 +70,7 @@ export default function LawyerRegistrationPage() {
 
   function validate() {
     const errs: Record<string, string> = {};
-    if (!form.companyName.trim()) errs.companyName = isZh ? "请填写公司名称" : "Please enter company name";
+    if (!form.companyName.trim()) errs.companyName = isZh ? "请填写" + (form.lawyerType === "personal" ? "个人姓名" : "律所/公司名称") : (form.lawyerType === "personal" ? "Please enter your name" : "Please enter company name");
     if (!form.country) errs.country = isZh ? "请选择国家/地区" : "Please select a country/region";
     const selected = COUNTRIES.find(c => c.code === form.country);
     if (selected && !selected.available) {
@@ -186,17 +187,54 @@ export default function LawyerRegistrationPage() {
           }}>
             <div style={{ fontSize: "48px", marginBottom: "16px" }}>🏛️</div>
             <h1 style={{ fontSize: "var(--text-h2)", fontWeight: 700, color: "white", letterSpacing: "-0.02em", marginBottom: "12px" }}>
-              {isZh ? "律师楼入驻申请" : "Law Firm Registration"}
+              {isZh ? "律师入驻申请" : "Lawyer Registration"}
             </h1>
             <p style={{ fontSize: "var(--text-body)", color: "rgba(255,255,255,0.75)", maxWidth: "480px", margin: "0 auto", lineHeight: 1.65 }}>
               {isZh
-                ? "入驻后，您的律所将作为平台授权的肖像权保护机构，为用户提供法律咨询、维权代理等服务。所有用户授权通过平台统一管理，避免私下交易。"
-                : "After joining, your firm will act as a platform-authorized portrait rights protection agency, providing users with legal consulting, rights protection, and infringement handling services."}
+                ? "选择\"入驻律师\"后，您的律所或个人将作为平台授权的肖像权保护机构，为用户提供法律咨询、维权代理等服务。所有用户授权通过平台统一管理，避免私下交易。"
+                : "After joining, your firm or practice will act as a platform-authorized portrait rights protection agency, providing users with legal consulting, rights protection, and infringement handling services."}
             </p>
           </div>
 
           {/* ── Form Card ──────────────────────────────────── */}
           <form onSubmit={handleSubmit} className="card" style={{ padding: "40px" }}>
+
+            {/* Lawyer Type Selector */}
+            <div style={{ marginBottom: "32px" }}>
+              <label style={{ display: "block", fontSize: "var(--text-body-sm)", fontWeight: 600, color: "var(--text-primary)", marginBottom: "12px" }}>
+                {isZh ? "入驻类型" : "Registration Type"}
+                <span style={{ color: "var(--error)", marginLeft: "2px" }}>*</span>
+              </label>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
+                {[
+                  { value: "firm", labelZh: "律师楼", labelEn: "Law Firm", icon: "🏛️", desc: isZh ? "律师事务所、公司化运营" : "Law firm, incorporated" },
+                  { value: "personal", labelZh: "个人律师", labelEn: "Personal Lawyer", icon: "⚖️", desc: isZh ? "独立执业律师" : "Solo practitioner" },
+                ].map((opt) => (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    onClick={() => setForm((prev) => ({ ...prev, lawyerType: opt.value }))}
+                    style={{
+                      padding: "16px",
+                      borderRadius: "var(--radius-md)",
+                      border: `2px solid ${form.lawyerType === opt.value ? "var(--accent-primary)" : "var(--border-default)"}`,
+                      background: form.lawyerType === opt.value ? "var(--accent-light)" : "var(--surface)",
+                      cursor: "pointer",
+                      textAlign: "left",
+                      transition: "all 150ms ease-out",
+                    }}
+                  >
+                    <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "4px" }}>
+                      <span style={{ fontSize: "20px" }}>{opt.icon}</span>
+                      <span style={{ fontWeight: 600, fontSize: "var(--text-body)", color: "var(--text-primary)" }}>
+                        {isZh ? opt.labelZh : opt.labelEn}
+                      </span>
+                    </div>
+                    <p style={{ fontSize: "var(--text-caption)", color: "var(--text-secondary)", margin: 0 }}>{opt.desc}</p>
+                  </button>
+                ))}
+              </div>
+            </div>
 
             {serverError && (
               <div style={{
@@ -217,14 +255,14 @@ export default function LawyerRegistrationPage() {
               {/* Company Name */}
               <div>
                 <label style={{ display: "block", fontSize: "var(--text-body-sm)", fontWeight: 600, color: "var(--text-primary)", marginBottom: "8px" }}>
-                  {isZh ? "律所/公司名称" : "Law Firm / Company Name"}
+                  {form.lawyerType === "personal" ? (isZh ? "个人姓名" : "Your Name") : (isZh ? "律所/公司名称" : "Law Firm / Company Name")}
                   <span style={{ color: "var(--error)", marginLeft: "2px" }}>*</span>
                 </label>
                 <input
                   type="text"
                   value={form.companyName}
                   onChange={(e) => set("companyName", e.target.value)}
-                  placeholder={isZh ? "例如：Smith & Associates Law Firm" : "e.g. Smith & Associates Law Firm"}
+                  placeholder={form.lawyerType === "personal" ? (isZh ? "请输入您的姓名" : "Enter your full name") : (isZh ? "例如：Smith & Associates Law Firm" : "e.g. Smith & Associates Law Firm")}
                   style={{
                     width: "100%",
                     height: "44px",
