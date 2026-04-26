@@ -8,9 +8,12 @@ const PUBLIC_PATHS = [
   "/terms",
   "/privacy",
   "/contact",
-"/celebrity",
+  "/celebrity",
+  "/enterprise",
   "/enterprise/authorization/apply",
   "/enterprise/lawyer-registration",
+  "/contracts",
+  "/faq",
 ];
 
 export async function middleware(req: NextRequest) {
