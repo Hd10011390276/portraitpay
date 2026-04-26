@@ -224,6 +224,14 @@ export const translations = {
         },
       ],
     },
+    // Lawyer Section
+    lawyerSection: {
+      title: "律师入驻通道",
+      desc: "作为平台认证的肖像权保护机构（律师楼或个人律师），为用户提供法律咨询、维权代理、侵权处理等服务。所有用户授权通过平台统一管理，避免私下交易。",
+      applyNow: "立即申请入驻 →",
+      learnMore: "了解更多",
+      footer: "入驻审核周期：3-5 个工作日 · 平台收取授权服务费",
+    },
     // FAQ
     faq: {
       title: "常见问题",
@@ -1554,6 +1562,14 @@ export const translations = {
           highlight: false,
         },
       ],
+    },
+    // Lawyer Section
+    lawyerSection: {
+      title: "Lawyer Registration",
+      desc: "As a platform-certified portrait rights protection agency (law firm or solo lawyer), provide users with legal consultation, rights protection, and infringement handling services. All user licensing is managed through the platform to avoid private transactions.",
+      applyNow: "Apply Now →",
+      learnMore: "Learn More",
+      footer: "Review cycle: 3-5 business days · Platform takes licensing service fee",
     },
     // FAQ
     faq: {

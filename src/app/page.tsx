@@ -499,10 +499,10 @@ export default function HomePage() {
           <div className="container" style={{ display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", gap: "24px" }}>
             <div style={{ fontSize: "48px", marginBottom: "8px" }}>🏛️</div>
             <h2 style={{ fontSize: "var(--text-h2)", fontWeight: 700, color: "white", letterSpacing: "-0.02em" }}>
-              律师入驻通道
+              {t.lawyerSection.title}
             </h2>
             <p style={{ fontSize: "17px", color: "rgba(255,255,255,0.75)", maxWidth: "540px", lineHeight: 1.65 }}>
-              作为平台认证的肖像权保护机构（律师楼或个人律师），为用户提供法律咨询、维权代理、侵权处理等服务。所有用户授权通过平台统一管理，避免私下交易。
+              {t.lawyerSection.desc}
             </p>
             <div style={{ display: "flex", gap: "12px", flexWrap: "wrap", justifyContent: "center" }}>
               <a href="/enterprise/lawyer-registration" className="btn btn-lg" style={{
@@ -518,7 +518,7 @@ export default function HomePage() {
                 gap: "8px",
                 transition: "all 150ms",
               }}>
-                立即申请入驻 →
+                {t.lawyerSection.applyNow}
               </a>
               <a href="/enterprise" className="btn btn-lg" style={{
                 background: "transparent",
@@ -533,11 +533,11 @@ export default function HomePage() {
                 alignItems: "center",
                 gap: "8px",
               }}>
-                了解更多
+                {t.lawyerSection.learnMore}
               </a>
             </div>
             <p style={{ fontSize: "13px", color: "rgba(255,255,255,0.5)", marginTop: "8px" }}>
-              入驻审核周期：3-5 个工作日 · 平台收取授权服务费
+              {t.lawyerSection.footer}
             </p>
           </div>
         </section>
