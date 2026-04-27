@@ -453,7 +453,10 @@ export async function POST(req: NextRequest) {
 
     // ── Fall back to cloud provider ───────────────────────────────────────
     try {
+      const provider = process.env.KYC_PROVIDER ?? "aliyun";
+      console.log("[face/compare] Cloud fallback: provider=", provider);
       result = await compareWithCloudProvider(image1, image2, threshold);
+      console.log("[face/compare] Cloud result:", result);
     } catch (err) {
       console.error("[face/compare] Cloud provider comparison failed, returning FAIL:", err);
       result = { score: 0, result: "FAIL" as const, provider: "stub" };
