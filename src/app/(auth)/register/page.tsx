@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Input } from "@/components/auth/Input";
@@ -37,22 +37,27 @@ export default function RegisterPage() {
     setGlobalError("");
   };
 
+  const formRef = useRef(form);
+  formRef.current = form;
+
   const validate = (): boolean => {
     const errs: Record<string, string> = {};
+    const currentForm = formRef.current;
 
-    if (!form.name.trim()) errs.name = t.register.errors.nameRequired;
-    if (!form.email) errs.email = t.register.errors.emailRequired;
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) errs.email = t.register.errors.invalidEmail;
-    if (!form.password) errs.password = t.register.errors.passwordRequired;
-    else if (form.password.length < 8) errs.password = t.register.errors.passwordTooShort;
+    if (!currentForm.name.trim()) errs.name = t.register.errors.nameRequired;
+    if (!currentForm.email) errs.email = t.register.errors.emailRequired;
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(currentForm.email)) errs.email = t.register.errors.invalidEmail;
+    if (!currentForm.password) errs.password = t.register.errors.passwordRequired;
+    else if (currentForm.password.length < 8) errs.password = t.register.errors.passwordTooShort;
     else {
-      if (!/[A-Z]/.test(form.password)) errs.password = t.register.errors.passwordNeedUppercase;
-      else if (!/[0-9]/.test(form.password)) errs.password = t.register.errors.passwordNeedNumber;
+      if (!/[A-Z]/.test(currentForm.password)) errs.password = t.register.errors.passwordNeedUppercase;
+      else if (!/[0-9]/.test(currentForm.password)) errs.password = t.register.errors.passwordNeedNumber;
     }
-    if (!form.confirmPassword) errs.confirmPassword = t.register.errors.confirmPasswordRequired;
-    else if (form.password !== form.confirmPassword) errs.confirmPassword = t.register.errors.passwordsMismatch;
-    if (!form.role) errs.role = t.register.errors.selectRole;
+    if (!currentForm.confirmPassword) errs.confirmPassword = t.register.errors.confirmPasswordRequired;
+    else if (currentForm.password !== currentForm.confirmPassword) errs.confirmPassword = t.register.errors.passwordsMismatch;
+    if (!currentForm.role) errs.role = t.register.errors.selectRole;
 
+    // Always clear all errors first, then set only the new ones
     setErrors(errs);
     return Object.keys(errs).length === 0;
   };
