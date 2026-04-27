@@ -98,7 +98,7 @@ export function DashboardShell({ children, title, subtitle, action, forceLight }
       )}
 
       {/* Mobile top bar */}
-      <div className={`sm:hidden fixed top-0 left-0 right-0 z-20 h-14 ${forceLight ? "bg-white" : theme === "dark" ? "bg-gray-900" : "bg-white"} border-b ${forceLight ? "border-gray-200" : theme === "dark" ? "border-gray-700" : "border-gray-200"} flex items-center px-4 gap-2 shrink-0`}>
+      <div className={`sm:hidden fixed top-0 left-0 right-0 z-20 h-14 ${forceLight ? "bg-white" : theme === "dark" ? "bg-gray-900" : "bg-white"} border-b ${forceLight ? "border-gray-200" : theme === "dark" ? "border-gray-700" : "border-gray-200"} flex items-center px-4 gap-2 shrink-0`} style={{ paddingTop: 'env(safe-area-inset-top)' }}>
         <button
           onClick={() => setMobileMenuOpen(true)}
           className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
@@ -115,7 +115,7 @@ export function DashboardShell({ children, title, subtitle, action, forceLight }
       {/* Main content — offset by sidebar on desktop, topbar on mobile */}
       <div className="sm:ml-64">
         <Header user={user} title={title} subtitle={subtitle} action={action} />
-        <main className="p-4 sm:p-6">
+        <main className="p-4 sm:p-6 pt-[calc(3.5rem+env(safe-area-inset-top))] sm:pt-6">
           {children}
         </main>
       </div>

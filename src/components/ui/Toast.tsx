@@ -129,11 +129,14 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   return (
     <ToastContext.Provider value={{ toasts, toast, dismiss, dismissAll }}>
       {children}
-      {/* Toast container — fixed bottom-right */}
+      {/* Toast container — fixed bottom-right, accounts for home bar */}
       <div
         aria-live="polite"
         aria-label="Notifications"
-        className="fixed bottom-6 right-6 z-50 flex flex-col gap-3 items-end pointer-events-none"
+        className="fixed right-6 z-50 flex flex-col gap-3 items-end pointer-events-none"
+        style={{
+          bottom: 'max(24px, env(safe-area-inset-bottom, 24px))',
+        }}
       >
         {toasts.map((t) => (
           <div key={t.id} className="pointer-events-auto">
