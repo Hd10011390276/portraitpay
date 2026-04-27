@@ -170,8 +170,8 @@ async function specialUrlEncode(value: string): Promise<string> {
 }
 
 async function compareWithAliyun(
-  image1: File,
-  image2: File,
+  imageUrl1: string,
+  imageUrl2: string,
 ): Promise<{ score: number; result: "PASS" | "FAIL" | "REVIEW"; provider: string }> {
   const accessKeyId = process.env.ALIBABA_CLOUD_ACCESS_KEY_ID;
   const accessKeySecret = process.env.ALIBABA_CLOUD_ACCESS_KEY_SECRET;
@@ -182,16 +182,13 @@ async function compareWithAliyun(
     return { score: 0, result: "FAIL" as const, provider: "aliyun-stub" };
   }
 
-  const portraitBase64 = await fileToBase64(image1);
-  const idCardBase64 = await fileToBase64(image2);
-
   const host = `facebody.${region}.aliyuncs.com`;
   const action = "CompareFace";
   const version = "2019-12-30";
   const timestamp = new Date().toISOString().replace(/\.\d+Z$/, "Z");
   const nonce = crypto.randomUUID();
 
-  // Build query string (alphabetically sorted, as required by POP signing)
+  // Build query params (alphabetically sorted, as required by POP signing)
   const params = new URLSearchParams({
     SignatureMethod: "HMAC-SHA1",
     SignatureNonce: nonce,
@@ -202,8 +199,8 @@ async function compareWithAliyun(
     RegionId: region,
     Version: version,
     Action: action,
-    ImageURL1: `data:image/jpeg;base64,${portraitBase64}`,
-    ImageURL2: `data:image/jpeg;base64,${idCardBase64}`,
+    ImageURL1: imageUrl1,
+    ImageURL2: imageUrl2,
   });
 
   const sortedKeys = Array.from(params.keys()).sort();
@@ -240,60 +237,33 @@ async function compareWithAliyun(
   }
 
   const data = await res.json();
+  console.log("[face/compare] Aliyun response:", JSON.stringify(data));
   const similarity = data.Data?.Similarity ?? data.data?.Similarity ?? 0;
   const result: "PASS" | "FAIL" | "REVIEW" =
     similarity >= 80 ? "PASS" : similarity >= 60 ? "REVIEW" : "FAIL";
   return { score: similarity, result, provider: "aliyun" };
 }
 
-async function signAliyunRequest(opts: {
-  method: string;
-  host: string;
-  path: string;
-  headers: Record<string, string>;
-  body: string;
-  accessKeyId: string;
-  accessKeySecret: string;
-}): Promise<string> {
-  const bodyHash = await sha256Base64(opts.body);
-  const signString = `${opts.method}\n${opts.host}\n${opts.path}\n${bodyHash}`;
-  const key = opts.accessKeySecret + "&";
-  const signature = await hmacSha1Base64(key, signString);
-  return `acs ${opts.accessKeyId}:${signature}`;
-}
-
-async function sha256Base64(data: string): Promise<string> {
-  const buf = new TextEncoder().encode(data);
-  const hash = await crypto.subtle.digest("SHA-256", buf);
-  return Buffer.from(hash).toString("base64");
-}
-
-async function hmacSha1Base64(key: string, data: string): Promise<string> {
-  const keyBuf = new TextEncoder().encode(key);
-  const dataBuf = new TextEncoder().encode(data);
-  const cryptoKey = await crypto.subtle.importKey(
-    "raw", keyBuf, { name: "HMAC", hash: "SHA-1" }, false, ["sign"]
-  );
-  const signature = await crypto.subtle.sign("HMAC", cryptoKey, dataBuf);
-  return Buffer.from(signature).toString("base64");
-}
-
 async function compareWithTencent(
-  image1: File,
-  image2: File,
+  imageUrl1: string,
+  imageUrl2: string,
 ): Promise<{ score: number; result: "PASS" | "FAIL" | "REVIEW"; provider: string }> {
   const secretId = process.env.KYC_TENCENT_SECRET_ID;
   const secretKey = process.env.KYC_TENCENT_SECRET_KEY;
   const region = process.env.KYC_TENCENT_REGION ?? "ap-guangzhou";
-  const appId = process.env.KYC_TENCENT_APP_ID;
 
-  if (!secretId || !secretKey || !appId) {
+  if (!secretId || !secretKey) {
     console.warn("[face/compare] Tencent credentials missing, returning FAIL");
     return { score: 0, result: "FAIL" as const, provider: "tencent-stub" };
   }
 
-  const portraitBase64 = await fileToBase64(image1);
-  const idCardBase64 = await fileToBase64(image2);
+  // Fetch images from URLs and convert to base64
+  const [buf1, buf2] = await Promise.all([
+    fetch(imageUrl1).then(r => r.arrayBuffer()),
+    fetch(imageUrl2).then(r => r.arrayBuffer()),
+  ]);
+  const portraitBase64 = Buffer.from(buf1).toString("base64");
+  const idCardBase64 = Buffer.from(buf2).toString("base64");
   const timestamp = Math.floor(Date.now() / 1000).toString();
   const nonce = Math.floor(Math.random() * 99999999).toString();
 
