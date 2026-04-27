@@ -437,6 +437,19 @@ export async function POST(req: NextRequest) {
     }
 
     console.log(`[face/compare] Final result: provider=${result.provider} score=${result.score}`);
+    // Debug mode: return env status
+    if (req.nextUrl.searchParams.get("debug") === "1") {
+      return NextResponse.json({
+        aliyunKeyId: !!process.env.ALIBABA_CLOUD_ACCESS_KEY_ID,
+        aliyunKeyIdLen: (process.env.ALIBABA_CLOUD_ACCESS_KEY_ID || "").length,
+        aliyunKeySecret: !!process.env.ALIBABA_CLOUD_ACCESS_KEY_SECRET,
+        kycProvider: process.env.KYC_PROVIDER || "(not set)",
+        kycAliyunKeyId: !!process.env.KYC_ALIYUN_ACCESS_KEY_ID,
+        kycAliyunKeySecret: !!process.env.KYC_ALIYUN_ACCESS_KEY_SECRET,
+        tencentSecretId: !!process.env.KYC_TENCENT_SECRET_ID,
+      });
+    }
+
     return NextResponse.json({ success: true, ...result });
   } catch (err) {
     console.error("[face/compare] Unexpected error:", err);
