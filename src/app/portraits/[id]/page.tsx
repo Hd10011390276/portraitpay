@@ -154,9 +154,24 @@ export default function PortraitDetailPage() {
       const res = await fetch(`/api/portraits/${id}/certify`, { method: "POST" });
       clearInterval(interval);
 
-      const json = await res.json();
+      let json;
+      try {
+        json = await res.json();
+      } catch {
+        setCertifyMsg(`${tc.certifyFailed}Invalid server response (status ${res.status})`);
+        setTimeout(() => setCertifyMsg(""), 5000);
+        return;
+      }
+
+      if (!json) {
+        setCertifyMsg(`${tc.certifyFailed}Empty server response`);
+        setTimeout(() => setCertifyMsg(""), 5000);
+        return;
+      }
+
       if (!json.success) {
-        setCertifyMsg(`${tc.certifyFailed}${json.error}`);
+        const errMsg = json.error ?? (json.code ? `[${json.code}]` : "Unknown error");
+        setCertifyMsg(`${tc.certifyFailed}${errMsg}`);
         setTimeout(() => setCertifyMsg(""), 5000);
         return;
       }
