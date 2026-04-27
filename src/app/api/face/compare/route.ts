@@ -344,6 +344,19 @@ export async function POST(req: NextRequest) {
     const threshold = parseInt(req.nextUrl.searchParams.get("threshold") ?? String(DEFAULT_THRESHOLD), 10);
     const mode = req.nextUrl.searchParams.get("mode") ?? "auto";
 
+    // Debug: check env vars
+    if (mode === "debug") {
+      return NextResponse.json({
+        aliyunKeyId: !!process.env.ALIBABA_CLOUD_ACCESS_KEY_ID,
+        aliyunKeyIdLen: (process.env.ALIBABA_CLOUD_ACCESS_KEY_ID || "").length,
+        aliyunKeySecret: !!process.env.ALIBABA_CLOUD_ACCESS_KEY_SECRET,
+        kycProvider: process.env.KYC_PROVIDER || "(not set)",
+        kycAliyunKeyId: !!process.env.KYC_ALIYUN_ACCESS_KEY_ID,
+        kycAliyunKeySecret: !!process.env.KYC_ALIYUN_ACCESS_KEY_SECRET,
+        tencentSecretId: !!process.env.KYC_TENCENT_SECRET_ID,
+      });
+    }
+
     // ── Embedding mode (JSON) ──────────────────────────────────────────────
     if (contentType.includes("application/json") || mode === "embedding") {
       let body: { descriptor1?: number[]; descriptor2?: number[] };
