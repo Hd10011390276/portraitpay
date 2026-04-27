@@ -238,10 +238,11 @@ async function compareWithAliyun(
 
   const data = await res.json();
   console.log("[face/compare] Aliyun response:", JSON.stringify(data));
-  const similarity = data.Data?.Similarity ?? data.data?.Similarity ?? 0;
+  // Try multiple possible response shapes
+  const similarity = data.Similarity ?? data.Data?.Similarity ?? data.data?.Similarity ?? 0;
   const result: "PASS" | "FAIL" | "REVIEW" =
     similarity >= 80 ? "PASS" : similarity >= 60 ? "REVIEW" : "FAIL";
-  return { score: similarity, result, provider: "aliyun" };
+  return { score: similarity, result, provider: "aliyun", _debug: data }; // TEMP DEBUG
 }
 
 async function compareWithTencent(
