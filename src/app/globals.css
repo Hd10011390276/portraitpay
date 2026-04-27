@@ -7,6 +7,16 @@
    Apple Minimalism × Fintech Clarity
    ═══════════════════════════════════════════════════════════════ */
 
+/* ─── Base — safe area for mobile notch/home bar ───────────── */
+html, body {
+  min-height: 100vh;
+  min-height: 100dvh; /* accounts for mobile browser chrome */
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
 /* ─── Google Fonts (Inter) ─────────────────────────────────── */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
