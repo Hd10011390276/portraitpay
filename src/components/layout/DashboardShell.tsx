@@ -115,9 +115,7 @@ export function DashboardShell({ children, title, subtitle, action, forceLight }
       {/* Main content — offset by sidebar on desktop, topbar on mobile */}
       <div className="sm:ml-64">
         <Header user={user} title={title} subtitle={subtitle} action={action} />
-        <main className="p-4 sm:p-6 pt-[calc(3.5rem+env(safe-area-inset-top))] sm:pt-6">
-          {children}
-        </main>
+        <main className="p-4 sm:p-6 pt-[calc(3.5rem+env(safe-area-inset-top))] pb-[max(2rem,env(safe-area-inset-bottom,1rem))] sm:pt-6" style={{ minHeight: '100dvh' }}>
       </div>
     </div>
   );
