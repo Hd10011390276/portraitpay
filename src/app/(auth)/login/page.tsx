@@ -14,7 +14,7 @@ type LoginAs = "user" | "lawyer";
 export default function LoginPage() {
   const router = useRouter();
   const { locale, t } = useLanguage();
-  const [tab, setTab] = useState<Tab>("email");
+  const [tab] = useState<Tab>("email"); // phone login disabled — email only
   const [loginAs, setLoginAs] = useState<LoginAs>("user");
   const [loading, setLoading] = useState(false);
   const [globalError, setGlobalError] = useState("");
@@ -170,7 +170,6 @@ export default function LoginPage() {
           <div className="flex border-b border-gray-200 dark:border-gray-700">
             {[
               { key: "email", label: t.login.emailLogin },
-              { key: "phone", label: t.login.phoneOtp },
             ].map((t) => (
               <button
                 key={t.key}

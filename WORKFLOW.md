@@ -214,3 +214,15 @@ git config user.name "PortraitPay AI"
 2. **环境变量变更**：必须通知全员更新本地 `.env.production` 参考
 3. **私钥管理**：私钥只存在于 Vercel 环境变量，不进代码仓库
 4. **commit message 规范**：前缀用 `fix:` / `feat:` / `chore:` 便于追溯
+---
+
+## 九、重要里程碑版本
+
+### v1.0.0 ✅ 区块链认证上线（2026-04-27）
+- **Commit**: 24d6d9（fix: export getSessionFromRequest and add canvas package）
+- **Production URL**: https://portraitpay.vercel.app
+- **首个成功上链 TX**: https://sepolia.etherscan.io/tx/0xf23b08e877735d5c9b6e940df8fde18e5895c3813aa902064a5ef8ff3ce22f1f
+- **IPFS CID**: QmTzv656SHiJUottZwo8ceEGxVoxrTvSgNErmoULu2CEof
+- **PortraitCert 合约**: Sepolia 0xC2da77c9e9027c0902eA00dB185217542fF48F7E
+- 包含功能：肖像上传 + 人脸比对 + 区块链认证 + IPFS 存储
+- **回滚时**：如新版本部署后出现认证失败，检查此 commit 是否被覆盖

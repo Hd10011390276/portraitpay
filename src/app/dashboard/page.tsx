@@ -176,11 +176,10 @@ function DashboardContent({ user }: { user: User }) {
                     className="flex items-center gap-4 px-5 py-4 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
                   >
                     <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-blue-100 to-purple-100 dark:from-blue-900/30 dark:to-purple-900/30 flex items-center justify-center text-xl flex-shrink-0 overflow-hidden">
-                      {p.thumbnailUrl ? (
-                        <img src={p.thumbnailUrl} alt="" className="w-full h-full object-cover" />
-                      ) : (
-                        <span>👤</span>
-                      )}
+                      {(p.thumbnailUrl || p.originalImageUrl) ? (
+                        <img src={p.thumbnailUrl || p.originalImageUrl} alt="" className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; (e.target as HTMLImageElement).nextElementSibling?.classList.remove('hidden'); }} />
+                      ) : null}
+                      <span className={(p.thumbnailUrl || p.originalImageUrl) ? 'hidden' : ''}>👤</span>
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
