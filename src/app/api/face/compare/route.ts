@@ -147,9 +147,9 @@ async function compareWithCloudProvider(
     return compareWithTencent(image1, image2);
   }
 
-  // Fallback stub
-  const score = Math.round(70 + Math.random() * 29);
-  return { score, result: score >= threshold ? "PASS" : "FAIL", provider: "stub" };
+  // No cloud credentials configured — fail closed instead of fake pass
+  console.warn("[face/compare] No cloud credentials configured, returning FAIL");
+  return { score: 0, result: "FAIL" as const, provider: "stub" };
 }
 
 async function fileToBase64(file: File): Promise<string> {
@@ -172,9 +172,8 @@ async function compareWithAliyun(
   const appId = process.env.KYC_ALIYUN_APP_ID;
 
   if (!accessKeyId || !accessKeySecret || !appId) {
-    console.log("[face/compare] Aliyun credentials missing, using stub");
-    const score = Math.round(70 + Math.random() * 29);
-    return { score, result: score >= 60 ? "PASS" : "FAIL", provider: "aliyun-stub" };
+    console.warn("[face/compare] Aliyun credentials missing, returning FAIL");
+    return { score: 0, result: "FAIL" as const, provider: "aliyun-stub" };
   }
 
   const portraitBase64 = await fileToBase64(image1);
@@ -266,8 +265,8 @@ async function compareWithTencent(
   const appId = process.env.KYC_TENCENT_APP_ID;
 
   if (!secretId || !secretKey || !appId) {
-    const score = Math.round(70 + Math.random() * 29);
-    return { score, result: score >= 60 ? "PASS" : "FAIL", provider: "tencent-stub" };
+    console.warn("[face/compare] Tencent credentials missing, returning FAIL");
+    return { score: 0, result: "FAIL" as const, provider: "tencent-stub" };
   }
 
   const portraitBase64 = await fileToBase64(image1);
@@ -439,9 +438,8 @@ export async function POST(req: NextRequest) {
     try {
       result = await compareWithCloudProvider(image1, image2, threshold);
     } catch (err) {
-      console.error("[face/compare] Cloud provider comparison failed:", err);
-      const score = Math.round(70 + Math.random() * 29);
-      result = { score, result: score >= threshold ? "PASS" : "FAIL", provider: "stub" };
+      console.error("[face/compare] Cloud provider comparison failed, returning FAIL:", err);
+      result = { score: 0, result: "FAIL" as const, provider: "stub" };
     }
 
     console.log(`[face/compare] Final result: provider=${result.provider} score=${result.score}`);
