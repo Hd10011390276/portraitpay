@@ -112,15 +112,19 @@ export async function POST(request: NextRequest, context: RouteContext) {
       );
     }
 
-    // ── Step 5: Mint on Base Mainnet ─────────────────────────────
+    // ── Step 5: Mint on Sepolia ─────────────────────────────
     let certificationResult;
     try {
+      const cfg = SUPPORTED_NETWORKS[network];
+      console.log(`[Certify] RPC=${cfg.rpcUrl} contract=${cfg.contractAddress}`);
       certificationResult = await certifyPortrait(metadataIpfsResult.cid, imageHash, network);
       console.log(`[Certify] ✅ Blockchain certified! Tx: ${certificationResult.txHash}`);
     } catch (err) {
       console.error("[Certify] Blockchain certification failed:", err);
+      const errMsg = err instanceof Error ? err.message : String(err);
+      console.error("[Certify] Full error:", err);
       return NextResponse.json(
-        { success: false, error: "Blockchain transaction failed", code: "PP-5001" },
+        { success: false, error: `Blockchain transaction failed: ${errMsg}` },
         { status: 503 }
       );
     }

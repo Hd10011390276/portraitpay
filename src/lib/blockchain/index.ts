@@ -87,9 +87,18 @@ export async function certifyPortrait(
   console.log(`[Blockchain] Certifying portrait on ${network}...`);
   console.log(`  IPFS CID: ${ipfsCid}`);
   console.log(`  Image Hash: ${imageHash}`);
+  console.log(`  Image Hash bytes32: ${imageHashBytes32}`);
+  console.log(`  Contract call: certifyPortrait("${ipfsCid}", ${imageHashBytes32})`);
 
   // Estimate gas with 20% buffer to avoid revert (actual gas ~230783)
-  const estimatedGas = await contract.certifyPortrait.estimateGas(ipfsCid, imageHashBytes32);
+  let estimatedGas;
+  try {
+    estimatedGas = await contract.certifyPortrait.estimateGas(ipfsCid, imageHashBytes32);
+    console.log(`[Blockchain] Gas estimate: ${estimatedGas.toString()}`);
+  } catch (gasErr) {
+    console.error("[Blockchain] Gas estimation failed:", gasErr);
+    throw new Error(`Gas estimation failed: ${gasErr instanceof Error ? gasErr.message : String(gasErr)}`);
+  }
   const gasLimit = (estimatedGas * BigInt(120)) / BigInt(100);
 
   // Send transaction
