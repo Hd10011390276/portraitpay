@@ -33,6 +33,7 @@ export async function middleware(req: NextRequest) {
     pathname.startsWith("/api/auth/verify-email") ||
     pathname.startsWith("/api/auth/refresh") ||
     pathname.startsWith("/api/lawyers/apply") ||
+    pathname.startsWith("/api/face/compare") ||
     (pathname.startsWith("/api/lawyers") && req.method === "GET")
   ) {
     return NextResponse.next();
