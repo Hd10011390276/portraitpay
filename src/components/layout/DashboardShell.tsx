@@ -19,7 +19,6 @@ interface DashboardShellProps {
   title?: string;
   subtitle?: string;
   action?: React.ReactNode;
-  /** Forces light-mode white background, ignoring theme toggle. Use for pages that must always be white. */
   forceLight?: boolean;
 }
 
@@ -31,12 +30,10 @@ export function DashboardShell({ children, title, subtitle, action, forceLight }
   const [theme, setTheme] = useState<"light" | "dark">("light");
 
   useEffect(() => {
-    // Read current theme from localStorage (matches ThemeToggle)
     const saved = localStorage.getItem("theme");
     const isDark = saved === "dark" || (!saved && window.matchMedia("(prefers-color-scheme: dark)").matches);
     setTheme(isDark ? "dark" : "light");
 
-    // Listen for theme changes from ThemeToggle
     const handleThemeChange = (e: Event) => {
       const customEvent = e as CustomEvent<{ theme: string }>;
       setTheme(customEvent.detail.theme as "light" | "dark");
@@ -98,7 +95,10 @@ export function DashboardShell({ children, title, subtitle, action, forceLight }
       )}
 
       {/* Mobile top bar */}
-      <div className={`sm:hidden fixed top-0 left-0 right-0 z-20 h-14 ${forceLight ? "bg-white" : theme === "dark" ? "bg-gray-900" : "bg-white"} border-b ${forceLight ? "border-gray-200" : theme === "dark" ? "border-gray-700" : "border-gray-200"} flex items-center px-4 gap-2 shrink-0`} style={{ paddingTop: 'env(safe-area-inset-top)' }}>
+      <div
+        className={`sm:hidden fixed top-0 left-0 right-0 z-20 h-14 ${forceLight ? "bg-white" : theme === "dark" ? "bg-gray-900" : "bg-white"} border-b ${forceLight ? "border-gray-200" : theme === "dark" ? "border-gray-700" : "border-gray-200"} flex items-center px-4 gap-2 shrink-0`}
+        style={{ paddingTop: "env(safe-area-inset-top)" }}
+      >
         <button
           onClick={() => setMobileMenuOpen(true)}
           className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
@@ -112,10 +112,19 @@ export function DashboardShell({ children, title, subtitle, action, forceLight }
         <ThemeToggle />
       </div>
 
-      {/* Main content — offset by sidebar on desktop, topbar on mobile */}
+      {/* Main content */}
       <div className="sm:ml-64">
         <Header user={user} title={title} subtitle={subtitle} action={action} />
-        <main className="p-4 sm:p-6 pt-[calc(3.5rem+env(safe-area-inset-top))] pb-[max(2rem,env(safe-area-inset-bottom,1rem))] sm:pt-6" style={{ minHeight: '100dvh' }}>
+        <main
+          className="p-4 sm:p-6 sm:pt-6"
+          style={{
+            paddingTop: `calc(3.5rem + env(safe-area-inset-top))`,
+            paddingBottom: `max(2rem, env(safe-area-inset-bottom, 1rem))`,
+            minHeight: "100dvh",
+          }}
+        >
+          {children}
+        </main>
       </div>
     </div>
   );
