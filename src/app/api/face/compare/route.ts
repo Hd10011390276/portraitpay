@@ -139,15 +139,25 @@ async function compareWithCloudProvider(
   image2: File,
   threshold: number,
 ): Promise<{ score: number; result: "PASS" | "FAIL" | "REVIEW"; provider: string }> {
-  const provider = process.env.KYC_PROVIDER ?? "aliyun";
+  // Upload files to R2 to get public URLs
+  const { uploadFile } = await import("@/lib/storage");
+  const buf1 = Buffer.from(await image1.arrayBuffer());
+  const buf2 = Buffer.from(await image2.arrayBuffer());
+  const key1 = `temp/face/${Date.now()}-portrait.jpg`;
+  const key2 = `temp/face/${Date.now()}-idcard.jpg`;
+  const [url1, url2] = await Promise.all([
+    uploadFile(buf1, key1, image1.type || "image/jpeg"),
+    uploadFile(buf2, key2, image2.type || "image/jpeg"),
+  ]);
+  console.log("[face/compare] R2 URLs:", url1, url2);
 
+  const provider = process.env.KYC_PROVIDER ?? "aliyun";
   if (provider === "aliyun") {
-    return compareWithAliyun(image1, image2);
+    return compareWithAliyun(url1, url2);
   } else if (provider === "tencent") {
-    return compareWithTencent(image1, image2);
+    return compareWithTencent(url1, url2);
   }
 
-  // No cloud credentials configured — fail closed instead of fake pass
   console.warn("[face/compare] No cloud credentials configured, returning FAIL");
   return { score: 0, result: "FAIL" as const, provider: "stub" };
 }
