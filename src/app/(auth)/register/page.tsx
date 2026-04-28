@@ -24,7 +24,7 @@ export default function RegisterPage() {
     phone: "",
     role: "",
   });
-  const [allowLicensing, setAllowLicensing] = useState(true);
+  const [allowLicensing, setAllowLicensing] = useState(false);
   const [allowedScopes, setAllowedScopes] = useState<string[]>([]);
   const [prohibitedContent, setProhibitedContent] = useState<string[]>([]);
   const [errors, setErrors] = useState<Record<string, string>>({});
