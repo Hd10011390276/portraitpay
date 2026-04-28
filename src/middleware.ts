@@ -57,6 +57,17 @@ export async function middleware(req: NextRequest) {
     return NextResponse.redirect(loginUrl);
   }
 
+  // ── Lawyer route protection ─────────────────────────────────────
+  if (pathname.startsWith("/lawyer")) {
+    // verifyToken already validated the token above, reuse it to get role
+    const jwtPayload = await verifyToken(token!);
+    const userRole = jwtPayload?.role ?? "";
+    if (userRole !== "LAWYER") {
+      // Not a lawyer → redirect to user dashboard
+      return NextResponse.redirect(new URL("/dashboard", req.url));
+    }
+  }
+
   return NextResponse.next();
 }
 

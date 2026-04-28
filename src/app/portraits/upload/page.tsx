@@ -3,9 +3,10 @@
  *
  * Flow:
  *  1. Upload portrait photo (with crop)
- *  2. Create portrait record
- *  3. Upload to S3 storage
- *  4. Register URL + save face embedding (for similarity search, NOT identity verification)
+ *  2. Upload ID card front (stored for KYC, used at mint time for face verification)
+ *  3. Create portrait record
+ *  4. Upload to S3 storage
+ *  5. Register URL + save face embedding (for similarity search, NOT identity verification)
  *
  * Note: Face identity verification happens at mint time on the blockchain API, not at upload time.
  */
@@ -103,11 +104,36 @@ export default function UploadPortraitPage() {
   const [croppedFile, setCroppedFile] = useState<File | null>(null);
   const [imageHash, setImageHash] = useState<string | null>(null);
 
+  // ── ID Card ──────────────────────────────────────────────────
+  const [idCardFront, setIdCardFront] = useState<File | null>(null);
+  const [idCardFrontPreview, setIdCardFrontPreview] = useState<string | null>(null);
+
   // ── Form ─────────────────────────────────────────────────────
   const [form, setForm] = useState({ title: "", description: "", category: "general", tags: "", isPublic: false });
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   // ── Handlers ─────────────────────────────────────────────────
+  const handleIdCardFrontChange = useCallback((file: File) => {
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      alert("请上传图片文件");
+      return;
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      alert("图片大小不能超过 10MB");
+      return;
+    }
+    setIdCardFront(file);
+    const preview = URL.createObjectURL(file);
+    setIdCardFrontPreview(preview);
+  }, []);
+
+  const handleIdCardFrontRemove = useCallback(() => {
+    setIdCardFront(null);
+    if (idCardFrontPreview) URL.revokeObjectURL(idCardFrontPreview);
+    setIdCardFrontPreview(null);
+  }, [idCardFrontPreview]);
+
   const handleFileSelected = useCallback(async (file: File) => {
     setCroppedFile(file);
     setErrors(prev => ({ ...prev, image: "" }));
@@ -144,7 +170,25 @@ export default function UploadPortraitPage() {
       if (!createJson.success) throw new Error(createJson.error);
       const id = createJson.data.id as string;
 
-      // 2. Upload to R2 via server proxy (avoids CORS)
+      // 2. Upload ID card front to R2 (stored for KYC verification at mint time)
+      if (idCardFront) {
+        setProgress("上传身份文件...");
+        const idCardFormData = new FormData();
+        idCardFormData.append("image", idCardFront);
+        const idCardRes = await fetch(`/api/portraits/${id}/upload/direct`, {
+          method: "POST",
+          body: idCardFormData,
+        });
+        const idCardJson = await idCardRes.json();
+        if (!idCardRes.ok || !idCardJson.success) {
+          console.error("[ID card] Upload failed:", idCardJson.error);
+        } else {
+          // Store ID card URL in sessionStorage for KYC verification at mint time
+          sessionStorage.setItem(`idCardFront_${id}`, idCardJson.data.originalImageUrl);
+        }
+      }
+
+      // 3. Upload portrait to R2 via server proxy (avoids CORS)
       setProgress(t.ipRegister?.uploadingToStorage || "上传到存储...");
       const uploadFormData = new FormData();
       uploadFormData.append("image", croppedFile);
@@ -158,7 +202,7 @@ export default function UploadPortraitPage() {
 
       await savePortraitLocally(id, croppedFile);
 
-      // 3. Register URL
+      // 4. Register URL
       setProgress(t.ipRegister?.saving || "保存中...");
       const updateRes = await fetch(`/api/portraits/${id}/upload`, {
         method: "POST",
@@ -168,7 +212,7 @@ export default function UploadPortraitPage() {
       const updateJson = await updateRes.json();
       if (!updateJson.success) throw new Error(updateJson.error);
 
-      // 4. Save face embedding (for similarity search, not identity verification)
+      // 5. Save face embedding (for similarity search, not identity verification)
       try {
         setProgress("提取人脸特征...");
         const embedding = await extractFaceEmbedding(croppedFile);
@@ -249,7 +293,60 @@ export default function UploadPortraitPage() {
             )}
           </section>
 
-          {/* Section 2: Details */}
+          {/* Section 2: ID Card */}
+          <section className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
+            <h2 className="font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+              🪪 身份文件验证
+            </h2>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+              上传身份证正面照（仅用于区块链上链时人脸核验）
+            </p>
+            {!idCardFrontPreview ? (
+              <label
+                className="flex flex-col items-center justify-center border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl cursor-pointer hover:border-blue-400 dark:hover:border-blue-500 transition-colors"
+                style={{ height: "200px" }}
+              >
+                <div className="text-4xl mb-3">🪪</div>
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-300">
+                  点击上传身份证正面
+                </p>
+                <p className="text-xs text-gray-400 mt-1">JPG, PNG, WebP · 最大 10MB</p>
+                <input
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  className="hidden"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) handleIdCardFrontChange(file);
+                  }}
+                />
+              </label>
+            ) : (
+              <div className="flex flex-col gap-3">
+                <div className="relative inline-block">
+                  <img
+                    src={idCardFrontPreview}
+                    alt="身份证正面"
+                    className="w-full max-w-sm rounded-xl border border-gray-200 dark:border-gray-700"
+                    style={{ maxHeight: "200px", objectFit: "cover" }}
+                  />
+                  <button
+                    type="button"
+                    onClick={handleIdCardFrontRemove}
+                    className="absolute -top-2 -right-2 w-7 h-7 bg-red-500 text-white rounded-full flex items-center justify-center text-sm font-bold shadow-md hover:bg-red-600 transition-colors"
+                    title="移除"
+                  >
+                    ✕
+                  </button>
+                </div>
+                <p className="text-xs text-green-600 dark:text-green-400">
+                  ✅ 身份证正面已上传
+                </p>
+              </div>
+            )}
+          </section>
+
+          {/* Section 3: Details */}
           <section className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 p-6 space-y-4">
             <h2 className="font-semibold text-gray-900 dark:text-white mb-2">{t.upload?.details || "肖像详情"}</h2>
             <div>
