@@ -126,9 +126,8 @@ export default function LoginPage() {
         localStorage.setItem("pp_user", JSON.stringify(data.data.user));
       }
 
-      // Redirect based on login type and user role
-      const userRole = data.data?.user?.role;
-      if (loginAs === "lawyer" || userRole === "LAWYER") {
+      // Redirect based on explicit login type selection (button takes precedence over DB role)
+      if (loginAs === "lawyer") {
         router.push("/lawyer/dashboard");
       } else {
         router.push("/dashboard");
