@@ -547,6 +547,87 @@ export class KYCService {
     return result.count;
   }
 
+  // ─── 11. Mint 时人脸核验 ─────────────────────────────────────
+
+  /**
+   * Face verification at mint time.
+   * Uses the user's latest APPROVED KYC idCardNumber + the portrait image
+   * to call Aliyun face verify (real API, not stub).
+   *
+   * Returns: { success: true, ocrResult, faceResult }
+   * Throws on failure: { code: 'KYC_NOT_APPROVED' | 'FACE_MISMATCH' | 'OCR_NOT_FOUND' }
+   */
+  async verifyFaceForMint(
+    userId: string,
+    portraitImageUrl: string
+  ): Promise<{
+    success: true;
+    ocrResult: IDCardOCRResult;
+    faceResult: FaceVerifyResult;
+  }> {
+    // 1) Check user KYC status is APPROVED and not expired
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    if (!user) throw new Error("User not found");
+
+    if (user.kycStatus !== "APPROVED") {
+      const err = new Error("KYC not approved");
+      (err as any).code = "KYC_NOT_APPROVED";
+      throw err;
+    }
+
+    if (isKYCExpired(user.kycExpiredAt)) {
+      const err = new Error("KYC expired");
+      (err as any).code = "KYC_NOT_APPROVED";
+      throw err;
+    }
+
+    // 2) Find latest KYCLog for this user where action='ocr_result' and result contains idCardNumber
+    const ocrLog = await prisma.kYCLog.findFirst({
+      where: {
+        userId,
+        action: "ocr_result",
+        idCardNumber: { not: null },
+      },
+      orderBy: { createdAt: "desc" },
+    });
+
+    if (!ocrLog || !ocrLog.ocrRawData) {
+      const err = new Error("OCR result not found for user");
+      (err as any).code = "OCR_NOT_FOUND";
+      throw err;
+    }
+
+    const ocrResult = ocrLog.ocrRawData as unknown as IDCardOCRResult;
+
+    if (!ocrResult.idCardNumber) {
+      const err = new Error("OCR result missing idCardNumber");
+      (err as any).code = "OCR_NOT_FOUND";
+      throw err;
+    }
+
+    // 3) Guard: portrait image must exist
+    if (!portraitImageUrl || portraitImageUrl.trim() === "") {
+      const err = new Error("Portrait image not found. Please upload a portrait first.");
+      (err as any).code = "PORTRAIT_IMAGE_MISSING";
+      throw err;
+    }
+
+    // 4) Call face verify
+    const faceResult = await this.provider.submitFaceVerify(
+      portraitImageUrl,
+      ocrResult.idCardNumber
+    );
+
+    // 5) If FAIL → throw FACE_MISMATCH
+    if (faceResult.verifyResult === "FAIL") {
+      const err = new Error("Face verification failed — portrait does not match ID card");
+      (err as any).code = "FACE_MISMATCH";
+      throw err;
+    }
+
+    return { success: true, ocrResult, faceResult };
+  }
+
   // ─── 辅助 ───────────────────────────────────────────────────
 
   private async getTargetKYCLevel(userId: string): Promise<number> {

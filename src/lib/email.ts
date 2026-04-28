@@ -233,7 +233,75 @@ export async function sendPortraitCertifiedEmail(params: PortraitCertifiedEmailP
     });
     console.log("[sendPortraitCertifiedEmail] Sent to:", email);
   } catch (err) {
-    console.error("[sendPortraitCertifiedEmail] failed:", err);
+    // Non-blocking: log but don't throw
+    console.error("[sendPortraitCertifiedEmail] SMTP send failed (non-blocking):", err instanceof Error ? err.message : String(err));
+    console.log("[sendPortraitCertifiedEmail] Would have sent to:", email, "subject:", `✅ 肖像认证成功 - ${portraitTitle}`);
+  }
+}
+
+// ============================================================
+// Portrait mint failed email
+// ============================================================
+interface PortraitMintFailedEmailParams {
+  name: string;
+  email: string;
+  portraitTitle: string;
+  reason: string;
+}
+
+export async function sendPortraitMintFailedEmail(params: PortraitMintFailedEmailParams): Promise<void> {
+  const { name, email, portraitTitle, reason } = params;
+  const timestamp = new Date().toLocaleString("zh-CN", { timeZone: "Asia/Shanghai" });
+
+  const html = `<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"></head>
+<body style="font-family:Arial,sans-serif;background:#f4f4f4;margin:0;padding:20px">
+<div style="max-width:600px;margin:0 auto;background:#fff;border-radius:8px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.08)">
+  <div style="background:#dc2626;padding:20px 24px">
+    <h2 style="margin:0;color:#fff;font-size:18px">❌ 区块链上链失败</h2>
+    <p style="margin:4px 0 0;color:#fecaca;font-size:13px">PortraitPay AI · 认证失败通知</p>
+  </div>
+  <div style="padding:24px">
+    <p style="font-size:15px;color:#333">${name}，您好！</p>
+    <p style="font-size:15px;color:#333">您的肖像 <strong>"${portraitTitle}"</strong> 在区块链上链过程中未能通过身份核验，上链已被拒绝。</p>
+    <div style="margin:20px 0;padding:16px;background:#fef2f2;border-radius:8px;border-left:4px solid #dc2626">
+      <p style="margin:0 0 8px;font-size:13px;font-weight:bold;color:#991b1b">❌ 认证失败原因：</p>
+      <p style="margin:0;font-size:14px;color:#991b1b">${reason}</p>
+    </div>
+    <div style="margin:20px 0;padding:16px;background:#f9f9f9;border-radius:8px">
+      <p style="margin:0 0 8px;font-size:13px;font-weight:bold;color:#333">📋 如何解决：</p>
+      <ol style="margin:0;padding-left:20px;color:#666;font-size:13px;line-height:1.8">
+        <li>重新上传一张清晰、正对摄像头的人脸照片（纯色背景最佳）</li>
+        <li>确保证件照片和本次人脸为同一人</li>
+        <li>在光线充足的环境下重新操作</li>
+        <li>如果证件信息有变更，请先更新身份证信息</li>
+      </ol>
+    </div>
+    <div style="text-align:center;margin:20px 0">
+      <a href="${process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"}" style="display:inline-block;padding:12px 24px;background:#dc2626;color:#fff;text-decoration:none;border-radius:8px;font-size:14px">重新上传肖像 →</a>
+    </div>
+    <p style="font-size:12px;color:#999">请求时间：${timestamp}</p>
+    <p style="font-size:12px;color:#999">此通知由系统自动发送，请勿回复。如有疑问请联系 support@portraitpayai.com</p>
+  </div>
+</div>
+</body>
+</html>`;
+
+  const text = `PortraitPay AI — 区块链上链失败通知\n\n${name}，您好！\n您的肖像 "${portraitTitle}" 在区块链上链过程中未能通过身份核验，上链已被拒绝。\n\n失败原因：\n${reason}\n\n如何解决：\n1. 重新上传一张清晰、正对摄像头的人脸照片（纯色背景最佳）\n2. 确保证件照片和本次人脸为同一人\n3. 在光线充足的环境下重新操作\n4. 如果证件信息有变更，请先更新身份证信息\n\n请求时间：${timestamp}\n\n此通知由系统自动发送，请勿回复。`;
+
+  try {
+    await sendEmail({
+      to: email,
+      subject: `❌ 区块链上链失败 - ${portraitTitle}`,
+      html,
+      text,
+    });
+    console.log("[sendPortraitMintFailedEmail] Sent to:", email);
+  } catch (err) {
+    // Non-blocking: log but don't throw
+    console.error("[sendPortraitMintFailedEmail] SMTP send failed (non-blocking):", err instanceof Error ? err.message : String(err));
+    console.log("[sendPortraitMintFailedEmail] Would have sent to:", email, "subject:", `❌ 区块链上链失败 - ${portraitTitle}`, "reason:", reason);
   }
 }
 

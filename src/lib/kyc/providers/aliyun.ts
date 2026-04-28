@@ -22,9 +22,11 @@ import { addMonths } from "date-fns";
 // 桩实现（开发/演示用）- 替换为真实阿里云 SDK 调用
 // ============================================================
 
-// STUBS: 开发/演示模式 - 强制启用以避免真实 API 调用失败
+// STUBS: 开发/演示模式 - 设为 false 以启用真实阿里云 API
+// 生产环境必须设为 false（配合真实 KYC_ALIYUN_ACCESS_KEY_ID/SECRET）
+// 开发时设为 true 或设置环境变量 KYC_ALIYUN_STUB=true
 const STUBS = {
-  enabled: true,
+  enabled: false,
   autoApprove: true,
 };
 
@@ -118,6 +120,9 @@ export class AliyunKYCProvider implements KYCProviderClient {
     idCardNumber: string
   ): Promise<FaceVerifyResult> {
     if (STUBS.enabled || !this.accessKeyId || !this.accessKeySecret) {
+      // ⚠️  STUB MODE: This returns fake pass data. MUST BE DISABLED IN PRODUCTION.
+      //  Set STUBS.enabled = false (or remove / set KYC_ALIYUN_STUB=false env var)
+      //  before deploying to production so real Aliyun API is called.
       return this.stubFaceVerify();
     }
 
