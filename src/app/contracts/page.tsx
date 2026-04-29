@@ -138,18 +138,24 @@ export default function ContractsPage() {
         </div>
       </header>
 
-      {/* Page Header — white bg in light mode, dark navy in dark mode */}
-      <section className="bg-white dark:bg-[#244169] text-gray-900 dark:text-white py-12 px-6 border-b border-gray-200 dark:border-gray-700">
-        <div className="max-w-5xl mx-auto">
-          <h1 className="text-3xl md:text-4xl font-bold mb-3" style={{ letterSpacing: "-0.03em" }}>
-            {isZh ? "合同模板下载中心" : "Contract Templates Download Center"}
-          </h1>
-          <p className="text-gray-600 dark:text-blue-200 text-lg max-w-2xl">
-            {isZh
-              ? "免费下载 PDF 合同模板，或支付 $1 解锁 Word 可编辑版本。所有模板均经执业律师审核。"
-              : "Free PDF download, or pay $1 to unlock editable Word versions. All templates reviewed by licensed lawyers."}
-          </p>
-        </div>
+      {/* Page Header — gradient hero card matching lawyer-registration style */}
+      <section style={{
+        background: "linear-gradient(135deg, #1e3a5f 0%, #2d5a87 50%, #1a3a5c 100%)",
+        padding: "48px 32px",
+        borderRadius: "var(--radius-xl)",
+        textAlign: "center",
+        margin: "40px auto",
+        maxWidth: "800px",
+      }}>
+        <div style={{ fontSize: "48px", marginBottom: "16px" }}>📋</div>
+        <h1 style={{ fontSize: "var(--text-h2)", fontWeight: 700, color: "white", letterSpacing: "-0.02em", marginBottom: "12px" }}>
+          {isZh ? "合同模板下载中心" : "Contract Templates Download Center"}
+        </h1>
+        <p style={{ fontSize: "var(--text-body)", color: "rgba(255,255,255,0.75)", maxWidth: "480px", margin: "0 auto", lineHeight: 1.65 }}>
+          {isZh
+            ? "免费下载 PDF 合同模板，或支付 $1 解锁 Word 可编辑版本。所有模板均经执业律师审核。"
+            : "Free PDF download, or pay $1 to unlock editable Word versions. All templates reviewed by licensed lawyers."}
+        </p>
       </section>
 
       {/* Contract Cards */}
