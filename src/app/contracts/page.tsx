@@ -138,13 +138,13 @@ export default function ContractsPage() {
         </div>
       </header>
 
-      {/* Page Header */}
-      <section className="bg-gradient-to-br from-[#244169] to-[#1a3354] text-white py-12 px-6">
+      {/* Page Header — white bg in light mode, dark navy in dark mode */}
+      <section className="bg-white dark:bg-[#244169] text-gray-900 dark:text-white py-12 px-6 border-b border-gray-200 dark:border-gray-700">
         <div className="max-w-5xl mx-auto">
           <h1 className="text-3xl md:text-4xl font-bold mb-3" style={{ letterSpacing: "-0.03em" }}>
             {isZh ? "合同模板下载中心" : "Contract Templates Download Center"}
           </h1>
-          <p className="text-blue-200 text-lg max-w-2xl">
+          <p className="text-gray-600 dark:text-blue-200 text-lg max-w-2xl">
             {isZh
               ? "免费下载 PDF 合同模板，或支付 $1 解锁 Word 可编辑版本。所有模板均经执业律师审核。"
               : "Free PDF download, or pay $1 to unlock editable Word versions. All templates reviewed by licensed lawyers."}
