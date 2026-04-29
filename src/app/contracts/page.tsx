@@ -7,6 +7,8 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { useLanguage } from "@/context/LanguageContext";
+import ThemeToggle from "@/components/ThemeToggle";
+import { LanguageToggle } from "@/components/layout/LanguageToggle";
 
 const CONTRACT_FILES = [
   {
@@ -120,18 +122,18 @@ export default function ContractsPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
-      {/* Header */}
-      <header className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
-        <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-3">
-            <img src="/logo.png" alt="PortraitPay AI" className="logo-light w-8 h-8 object-contain" style={{ borderRadius: "6px" }} />
-            <img src="/logo-dark.png" alt="PortraitPay AI" className="logo-dark w-8 h-8 object-contain" style={{ borderRadius: "6px" }} />
-            <span className="font-bold text-gray-900 dark:text-white text-sm" style={{ letterSpacing: "-0.02em" }}>PortraitPay AI</span>
+      {/* Minimal sticky header with back link + theme/language toggles */}
+      <header className="sticky top-0 z-30 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-gray-200 dark:border-gray-700">
+        <div className="max-w-5xl mx-auto px-6 h-14 flex items-center justify-between">
+          <Link href="/dashboard" className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+            {isZh ? "返回控制台" : "Back to Dashboard"}
           </Link>
-          <div className="flex items-center gap-4">
-            <Link href="/dashboard" className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white text-sm">
-              {isZh ? "返回控制台" : "Back to Dashboard"}
-            </Link>
+          <div className="flex items-center gap-2">
+            <ThemeToggle />
+            <LanguageToggle />
           </div>
         </div>
       </header>

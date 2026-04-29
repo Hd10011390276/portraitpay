@@ -510,7 +510,6 @@ export const translations = {
       verifiedLawFirms: "认证律师楼",
       editProfile: "编辑资料",
       view: "查看",
-      contractTemplates: "合同模板下载",
       roleLabels: {
         user: "普通用户",
         artist: "艺人",
@@ -1883,7 +1882,6 @@ export const translations = {
       verifiedLawFirms: "Verified Law Firms",
       editProfile: "Edit Profile",
       view: "View",
-      contractTemplates: "Contract Templates Download",
       roleLabels: {
         user: "Regular User",
         artist: "Artist",

@@ -31,7 +31,6 @@ function DashboardContent({ user }: { user: User }) {
   const [recentPortraits, setRecentPortraits] = useState<any[]>([]);
   const [recentTransactions, setRecentTransactions] = useState<any[]>([]);
   const [lawyers, setLawyers] = useState<any[]>([]);
-  const [downloadingFile, setDownloadingFile] = useState<string | null>(null);
 
   const getRoleLabel = (role: string) => {
     const roleKey = role.toLowerCase() as keyof typeof t.dashboard.roleLabels;
@@ -103,28 +102,6 @@ function DashboardContent({ user }: { user: User }) {
 
     fetchDashboardData();
   }, [t, isZh]);
-
-  async function downloadFile(name: string) {
-    if (downloadingFile) return;
-    setDownloadingFile(name);
-    try {
-      const res = await fetch(`/api/contracts/${name}`);
-      if (!res.ok) throw new Error("Download failed");
-      const blob = await res.blob();
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = name;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      window.URL.revokeObjectURL(url);
-    } catch (err) {
-      console.error("Download error:", err);
-    } finally {
-      setDownloadingFile(null);
-    }
-  }
 
   const initials = user?.name?.[0] ?? user?.email[0]?.toUpperCase() ?? "?";
 
@@ -296,59 +273,6 @@ function DashboardContent({ user }: { user: User }) {
                 ))}
               </div>
             )}
-          </div>
-        </div>
-
-        {/* Contract Templates */}
-        <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
-          <div className="flex items-center gap-2 px-5 py-4 border-b border-gray-100 dark:border-gray-800">
-            <span className="text-xl">📄</span>
-            <h2 className="font-semibold text-gray-900 dark:text-white">
-              {t.dashboard.contractTemplates || "Download Contract Templates"}
-            </h2>
-          </div>
-          <div className="p-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-            {[
-              { name: "00-Overview-and-Signing-Guide.docx", label: "Overview & Signing Guide" },
-              { name: "01-Standard-License-Agreement.docx", label: "Standard License Agreement" },
-              { name: "02-Exclusive-License-Agreement.docx", label: "Exclusive License Agreement" },
-              { name: "03-Endorsement-License-Agreement.docx", label: "Endorsement License Agreement" },
-              { name: "04-Film-Adaptation-License-Agreement.docx", label: "Film Adaptation License Agreement" },
-            ].map((file) => {
-              const isDownloading = downloadingFile === file.name;
-              return (
-                <button
-                  key={file.name}
-                  onClick={() => downloadFile(file.name)}
-                  disabled={isDownloading}
-                  className="flex items-center gap-3 px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-700 hover:border-blue-400 dark:hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all group disabled:opacity-60 disabled:cursor-not-allowed text-left w-full"
-                >
-                  <div className="w-9 h-9 rounded bg-[#244169]/10 flex items-center justify-center flex-shrink-0">
-                    {isDownloading ? (
-                      <svg className="w-4 h-4 text-[#244169] animate-spin" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                      </svg>
-                    ) : (
-                      <svg className="w-4 h-4 text-[#244169]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                      </svg>
-                    )}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-gray-900 dark:text-white group-hover:text-[#244169] dark:group-hover:text-blue-400 transition-colors truncate">
-                      {file.label}
-                    </p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">.docx {isDownloading && (isZh ? "下载中..." : "Downloading...")}</p>
-                  </div>
-                  {!isDownloading && (
-                    <svg className="w-4 h-4 text-gray-400 group-hover:text-[#244169] dark:group-hover:text-blue-400 transition-colors flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                    </svg>
-                  )}
-                </button>
-              );
-            })}
           </div>
         </div>
 

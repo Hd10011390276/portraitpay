@@ -8,6 +8,8 @@ import React, { useState, Suspense } from "react";
 import Link from "next/link";
 import { useLanguage } from "@/context/LanguageContext";
 import { useSearchParams } from "next/navigation";
+import ThemeToggle from "@/components/ThemeToggle";
+import { LanguageToggle } from "@/components/layout/LanguageToggle";
 
 const CONTRACT_LABELS: Record<string, { label: string; labelZh: string }> = {
   "00-Overview-and-Signing-Guide": { label: "Overview & Signing Guide", labelZh: "概览与签署指南" },
@@ -110,17 +112,21 @@ function PaymentPageInner() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
-      {/* Header */}
-      <header className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
-        <div className="max-w-2xl mx-auto px-6 py-4 flex items-center gap-4">
-          <Link href="/contracts" className="text-gray-500 hover:text-gray-900 dark:hover:text-white">
+      {/* Minimal sticky header with back link + theme/language toggles */}
+      <header className="sticky top-0 z-30 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-gray-200 dark:border-gray-700">
+        <div className="max-w-2xl mx-auto px-6 h-14 flex items-center gap-4">
+          <Link href="/contracts" className="text-gray-500 hover:text-gray-900 dark:hover:text-white transition-colors">
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
             </svg>
           </Link>
-          <span className="text-sm text-gray-500 dark:text-gray-400">
+          <span className="text-sm text-gray-500 dark:text-gray-400 flex-1">
             {isZh ? "合同模板下载中心" : "Contract Templates Download Center"}
           </span>
+          <div className="flex items-center gap-2">
+            <ThemeToggle />
+            <LanguageToggle />
+          </div>
         </div>
       </header>
 
