@@ -31,11 +31,11 @@ interface LawyerCase {
   };
 }
 
-function StatCard({ label, value, color }: { label: string; value: number; color: string }) {
+function StatCard({ label, value, color, suffix }: { label: string; value: number; color: string; suffix?: string }) {
   return (
     <div className="bg-white dark:bg-gray-900 rounded-xl p-5 border border-gray-200 dark:border-gray-700">
       <div className="text-sm text-gray-500 dark:text-gray-400">{label}</div>
-      <div className="text-3xl font-bold mt-1" style={{ color }}>{value}</div>
+      <div className="text-3xl font-bold mt-1" style={{ color }}>{value}{suffix ?? ""}</div>
     </div>
   );
 }
@@ -89,7 +89,7 @@ export default function LawyerDashboard() {
       subtitle={isZh ? "管理您的肖像权保护案件" : "Manage your portrait rights protection cases"}
     >
       {/* Stats */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
         <StatCard
           label={isZh ? "待处理案件" : "Pending Cases"}
           value={pendingCount}
@@ -104,6 +104,12 @@ export default function LawyerDashboard() {
           label={isZh ? "已解决案件" : "Resolved"}
           value={resolvedCount}
           color="#22c55e"
+        />
+        <StatCard
+          label={isZh ? "累计收益" : "Earnings"}
+          value={0}
+          color="#7c3aed"
+          suffix=" USD"
         />
         <StatCard
           label={isZh ? "案件总数" : "Total Cases"}

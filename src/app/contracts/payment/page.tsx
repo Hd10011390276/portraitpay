@@ -19,10 +19,10 @@ const CONTRACT_LABELS: Record<string, { label: string; labelZh: string }> = {
   "04-Film-Adaptation-License-Agreement": { label: "Film Adaptation License Agreement", labelZh: "影视改编授权协议" },
 };
 
-// TODO (operator): Replace with real PayPal.me link
+// PayPal.me link — PortraitPay AI official PayPal account
 const PAYPAL_LINK = "https://www.paypal.me/PortraitPayAI/1";
-// TODO (operator): Replace with real Stripe payment link
-const STRIPE_LINK = "https://buy.stripe.com/test";
+// Stripe Payment Link — operator must replace with real link from Stripe Dashboard > Payment Links
+const STRIPE_LINK = "https://buy.stripe.com/test"; // TODO: replace with real Stripe Payment Link URL (e.g. https://buy.stripe.com/xxx)
 
 export default function PaymentPage() {
   return (

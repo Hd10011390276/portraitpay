@@ -156,6 +156,23 @@ export default function ContractsPage() {
             ? "免费下载 PDF 合同模板，或支付 $1 解锁 Word 可编辑版本。所有模板均经执业律师审核。"
             : "Free PDF download, or pay $1 to unlock editable Word versions. All templates reviewed by licensed lawyers."}
         </p>
+        {/* Lawyer review attribution badge */}
+        <div style={{ marginTop: "16px", display: "flex", justifyContent: "center" }}>
+          <span style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: "6px",
+            padding: "6px 14px",
+            borderRadius: "var(--radius-full)",
+            background: "rgba(255,255,255,0.15)",
+            border: "1px solid rgba(255,255,255,0.25)",
+            fontSize: "12px",
+            fontWeight: 600,
+            color: "rgba(255,255,255,0.9)",
+          }}>
+            ⚖️ {isZh ? "经执业律师审核" : "Reviewed by Licensed Lawyers"} | © 2024 PortraitPay AI
+          </span>
+        </div>
       </section>
 
       {/* Contract Cards */}
@@ -252,6 +269,19 @@ export default function ContractsPage() {
 
       {/* Footer */}
       <footer className="border-t border-gray-200 dark:border-gray-700 py-8 px-6 mt-8">
+        {/* Lawyer review attribution */}
+        <div className="max-w-5xl mx-auto mb-6">
+          <div className="flex items-center justify-center gap-2 px-4 py-3 bg-gray-50 dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700">
+            <svg className="w-4 h-4 text-[#244169] flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+            </svg>
+            <span className="text-sm text-gray-600 dark:text-gray-400">
+              {isZh
+                ? "所有模板均经合作律所执业律师审核，仅供参考，不构成法律意见"
+                : "All templates reviewed by licensed lawyers — for reference only, not legal advice"}
+            </span>
+          </div>
+        </div>
         <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <img src="/logo.png" alt="Logo" className="logo-light w-6 h-6 object-contain" style={{ borderRadius: "4px" }} />
