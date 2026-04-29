@@ -25,10 +25,21 @@ const nextConfig = {
     ],
   },
 
-  // Experimental features
   experimental: {
     // Optimize package imports
     optimizePackageImports: ['date-fns', 'react-hook-form'],
+  },
+
+  // Keep native/optional deps out of the browser bundle
+  serverExternalPackages: ['@vladmandic/face-api', 'canvas'],
+
+  // Stub canvas for server-side builds so webpack doesn't fail resolution
+  webpack: (config, { isServer }) => {
+    if (isServer) {
+      config.externals = config.externals || [];
+      config.externals.push('canvas', '@vladmandic/face-api');
+    }
+    return config;
   },
 };
 
