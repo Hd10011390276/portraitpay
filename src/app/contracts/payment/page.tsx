@@ -1,0 +1,280 @@
+/**
+ * /contracts/payment — Payment page to unlock Word download
+ * Shows PayPal and Stripe card options, then unlocks Word download on confirmation.
+ */
+"use client";
+
+import React, { useState, Suspense } from "react";
+import Link from "next/link";
+import { useLanguage } from "@/context/LanguageContext";
+import { useSearchParams } from "next/navigation";
+
+const CONTRACT_LABELS: Record<string, { label: string; labelZh: string }> = {
+  "00-Overview-and-Signing-Guide": { label: "Overview & Signing Guide", labelZh: "概览与签署指南" },
+  "01-Standard-License-Agreement": { label: "Standard License Agreement", labelZh: "标准授权协议" },
+  "02-Exclusive-License-Agreement": { label: "Exclusive License Agreement", labelZh: "独家授权协议" },
+  "03-Endorsement-License-Agreement": { label: "Endorsement License Agreement", labelZh: "代言授权协议" },
+  "04-Film-Adaptation-License-Agreement": { label: "Film Adaptation License Agreement", labelZh: "影视改编授权协议" },
+};
+
+// TODO (operator): Replace with real PayPal.me link
+const PAYPAL_LINK = "https://www.paypal.me/PortraitPayAI/1";
+// TODO (operator): Replace with real Stripe payment link
+const STRIPE_LINK = "https://buy.stripe.com/test";
+
+export default function PaymentPage() {
+  return (
+    <Suspense fallback={<PaymentPageLoading isZh={false} />}>
+      <PaymentPageInner />
+    </Suspense>
+  );
+}
+
+function PaymentPageLoading({ isZh }: { isZh: boolean }) {
+  return (
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex items-center justify-center">
+      <div className="animate-spin h-6 w-6 border-2 border-[#244169] border-t-transparent rounded-full" />
+    </div>
+  );
+}
+
+function PaymentPageInner() {
+  const { t, locale } = useLanguage();
+  const isZh = locale === "zh-CN";
+  const searchParams = useSearchParams();
+  const contractName = searchParams.get("name") || "";
+  const contract = CONTRACT_LABELS[contractName];
+
+  const [email, setEmail] = useState("");
+  const [txId, setTxId] = useState("");
+  const [verifying, setVerifying] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState(false);
+
+  async function handleUnlock() {
+    if (!email.trim() || !txId.trim()) {
+      setError(isZh ? "请填写邮箱和交易ID" : "Please fill in both email and transaction ID");
+      return;
+    }
+    setVerifying(true);
+    setError("");
+    try {
+      const res = await fetch("/api/contracts/unlock", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: email.trim(), txId: txId.trim(), contractName }),
+      });
+      const data = await res.json();
+      if (data.unlocked) {
+        localStorage.setItem(`wordUnlocked_${contractName}`, "true");
+        // Notify the contracts page
+        window.dispatchEvent(new Event("contracts:unlock"));
+        setSuccess(true);
+      } else {
+        setError(data.error || (isZh ? "验证失败，请检查交易信息" : "Verification failed, please check your transaction"));
+      }
+    } catch {
+      setError(isZh ? "验证失败，请稍后重试" : "Verification failed, please try again");
+    } finally {
+      setVerifying(false);
+    }
+  }
+
+  if (success) {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex items-center justify-center px-6">
+        <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 p-10 max-w-md w-full text-center">
+          <div className="w-16 h-16 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center mx-auto mb-4">
+            <svg className="w-8 h-8 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+            </svg>
+          </div>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+            {isZh ? "解锁成功！" : "Unlocked!"}
+          </h2>
+          <p className="text-gray-500 dark:text-gray-400 mb-6">
+            {isZh
+              ? `您已成功解锁 ${contract ? (isZh ? contract.labelZh : contract.label) : "Word"} 下载。`
+              : `You have successfully unlocked Word download for ${contract?.label || "this contract"}.`}
+          </p>
+          <Link
+            href="/contracts"
+            className="inline-flex items-center gap-2 px-6 py-3 bg-[#244169] hover:bg-[#1a3354] text-white font-medium rounded-lg transition-colors"
+          >
+            {isZh ? "返回下载中心" : "Back to Download Center"}
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
+      {/* Header */}
+      <header className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
+        <div className="max-w-2xl mx-auto px-6 py-4 flex items-center gap-4">
+          <Link href="/contracts" className="text-gray-500 hover:text-gray-900 dark:hover:text-white">
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+            </svg>
+          </Link>
+          <span className="text-sm text-gray-500 dark:text-gray-400">
+            {isZh ? "合同模板下载中心" : "Contract Templates Download Center"}
+          </span>
+        </div>
+      </header>
+
+      <main className="max-w-2xl mx-auto px-6 py-10">
+        {/* Contract Info */}
+        <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 p-6 mb-6">
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-1">
+            {isZh ? "解锁 Word 下载" : "Unlock Word Download"}
+          </h1>
+          <p className="text-gray-500 dark:text-gray-400">
+            {isZh ? "合同：" : "Contract: "}
+            <span className="font-medium text-gray-900 dark:text-white">
+              {contract ? (isZh ? contract.labelZh : contract.label) : contractName}
+            </span>
+          </p>
+          <div className="mt-3 inline-flex items-center gap-2 px-3 py-1 bg-[#244169]/10 rounded-full text-[#244169] dark:bg-[#244169]/20 dark:text-blue-400 text-sm font-medium">
+            <span>$1 USD</span>
+          </div>
+        </div>
+
+        {/* Payment Options */}
+        <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 p-6 mb-6">
+          <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-4">
+            {isZh ? "选择支付方式" : "Select Payment Method"}
+          </h2>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+            {/* PayPal */}
+            <a
+              href={PAYPAL_LINK}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex flex-col items-center gap-3 p-5 rounded-xl border-2 border-[#0070ba] hover:bg-[#0070ba]/5 transition-colors"
+            >
+              <div className="w-12 h-12 rounded-lg bg-[#0070ba] flex items-center justify-center">
+                <span className="text-white font-bold text-sm">PayPal</span>
+              </div>
+              <div className="text-center">
+                <p className="font-semibold text-gray-900 dark:text-white">{isZh ? "PayPal 支付" : "Pay with PayPal"}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  {isZh ? "安全便捷的在线支付" : "Safe and secure online payment"}
+                </p>
+              </div>
+            </a>
+
+            {/* Stripe Card */}
+            <a
+              href={STRIPE_LINK}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex flex-col items-center gap-3 p-5 rounded-xl border-2 border-[#635bff] hover:bg-[#635bff]/5 transition-colors"
+            >
+              <div className="w-12 h-12 rounded-lg bg-[#635bff] flex items-center justify-center">
+                <span className="text-white font-bold text-xs">stripe</span>
+              </div>
+              <div className="text-center">
+                <p className="font-semibold text-gray-900 dark:text-white">{isZh ? "银行卡支付" : "Pay with Card"}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  {isZh ? "支持 Visa, Mastercard 等" : "Visa, Mastercard & more"}
+                </p>
+              </div>
+            </a>
+          </div>
+
+          <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 text-sm text-blue-700 dark:text-blue-300">
+            {isZh
+              ? "💡 支付完成后，请填写下方表单进行验证以解锁下载。"
+              : "💡 After payment, fill in the form below to verify and unlock your download."}
+          </div>
+        </div>
+
+        {/* Verification Form */}
+        <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 p-6">
+          <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-1">
+            {isZh ? "验证支付" : "Verify Payment"}
+          </h2>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mb-5">
+            {isZh
+              ? "支付完成后，请提供您的邮箱和交易 ID 以解锁 Word 下载。"
+              : "After payment, provide your email and transaction ID to unlock Word download."}
+          </p>
+
+          <div className="space-y-4">
+            {/* Email */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+                {isZh ? "支付时使用的邮箱" : "Email used for payment"}
+              </label>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder={isZh ? "your@email.com" : "your@email.com"}
+                className="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#244169] focus:border-transparent"
+              />
+            </div>
+
+            {/* Transaction ID */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+                {isZh ? "交易 ID / Transaction ID" : "Transaction ID / PayPal Order ID"}
+              </label>
+              <input
+                type="text"
+                value={txId}
+                onChange={(e) => setTxId(e.target.value)}
+                placeholder={isZh ? "输入交易 ID" : "e.g., PAYPAL-ORDER-ID or stripe_pi_xxx"}
+                className="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#244169] focus:border-transparent"
+              />
+              <p className="text-xs text-gray-400 mt-1">
+                {isZh
+                  ? "PayPal: 确认邮件中的 Order ID；Stripe: stripe_pi_xxx 格式"
+                  : "PayPal: Order ID from confirmation email; Stripe: stripe_pi_xxx format"}
+              </p>
+            </div>
+
+            {error && (
+              <div className="bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-sm rounded-lg px-4 py-3">
+                {error}
+              </div>
+            )}
+
+            <button
+              onClick={handleUnlock}
+              disabled={verifying}
+              className="w-full py-3 bg-[#244169] hover:bg-[#1a3354] disabled:opacity-60 text-white font-medium rounded-lg transition-colors flex items-center justify-center gap-2"
+            >
+              {verifying ? (
+                <>
+                  <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                  </svg>
+                  {isZh ? "验证中..." : "Verifying..."}
+                </>
+              ) : (
+                <>
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                  </svg>
+                  {isZh ? "验证并解锁下载" : "Verify & Unlock Download"}
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+
+        {/* Back link */}
+        <div className="mt-6 text-center">
+          <Link href="/contracts" className="text-sm text-gray-500 hover:text-[#244169] dark:hover:text-blue-400 transition-colors">
+            ← {isZh ? "返回下载中心" : "Back to Download Center"}
+          </Link>
+        </div>
+      </main>
+    </div>
+  );
+}

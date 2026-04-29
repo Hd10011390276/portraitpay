@@ -1,6 +1,6 @@
 /**
- * /contracts - Digital Avatar Licensing Contracts showcase page
- * Public marketing page for production companies and brands
+ * /contracts — Contract Templates Download Center
+ * Dedicated page for downloading contract PDF (free) and Word (paid) files.
  */
 "use client";
 
@@ -8,281 +8,243 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { useLanguage } from "@/context/LanguageContext";
 
-const contracts = [
+const CONTRACT_FILES = [
   {
-    type: "Standard License",
-    typeZh: "标准授权",
+    name: "00-Overview-and-Signing-Guide",
+    label: "Overview & Signing Guide",
+    labelZh: "概览与签署指南",
+    icon: "📋",
+    description: "Introduction to contract system and step-by-step signing instructions.",
+    descriptionZh: "合同系统介绍及分步签署说明。",
+  },
+  {
+    name: "01-Standard-License-Agreement",
+    label: "Standard License Agreement",
+    labelZh: "标准授权协议",
     icon: "📄",
     description: "General use for social media, advertisements, and products.",
     descriptionZh: "适用于社交媒体、广告和产品的通用授权。",
-    duration: "12",
-    durationUnit: "months",
-    durationUnitZh: "个月",
-    useCases: ["Social media posts", "Online advertisements", "Product packaging", "Marketing materials"],
-    useCasesZh: ["社交媒体帖子", "在线广告", "产品包装", "营销材料"],
-    color: "blue",
-    bgLight: "from-blue-50 to-indigo-50",
-    bgDark: "dark:from-blue-900/20 dark:to-indigo-900/20",
-    borderLight: "border-blue-200",
-    borderDark: "dark:border-blue-800",
-    accentLight: "text-blue-700 dark:text-blue-400",
-    badgeLight: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
   },
   {
-    type: "Exclusive License",
-    typeZh: "独家授权",
+    name: "02-Exclusive-License-Agreement",
+    label: "Exclusive License Agreement",
+    labelZh: "独家授权协议",
     icon: "🏆",
     description: "Full exclusivity including film, gaming, and broadcast rights.",
     descriptionZh: "包含电影、游戏和广播权的完全独家授权。",
-    duration: "24",
-    durationUnit: "months",
-    durationUnitZh: "个月",
-    useCases: ["Film & TV productions", "Video games", "Broadcasting", "All commercial uses"],
-    useCasesZh: ["电影和电视节目", "电子游戏", "广播", "所有商业用途"],
-    color: "purple",
-    bgLight: "from-purple-50 to-pink-50",
-    bgDark: "dark:from-purple-900/20 dark:to-pink-900/20",
-    borderLight: "border-purple-200",
-    borderDark: "dark:border-purple-800",
-    accentLight: "text-purple-700 dark:text-purple-400",
-    badgeLight: "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400",
   },
   {
-    type: "Endorsement License",
-    typeZh: "代言授权",
+    name: "03-Endorsement-License-Agreement",
+    label: "Endorsement License Agreement",
+    labelZh: "代言授权协议",
     icon: "⭐",
     description: "Brand endorsement, advertisement filming, and promotional activities.",
     descriptionZh: "品牌代言、广告拍摄和推广活动。",
-    duration: "12",
-    durationUnit: "months",
-    durationUnitZh: "个月",
-    useCases: ["Brand campaigns", "TV commercials", "Print advertising", "Event appearances"],
-    useCasesZh: ["品牌活动", "电视广告", "平面广告", "活动出席"],
-    color: "amber",
-    bgLight: "from-amber-50 to-orange-50",
-    bgDark: "dark:from-amber-900/20 dark:to-orange-900/20",
-    borderLight: "border-amber-200",
-    borderDark: "dark:border-amber-800",
-    accentLight: "text-amber-700 dark:text-amber-400",
-    badgeLight: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",
   },
   {
-    type: "Film Adaptation",
-    typeZh: "影视改编",
+    name: "04-Film-Adaptation-License-Agreement",
+    label: "Film Adaptation License Agreement",
+    labelZh: "影视改编授权协议",
     icon: "🎬",
     description: "Film, TV, and web series exclusive licensing with maximum protection.",
     descriptionZh: "电影、电视和网络剧的独家授权，最大程度保护。",
-    duration: "36",
-    durationUnit: "months",
-    durationUnitZh: "个月",
-    useCases: ["Feature films", "TV series", "Web dramas", "Documentaries"],
-    useCasesZh: ["电影", "电视剧", "网络剧", "纪录片"],
-    color: "emerald",
-    bgLight: "from-emerald-50 to-teal-50",
-    bgDark: "dark:from-emerald-900/20 dark:to-teal-900/20",
-    borderLight: "border-emerald-200",
-    borderDark: "dark:border-emerald-800",
-    accentLight: "text-emerald-700 dark:text-emerald-400",
-    badgeLight: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400",
   },
 ];
 
 export default function ContractsPage() {
   const { t, locale } = useLanguage();
   const isZh = locale === "zh-CN";
+  const [downloadingPdf, setDownloadingPdf] = useState<string | null>(null);
+  const [downloadingWord, setDownloadingWord] = useState<string | null>(null);
+  const [unlockedContracts, setUnlockedContracts] = useState<Record<string, boolean>>({});
+
+  // Check unlock status on mount and whenever localStorage changes
+  React.useEffect(() => {
+    const checkUnlock = () => {
+      const unlocked: Record<string, boolean> = {};
+      for (const c of CONTRACT_FILES) {
+        unlocked[c.name] = localStorage.getItem(`wordUnlocked_${c.name}`) === "true";
+      }
+      setUnlockedContracts(unlocked);
+    };
+    checkUnlock();
+    // Poll for localStorage changes (listen to storage event from same tab via custom event)
+    const handler = () => checkUnlock();
+    window.addEventListener("contracts:unlock", handler);
+    return () => window.removeEventListener("contracts:unlock", handler);
+  }, []);
+
+  async function downloadPdf(name: string) {
+    if (downloadingPdf) return;
+    setDownloadingPdf(name);
+    try {
+      const res = await fetch(`/contracts/pdf/${name}.pdf`);
+      if (!res.ok) throw new Error("PDF not found");
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${name}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+    } catch {
+      alert(isZh ? "PDF 下载失败，请稍后重试" : "PDF download failed, please try again later");
+    } finally {
+      setDownloadingPdf(null);
+    }
+  }
+
+  async function downloadWord(name: string) {
+    if (downloadingWord) return;
+    setDownloadingWord(name);
+    try {
+      const res = await fetch(`/api/contracts/${name}.docx`);
+      if (!res.ok) throw new Error("Download failed");
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${name}.docx`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+    } catch {
+      alert(isZh ? "Word 下载失败，请稍后重试" : "Word download failed, please try again later");
+    } finally {
+      setDownloadingWord(null);
+    }
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       {/* Header */}
       <header className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
-        <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+        <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-3">
             <img src="/logo.png" alt="PortraitPay AI" className="logo-light w-8 h-8 object-contain" style={{ borderRadius: "6px" }} />
             <img src="/logo-dark.png" alt="PortraitPay AI" className="logo-dark w-8 h-8 object-contain" style={{ borderRadius: "6px" }} />
             <span className="font-bold text-gray-900 dark:text-white text-sm" style={{ letterSpacing: "-0.02em" }}>PortraitPay AI</span>
           </Link>
           <div className="flex items-center gap-4">
-            <Link href="/enterprise/authorization/apply" className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors">
-              {isZh ? "申请授权" : "Request License"}
-            </Link>
-            <Link href="/login" className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white text-sm">
-              {isZh ? "登录" : "Sign In"}
+            <Link href="/dashboard" className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white text-sm">
+              {isZh ? "返回控制台" : "Back to Dashboard"}
             </Link>
           </div>
         </div>
       </header>
 
-      {/* Hero */}
-      <section className="bg-gradient-to-br from-gray-900 to-gray-950 dark:from-gray-950 dark:to-black text-white py-20 px-6">
-        <div className="max-w-6xl mx-auto text-center">
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-blue-500/20 border border-blue-500/30 rounded-full text-blue-300 text-sm mb-6">
-            <span className="w-2 h-2 bg-blue-400 rounded-full animate-pulse" />
-            {isZh ? "区块链认证 · 律师审核 · 永久有效" : "Blockchain Certified · Lawyer Reviewed · Permanently Valid"}
-          </div>
-          <h1 className="text-4xl md:text-5xl font-bold mb-4" style={{ letterSpacing: "-0.03em" }}>
-            {isZh ? "数字人授权合同" : "Digital Avatar Licensing Contracts"}
+      {/* Page Header */}
+      <section className="bg-gradient-to-br from-[#244169] to-[#1a3354] text-white py-12 px-6">
+        <div className="max-w-5xl mx-auto">
+          <h1 className="text-3xl md:text-4xl font-bold mb-3" style={{ letterSpacing: "-0.03em" }}>
+            {isZh ? "合同模板下载中心" : "Contract Templates Download Center"}
           </h1>
-          <p className="text-xl text-gray-300 max-w-2xl mx-auto mb-8">
+          <p className="text-blue-200 text-lg max-w-2xl">
             {isZh
-              ? "为制片公司、品牌和创作者打造的合法数字人授权解决方案。区块链存证 + 律师审核 = 法律认可的授权证明。"
-              : "Legally binding authorization for production companies, brands, and creators. Blockchain evidence + lawyer review = legally admissible proof."}
+              ? "免费下载 PDF 合同模板，或支付 $1 解锁 Word 可编辑版本。所有模板均经执业律师审核。"
+              : "Free PDF download, or pay $1 to unlock editable Word versions. All templates reviewed by licensed lawyers."}
           </p>
-          <div className="flex flex-wrap justify-center gap-4">
-            <Link href="/enterprise/authorization/apply" className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors">
-              {isZh ? "申请授权合同" : "Request a Contract"}
-            </Link>
-            <Link href="/faq" className="px-6 py-3 border border-gray-600 hover:border-gray-400 text-gray-300 hover:text-white font-medium rounded-lg transition-colors">
-              {isZh ? "常见问题" : "View FAQ"}
-            </Link>
-          </div>
         </div>
       </section>
 
-      {/* How it works */}
-      <section className="py-16 px-6 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
-        <div className="max-w-6xl mx-auto">
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white text-center mb-12">
-            {isZh ? "工作流程" : "How It Works"}
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-            {[
-              { step: "01", title: isZh ? "选择合同模板" : "Choose Contract Template", desc: isZh ? "从4种授权类型中选择最适合您用途的模板" : "Select from 4 license types for your use case" },
-              { step: "02", title: isZh ? "提交授权申请" : "Submit Authorization Request", desc: isZh ? "填写表单，附上数字人相关资料和授权范围" : "Fill out the form with avatar details and license scope" },
-              { step: "03", title: isZh ? "律师审核确认" : "Lawyer Review & Approval", desc: isZh ? "平台律师审核合同内容，确保合法合规" : "Platform lawyers review to ensure legal compliance" },
-              { step: "04", title: isZh ? "获得区块链授权证明" : "Receive Blockchain Certificate", desc: isZh ? "签署完成后获得链上授权证明，可供第三方验证" : "Receive on-chain authorization proof verifiable by LibTV/Runway" },
-            ].map((item) => (
-              <div key={item.step} className="text-center">
-                <div className="w-12 h-12 mx-auto mb-4 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-blue-700 dark:text-blue-400 font-bold text-lg">
-                  {item.step}
-                </div>
-                <h3 className="font-semibold text-gray-900 dark:text-white mb-2">{item.title}</h3>
-                <p className="text-sm text-gray-500 dark:text-gray-400">{item.desc}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+      {/* Contract Cards */}
+      <section className="py-12 px-6">
+        <div className="max-w-5xl mx-auto space-y-6">
+          {CONTRACT_FILES.map((contract) => {
+            const isPdfLoading = downloadingPdf === contract.name;
+            const isWordLoading = downloadingWord === contract.name;
+            const isUnlocked = unlockedContracts[contract.name];
 
-      {/* Contract cards */}
-      <section className="py-20 px-6">
-        <div className="max-w-6xl mx-auto">
-          <h2 className="text-3xl font-bold text-gray-900 dark:text-white text-center mb-4">
-            {isZh ? "授权合同模板" : "License Contract Templates"}
-          </h2>
-          <p className="text-gray-500 dark:text-gray-400 text-center mb-12 max-w-xl mx-auto">
-            {isZh
-              ? "每种合同模板都由执业律师审核，确保符合行业标准并具有法律效力"
-              : "Each contract template is reviewed by licensed lawyers, ensuring industry standards and legal validity"}
-          </p>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {contracts.map((contract) => (
+            return (
               <div
-                key={contract.type}
-                className={`bg-gradient-to-br ${contract.bgLight} ${contract.bgDark} border ${contract.borderLight} ${contract.borderDark} rounded-2xl p-8 hover:shadow-xl transition-shadow`}
+                key={contract.name}
+                className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden"
               >
-                <div className="flex items-start justify-between mb-4">
-                  <div>
-                    <span className={`text-4xl mb-3 block`}>{contract.icon}</span>
-                    <h3 className="text-xl font-bold text-gray-900 dark:text-white">{isZh ? contract.typeZh : contract.type}</h3>
-                    <p className={`text-sm ${contract.accentLight} mt-1`}>{contract.type}</p>
+                <div className="p-6 flex items-start gap-5">
+                  {/* Icon */}
+                  <div className="w-14 h-14 rounded-xl bg-[#244169]/10 flex items-center justify-center text-3xl flex-shrink-0">
+                    {contract.icon}
                   </div>
-                  <span className={`px-3 py-1 text-sm font-medium rounded-full ${contract.badgeLight}`}>
-                    {contract.duration} {isZh ? contract.durationUnitZh : contract.durationUnit}
-                  </span>
-                </div>
 
-                <p className="text-gray-600 dark:text-gray-300 mb-6">
-                  {isZh ? contract.descriptionZh : contract.description}
-                </p>
-
-                <div className="mb-6">
-                  <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">
-                    {isZh ? "适用场景" : "Use Cases"}
-                  </p>
-                  <div className="flex flex-wrap gap-2">
-                    {(isZh ? contract.useCasesZh : contract.useCases).map((useCase) => (
-                      <span key={useCase} className="px-3 py-1 bg-white/60 dark:bg-gray-800/60 border border-gray-200 dark:border-gray-700 rounded-full text-xs text-gray-700 dark:text-gray-300">
-                        {useCase}
-                      </span>
-                    ))}
+                  {/* Info */}
+                  <div className="flex-1 min-w-0">
+                    <h3 className="text-lg font-bold text-gray-900 dark:text-white">
+                      {isZh ? contract.labelZh : contract.label}
+                    </h3>
+                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                      {isZh ? contract.descriptionZh : contract.description}
+                    </p>
                   </div>
                 </div>
 
-                <Link
-                  href="/enterprise/authorization/apply"
-                  className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-lg font-medium text-sm transition-colors bg-gray-900 dark:bg-gray-800 text-white hover:bg-gray-800 dark:hover:bg-gray-700`}
-                >
-                  {isZh ? "申请此合同" : "Request This License"}
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                  </svg>
-                </Link>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+                {/* Download Buttons */}
+                <div className="px-6 pb-6 flex flex-wrap items-center gap-3">
+                  {/* Free PDF */}
+                  <button
+                    onClick={() => downloadPdf(contract.name)}
+                    disabled={isPdfLoading}
+                    className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#16a34a] hover:bg-[#15803d] disabled:opacity-60 disabled:cursor-not-allowed text-white text-sm font-medium rounded-lg transition-colors"
+                  >
+                    {isPdfLoading ? (
+                      <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                      </svg>
+                    ) : (
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                      </svg>
+                    )}
+                    {isPdfLoading
+                      ? (isZh ? "下载中..." : "Downloading...")
+                      : (isZh ? "免费下载 PDF" : "Free Download PDF")}
+                  </button>
 
-      {/* Why choose us */}
-      <section className="py-16 px-6 bg-gray-900 dark:bg-gray-950 text-white">
-        <div className="max-w-6xl mx-auto">
-          <h2 className="text-2xl font-bold text-center mb-12">
-            {isZh ? "为什么选择 PortraitPay 授权合同？" : "Why PortraitPay Licensing Contracts?"}
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {[
-              {
-                icon: "🔗",
-                title: isZh ? "区块链存证" : "Blockchain Evidence",
-                desc: isZh ? "每份合同都有链上哈希值，可被 LibTV、Runway、Midjourney 等平台验证" : "Every contract has an on-chain hash verifiable by LibTV, Runway, and Midjourney",
-              },
-              {
-                icon: "⚖️",
-                title: isZh ? "律师审核" : "Lawyer Reviewed",
-                desc: isZh ? "所有合同模板由合作律所审核，确保法律效力" : "All contract templates reviewed by partner law firms for legal enforceability",
-              },
-              {
-                icon: "💰",
-                title: isZh ? "自动分账" : "Auto Profit Sharing",
-                desc: isZh ? "智能合约自动执行分账，实时结算，无需人工介入" : "Smart contracts automatically distribute profits in real-time, no manual intervention",
-              },
-            ].map((item) => (
-              <div key={item.title} className="text-center">
-                <span className="text-4xl mb-4 block">{item.icon}</span>
-                <h3 className="font-semibold mb-2">{item.title}</h3>
-                <p className="text-gray-400 text-sm">{item.desc}</p>
+                  {/* Word — unlocked: direct download, otherwise go to payment */}
+                  {isUnlocked ? (
+                    <button
+                      onClick={() => downloadWord(contract.name)}
+                      disabled={isWordLoading}
+                      className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#244169] hover:bg-[#1a3354] disabled:opacity-60 disabled:cursor-not-allowed text-white text-sm font-medium rounded-lg transition-colors"
+                    >
+                      {isWordLoading ? (
+                        <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                        </svg>
+                      ) : (
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                        </svg>
+                      )}
+                      {isWordLoading
+                        ? (isZh ? "下载中..." : "Downloading...")
+                        : (isZh ? "下载 Word" : "Download Word")}
+                    </button>
+                  ) : (
+                    <Link
+                      href={`/contracts/payment?name=${encodeURIComponent(contract.name)}`}
+                      className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#244169] hover:bg-[#1a3354] text-white text-sm font-medium rounded-lg transition-colors"
+                    >
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                      </svg>
+                      {isZh ? "解锁 Word $1" : "Unlock Word $1"}
+                    </Link>
+                  )}
+                </div>
               </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* CTA */}
-      <section className="py-20 px-6 bg-white dark:bg-gray-900">
-        <div className="max-w-2xl mx-auto text-center">
-          <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
-            {isZh ? "准备好申请数字人授权了吗？" : "Ready to License a Digital Avatar?"}
-          </h2>
-          <p className="text-gray-500 dark:text-gray-400 mb-8">
-            {isZh
-              ? "联系我们的团队，获取定制化授权方案和报价"
-              : "Contact our team for a customized licensing plan and quote"}
-          </p>
-          <div className="flex flex-wrap justify-center gap-4">
-            <Link href="/enterprise/authorization/apply" className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors">
-              {isZh ? "立即申请" : "Apply Now"}
-            </Link>
-            <Link href="/contact" className="px-6 py-3 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 font-medium rounded-lg transition-colors">
-              {isZh ? "联系我们" : "Contact Us"}
-            </Link>
-          </div>
+            );
+          })}
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-gray-200 dark:border-gray-700 py-8 px-6 bg-gray-50 dark:bg-gray-950">
-        <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+      <footer className="border-t border-gray-200 dark:border-gray-700 py-8 px-6 mt-8">
+        <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <img src="/logo.png" alt="Logo" className="logo-light w-6 h-6 object-contain" style={{ borderRadius: "4px" }} />
             <img src="/logo-dark.png" alt="Logo" className="logo-dark w-6 h-6 object-contain" style={{ borderRadius: "4px" }} />
@@ -291,7 +253,6 @@ export default function ContractsPage() {
           <div className="flex gap-6 text-sm text-gray-500 dark:text-gray-400">
             <Link href="/privacy" className="hover:text-gray-900 dark:hover:text-white">{isZh ? "隐私政策" : "Privacy Policy"}</Link>
             <Link href="/terms" className="hover:text-gray-900 dark:hover:text-white">{isZh ? "服务条款" : "Terms of Service"}</Link>
-            <Link href="/faq" className="hover:text-gray-900 dark:hover:text-white">FAQ</Link>
           </div>
           <p className="text-gray-400 dark:text-gray-500 text-sm">© 2026 PortraitPay AI</p>
         </div>
