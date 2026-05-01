@@ -20,16 +20,28 @@ export function LanguageToggle() {
         EN
       </button>
       <button
-        onClick={() => setLocale("zh-CN")}
+        onClick={() => setLocale("es-ES")}
         className={`px-3 py-1.5 text-sm font-medium border-l border-gray-200 dark:border-gray-700 transition-colors ${
-          locale === "zh-CN"
+          locale === "es-ES"
             ? "bg-blue-600 text-white"
             : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-800"
         }`}
-        title={locale === "zh-CN" ? "中文" : t.common.switchToChinese}
-        aria-label={locale === "zh-CN" ? "中文" : t.common.switchToChinese}
+        title={locale === "es-ES" ? "Español" : t.common.switchToSpanish}
+        aria-label={locale === "es-ES" ? "Español" : t.common.switchToSpanish}
       >
-        中文
+        ES
+      </button>
+      <button
+        onClick={() => setLocale("zh-Hant")}
+        className={`px-3 py-1.5 text-sm font-medium border-l border-gray-200 dark:border-gray-700 transition-colors ${
+          locale === "zh-Hant"
+            ? "bg-blue-600 text-white"
+            : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-800"
+        }`}
+        title={locale === "zh-Hant" ? "繁體中文" : t.common.switchToTraditionalChinese}
+        aria-label={locale === "zh-Hant" ? "繁體中文" : t.common.switchToTraditionalChinese}
+      >
+        繁
       </button>
     </div>
   );
