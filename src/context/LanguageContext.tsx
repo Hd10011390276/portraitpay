@@ -27,7 +27,7 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
       .find((row) => row.startsWith("pp_locale="));
     if (cookie) {
       const val = cookie.split("=")[1] as Locale;
-      if (val === "en-US" || val === "zh-CN") {
+      if (val === "en-US" || val === "es-ES" || val === "zh-Hant") {
         setLocaleState(val);
       }
     }
