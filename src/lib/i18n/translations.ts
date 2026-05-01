@@ -9,7 +9,7 @@ export const locales: Locale[] = ["en-US", "es-ES", "zh-Hant"];
 export const defaultLocale: Locale = "en-US";
 
 export const translations = {
-  "zh-CN": {
+  "zh-Hant": {
     // Navigation
     nav: {
       features: "功能特点",
@@ -2781,6 +2781,32 @@ export const translations = {
       },
     },
   },
+  "es-ES": {
+    meta: {
+      title: "PortraitPay AI",
+      description: "Protect your portrait rights on blockchain.",
+    },
+    nav: {
+      features: "Features",
+      howItWorks: "How it works",
+      pricing: "Pricing",
+      faq: "FAQ",
+      signIn: "Sign In",
+      getStarted: "Get Started",
+      lawyer: "Lawyers",
+      findLawyer: "Find Lawyer",
+    },
+    common: {
+      lightMode: "Light",
+      darkMode: "Dark",
+      switchToLight: "Switch to light mode",
+      switchToDark: "Switch to dark mode",
+      language: "Language",
+      switchToEnglish: "Switch to English",
+      switchToSpanish: "Switch to Spanish",
+      switchToTraditionalChinese: "Switch to Traditional Chinese",
+    },
+  }
 };
 
-export type TranslationKeys = (typeof translations)["zh-CN"];
+export type TranslationKeys = (typeof translations)["en-US"];
