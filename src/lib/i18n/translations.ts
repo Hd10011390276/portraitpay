@@ -3,9 +3,10 @@
  * Supports: en-US, es-ES, zh-Hant (default: en-US)
  * @note Ensure file is saved as UTF-8 (no BOM). Line endings: LF.
  */
-export type Locale = "en-US" | "es-ES" | "zh-Hant";
+export type Locale = "en-US" | "es-ES" | "zh-Hant" | "zh-CN";
 
-export const locales: Locale[] = ["en-US", "es-ES", "zh-Hant"];
+// zh-CN maps to zh-Hant (simplified → traditional is handled as the same locale)
+export const locales: Locale[] = ["en-US", "es-ES", "zh-Hant", "zh-CN"];
 export const defaultLocale: Locale = "en-US";
 
 export const translations = {
@@ -1429,6 +1430,9 @@ export const translations = {
       language: "Language",
       switchToChinese: "Switch to Chinese",
       switchToEnglish: "Switch to English",
+      switchToSpanish: "Switch to Spanish",
+      switchToTraditionalChinese: "Switch to Traditional Chinese",
+      switchToSimplifiedChinese: "Switch to Simplified Chinese",
     },
     // Hero
     hero: {
