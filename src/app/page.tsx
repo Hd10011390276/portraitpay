@@ -5,7 +5,6 @@ import { LanguageToggle } from "@/components/layout/LanguageToggle";
 import ThemeToggle from "@/components/ThemeToggle";
 import { useLanguage } from "@/context/LanguageContext";
 import { useState } from "react";
-import { translations } from "@/lib/i18n/translations";
 
 // ─── Icons (inline SVG) ─────────────────────────────────────────
 type IconProps = { className?: string; style?: React.CSSProperties };
@@ -224,8 +223,7 @@ function PricingCard({ title, price, period, desc, features, cta, badge, highlig
 
 // ─── Main Page ──────────────────────────────────────────────────
 export default function HomePage() {
-  const { locale } = useLanguage();
-  const t = locale === "zh-CN" ? translations["zh-CN"] : translations["en-US"];
+  const { t } = useLanguage();
 
   return (
     <>
