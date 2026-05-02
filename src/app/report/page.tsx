@@ -13,14 +13,6 @@ import { useRouter } from "next/navigation";
 import { DashboardShell } from "@/components/layout/DashboardShell";
 import { useLanguage } from "@/context/LanguageContext";
 
-const INFRINGEMENT_TYPES = t.report.infringementTypes || [
-  { value: "UNAUTHORIZED_USE", label: "Unauthorized Use" },
-  { value: "EXPIRED_LICENSE", label: "License Expired" },
-  { value: "SCOPE_VIOLATION", label: "Scope Violation" },
-  { value: "RESALE", label: "Resale/Illegal Transfer" },
-  { value: "DEEPFAKE", label: "Deepfake" },
-];
-
 interface FormData {
   portraitId: string;
   type: string;
@@ -33,6 +25,15 @@ interface FormData {
 export default function ReportPage() {
   const router = useRouter();
   const { t } = useLanguage();
+
+  const INFRINGEMENT_TYPES = t.report?.infringementTypes || [
+    { value: "UNAUTHORIZED_USE", label: "Unauthorized Use" },
+    { value: "EXPIRED_LICENSE", label: "License Expired" },
+    { value: "SCOPE_VIOLATION", label: "Scope Violation" },
+    { value: "RESALE", label: "Resale/Illegal Transfer" },
+    { value: "DEEPFAKE", label: "Deepfake" },
+  ];
+
   const [form, setForm] = useState<FormData>({
     portraitId: "",
     type: "UNAUTHORIZED_USE",
