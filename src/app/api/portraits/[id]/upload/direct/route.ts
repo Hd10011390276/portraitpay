@@ -67,25 +67,34 @@ export async function POST(request: NextRequest, context: RouteContext) {
     const key = isIdCard
       ? `portraits/${id}/idcard-front-${Date.now()}.jpg`
       : generateImageKey(id, "original");
+    console.log(`[upload/direct] id=${id} isIdCard=${isIdCard} key=${key}`);
 
     // Upload to R2
     let objectUrl: string;
     try {
+      console.log(`[upload/direct] Calling uploadFile for key: ${key}`);
       objectUrl = await uploadFile(imageBuffer, key, "image/jpeg");
+      console.log(`[upload/direct] uploadFile returned: ${objectUrl}`);
     } catch (uploadErr) {
       console.error("[upload/direct] R2 upload failed:", uploadErr);
       return NextResponse.json({ success: false, error: "Upload to storage failed" }, { status: 500 });
     }
 
     // Update portrait record based on upload type
-    const updateData: Record<string, string> = isIdCard
-      ? { idCardFrontUrl: objectUrl }
-      : { originalImageUrl: objectUrl, thumbnailUrl: objectUrl };
+    const updateData: Record<string, string> = {};
+    if (isIdCard) {
+      updateData.idCardFrontUrl = objectUrl;
+    } else {
+      updateData.originalImageUrl = objectUrl;
+      updateData.thumbnailUrl = objectUrl;
+    }
+    console.log(`[upload/direct] Updating portrait with:`, updateData);
 
     const updated = await prisma.portrait.update({
       where: { id },
       data: updateData,
     });
+    console.log(`[upload/direct] Portrait updated successfully`);
 
     return NextResponse.json({
       success: true,
@@ -98,8 +107,10 @@ export async function POST(request: NextRequest, context: RouteContext) {
     });
   } catch (error) {
     console.error("[POST /api/portraits/[id]/upload/direct]", error);
+    const message = error instanceof Error ? error.message : String(error);
+    console.error("[upload/direct] Full error:", message, error);
     return NextResponse.json(
-      { success: false, error: "Internal server error" },
+      { success: false, error: "Internal server error: " + message },
       { status: 500 }
     );
   }
