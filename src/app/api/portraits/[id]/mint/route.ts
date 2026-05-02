@@ -106,7 +106,8 @@ export async function POST(request: NextRequest, context: RouteContext) {
     try {
       const verifyResult = await kycService.verifyFaceForMint(
         session.userId,
-        portrait.originalImageUrl ?? ""
+        portrait.originalImageUrl ?? "",
+        portrait.idCardFrontUrl ?? undefined
       );
       console.log("[Mint] Face verification passed!", verifyResult.faceResult);
     } catch (err) {
@@ -118,6 +119,13 @@ export async function POST(request: NextRequest, context: RouteContext) {
       if (code === "PORTRAIT_IMAGE_MISSING") {
         return NextResponse.json(
           { success: false, error: "请先上传肖像照片后再上链。", code: "PP-FACE-003" },
+          { status: 400 }
+        );
+      }
+
+      if (code === "ID_CARD_MISSING") {
+        return NextResponse.json(
+          { success: false, error: "请先上传身份证照片后再上链。", code: "PP-FACE-004" },
           { status: 400 }
         );
       }

@@ -145,6 +145,9 @@ model Portrait {
   status        String @default("DRAFT")
   faceEmbedding Float[]
 
+  // ID card front photo URL (used for face verification at mint time)
+  idCardFrontUrl String?
+
   isPublic Boolean @default(false)
 
   // AI Licensing settings (per-portrait override)

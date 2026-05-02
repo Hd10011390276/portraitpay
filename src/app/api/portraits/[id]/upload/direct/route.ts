@@ -42,10 +42,12 @@ export async function POST(request: NextRequest, context: RouteContext) {
     // Parse multipart form data
     let imageBuffer: Buffer | null = null;
     let filename = "portrait.jpg";
-    
+    let uploadType = "portrait"; // "portrait" or "idCardFront"
+
     try {
       const formData = await request.formData();
       const file = formData.get("image") as File | null;
+      uploadType = (formData.get("type") as string) || "portrait";
       if (!file) {
         return NextResponse.json({ success: false, error: "No image provided" }, { status: 400 });
       }
@@ -60,8 +62,13 @@ export async function POST(request: NextRequest, context: RouteContext) {
       return NextResponse.json({ success: false, error: "Empty image" }, { status: 400 });
     }
 
+    // Generate storage key based on upload type
+    const isIdCard = uploadType === "idCardFront";
+    const key = isIdCard
+      ? `portraits/${id}/idcard-front-${Date.now()}.jpg`
+      : generateImageKey(id, "original");
+
     // Upload to R2
-    const key = generateImageKey(id, "original");
     let objectUrl: string;
     try {
       objectUrl = await uploadFile(imageBuffer, key, "image/jpeg");
@@ -70,13 +77,14 @@ export async function POST(request: NextRequest, context: RouteContext) {
       return NextResponse.json({ success: false, error: "Upload to storage failed" }, { status: 500 });
     }
 
-    // Update portrait record
+    // Update portrait record based on upload type
+    const updateData: Record<string, string> = isIdCard
+      ? { idCardFrontUrl: objectUrl }
+      : { originalImageUrl: objectUrl, thumbnailUrl: objectUrl };
+
     const updated = await prisma.portrait.update({
       where: { id },
-      data: {
-        originalImageUrl: objectUrl,
-        thumbnailUrl: objectUrl,
-      },
+      data: updateData,
     });
 
     return NextResponse.json({
@@ -85,6 +93,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
         portraitId: updated.id,
         originalImageUrl: updated.originalImageUrl,
         thumbnailUrl: updated.thumbnailUrl,
+        idCardFrontUrl: updated.idCardFrontUrl,
       },
     });
   } catch (error) {

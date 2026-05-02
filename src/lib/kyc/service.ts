@@ -552,14 +552,18 @@ export class KYCService {
   /**
    * Face verification at mint time.
    * Uses the user's latest APPROVED KYC idCardNumber + the portrait image
-   * to call Aliyun face verify (real API, not stub).
+   * to call Aliyun CompareFace API (real API, not stub).
+   *
+   * @param portraitImageUrl  肖像照 URL（必须，公网可访问）
+   * @param idCardFrontUrl   身份证正面照 URL（从 Portrait 记录获取，或直接传入）
    *
    * Returns: { success: true, ocrResult, faceResult }
-   * Throws on failure: { code: 'KYC_NOT_APPROVED' | 'FACE_MISMATCH' | 'OCR_NOT_FOUND' }
+   * Throws on failure: { code: 'KYC_NOT_APPROVED' | 'FACE_MISMATCH' | 'OCR_NOT_FOUND' | 'ID_CARD_MISSING' }
    */
   async verifyFaceForMint(
     userId: string,
-    portraitImageUrl: string
+    portraitImageUrl: string,
+    idCardFrontUrl?: string
   ): Promise<{
     success: true;
     ocrResult: IDCardOCRResult;
@@ -581,7 +585,31 @@ export class KYCService {
       throw err;
     }
 
-    // 2) Find latest KYCLog for this user where action='ocr_result' and result contains idCardNumber
+    // 2) Guard: portrait image must exist
+    if (!portraitImageUrl || portraitImageUrl.trim() === "") {
+      const err = new Error("Portrait image not found. Please upload a portrait first.");
+      (err as any).code = "PORTRAIT_IMAGE_MISSING";
+      throw err;
+    }
+
+    // 3) If idCardFrontUrl not passed, look up from Portrait record
+    if (!idCardFrontUrl) {
+      // Find the user's most recently uploaded portrait with idCardFrontUrl
+      const latestPortrait = await prisma.portrait.findFirst({
+        where: { ownerId: userId, idCardFrontUrl: { not: null } },
+        orderBy: { createdAt: "desc" },
+        select: { idCardFrontUrl: true },
+      });
+      idCardFrontUrl = latestPortrait?.idCardFrontUrl ?? null;
+    }
+
+    if (!idCardFrontUrl) {
+      const err = new Error("ID card front photo not found. Please upload your ID card during portrait registration.");
+      (err as any).code = "ID_CARD_MISSING";
+      throw err;
+    }
+
+    // 4) Find latest KYCLog for this user where action='ocr_result' and result contains idCardNumber
     const ocrLog = await prisma.kYCLog.findFirst({
       where: {
         userId,
@@ -605,20 +633,13 @@ export class KYCService {
       throw err;
     }
 
-    // 3) Guard: portrait image must exist
-    if (!portraitImageUrl || portraitImageUrl.trim() === "") {
-      const err = new Error("Portrait image not found. Please upload a portrait first.");
-      (err as any).code = "PORTRAIT_IMAGE_MISSING";
-      throw err;
-    }
-
-    // 4) Call face verify
+    // 5) Call CompareFace: portrait vs idCardFront
     const faceResult = await this.provider.submitFaceVerify(
       portraitImageUrl,
-      ocrResult.idCardNumber
+      idCardFrontUrl
     );
 
-    // 5) If FAIL → throw FACE_MISMATCH
+    // 6) If FAIL → throw FACE_MISMATCH
     if (faceResult.verifyResult === "FAIL") {
       const err = new Error("Face verification failed — portrait does not match ID card");
       (err as any).code = "FACE_MISMATCH";

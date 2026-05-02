@@ -21,6 +21,7 @@ const RegisterUploadSchema = z.object({
   originalImageUrl: z.string().url(),
   thumbnailUrl: z.string().url().optional(),
   imageHash: z.string().regex(/^[a-f0-9]{64}$/, "Must be a valid SHA-256 hex string").optional(),
+  idCardFrontUrl: z.string().url().optional(),
 });
 
 export async function POST(request: NextRequest, context: RouteContext) {
@@ -63,7 +64,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
       );
     }
 
-    const { originalImageUrl, thumbnailUrl, imageHash } = parsed.data;
+    const { originalImageUrl, thumbnailUrl, imageHash, idCardFrontUrl } = parsed.data;
 
     // ── Update portrait with image URLs ─────────────────────────
     const updated = await prisma.portrait.update({
@@ -72,6 +73,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
         originalImageUrl,
         thumbnailUrl: thumbnailUrl ?? originalImageUrl,
         ...(imageHash ? { imageHash } : {}),
+        ...(idCardFrontUrl ? { idCardFrontUrl } : {}),
       },
     });
 

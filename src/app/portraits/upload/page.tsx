@@ -171,10 +171,12 @@ export default function UploadPortraitPage() {
       const id = createJson.data.id as string;
 
       // 2. Upload ID card front to R2 (stored for KYC verification at mint time)
+      let idCardFrontUrl: string | null = null;
       if (idCardFront) {
         setProgress("上传身份文件...");
         const idCardFormData = new FormData();
         idCardFormData.append("image", idCardFront);
+        idCardFormData.append("type", "idCardFront");
         const idCardRes = await fetch(`/api/portraits/${id}/upload/direct`, {
           method: "POST",
           body: idCardFormData,
@@ -183,8 +185,8 @@ export default function UploadPortraitPage() {
         if (!idCardRes.ok || !idCardJson.success) {
           console.error("[ID card] Upload failed:", idCardJson.error);
         } else {
-          // Store ID card URL in sessionStorage for KYC verification at mint time
-          sessionStorage.setItem(`idCardFront_${id}`, idCardJson.data.originalImageUrl);
+          idCardFrontUrl = idCardJson.data.idCardFrontUrl ?? idCardJson.data.originalImageUrl;
+          sessionStorage.setItem(`idCardFront_${id}`, idCardFrontUrl);
         }
       }
 
@@ -207,7 +209,7 @@ export default function UploadPortraitPage() {
       const updateRes = await fetch(`/api/portraits/${id}/upload`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ originalImageUrl, imageHash }),
+        body: JSON.stringify({ originalImageUrl, imageHash, idCardFrontUrl }),
       });
       const updateJson = await updateRes.json();
       if (!updateJson.success) throw new Error(updateJson.error);
