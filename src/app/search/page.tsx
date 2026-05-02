@@ -158,7 +158,7 @@ function SearchContent() {
             <LanguageToggle />
             <ThemeToggle />
             <Link href="/login" className="btn btn-primary btn-sm">
-              {locale === "zh-CN" ? "登录" : "Sign In"}
+              {t.common?.signIn || t.nav?.signIn || "Sign In"}
             </Link>
           </div>
         </div>
@@ -174,8 +174,7 @@ function SearchContent() {
             </h1>
             {searched && !loading && (
               <p style={{ fontSize: "14px", color: "var(--text-secondary)" }}>
-                {portraits.length} {locale === "zh-CN" ? "个结果" : "results"}
-                {CERTIFIED_COUNT > 0 && ` · ${CERTIFIED_COUNT} ${locale === "zh-CN" ? "已认证" : "certified"}`}
+                {portraits.length} {t.search?.results || "results"}{CERTIFIED_COUNT > 0 && ` · ${CERTIFIED_COUNT} ${t.dashboard?.stats?.verified || "certified"}`}
               </p>
             )}
           </div>
@@ -200,10 +199,10 @@ function SearchContent() {
               </p>
               <div style={{ display: "flex", gap: "12px", justifyContent: "center" }}>
                 <Link href="/" className="btn btn-secondary">
-                  {locale === "zh-CN" ? "返回首页" : "Back to Home"}
+                  {t.common?.backHome || t.footer?.home || "Back to Home"}
                 </Link>
                 <Link href="/register" className="btn btn-primary">
-                  {locale === "zh-CN" ? "注册肖像" : "Register Portrait"}
+                  {t.search?.registerPortrait || "Register Portrait"}
                 </Link>
               </div>
             </div>
@@ -236,9 +235,7 @@ function SearchContent() {
       }}>
         <div className="container" style={{ textAlign: "center" }}>
           <p style={{ fontSize: "13px", color: "var(--text-tertiary)" }}>
-            {locale === "zh-CN"
-              ? "© 2026 PortraitPay AI. 保留所有权利。"
-              : "© 2026 PortraitPay AI. All rights reserved."}
+            {t.footer?.copyright || "© 2026 PortraitPay AI. All rights reserved."}
           </p>
         </div>
       </footer>

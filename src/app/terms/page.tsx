@@ -3,13 +3,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { useLanguage } from "@/context/LanguageContext";
-import { translations } from "@/lib/i18n/translations";
 import ThemeToggle from "@/components/ThemeToggle";
 import { LanguageToggle } from "@/components/layout/LanguageToggle";
 
 export default function TermsPage() {
-  const { locale } = useLanguage();
-  const t = locale === "zh-CN" ? translations["zh-CN"] : translations["en-US"];
+  const { t } = useLanguage();
   const l = t.legal.terms;
 
   return (

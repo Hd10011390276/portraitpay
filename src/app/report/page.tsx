@@ -13,12 +13,12 @@ import { useRouter } from "next/navigation";
 import { DashboardShell } from "@/components/layout/DashboardShell";
 import { useLanguage } from "@/context/LanguageContext";
 
-const INFRINGEMENT_TYPES = [
-  { value: "UNAUTHORIZED_USE", labelZh: "未经授权使用", labelEn: "Unauthorized Use" },
-  { value: "EXPIRED_LICENSE", labelZh: "授权已过期", labelEn: "License Expired" },
-  { value: "SCOPE_VIOLATION", labelZh: "超出授权范围使用", labelEn: "Scope Violation" },
-  { value: "RESALE", labelZh: "二次转售/非法转让", labelEn: "Resale/Illegal Transfer" },
-  { value: "DEEPFAKE", labelZh: "AI换脸/深度合成", labelEn: "Deepfake" },
+const INFRINGEMENT_TYPES = t.report.infringementTypes || [
+  { value: "UNAUTHORIZED_USE", label: "Unauthorized Use" },
+  { value: "EXPIRED_LICENSE", label: "License Expired" },
+  { value: "SCOPE_VIOLATION", label: "Scope Violation" },
+  { value: "RESALE", label: "Resale/Illegal Transfer" },
+  { value: "DEEPFAKE", label: "Deepfake" },
 ];
 
 interface FormData {
@@ -32,8 +32,7 @@ interface FormData {
 
 export default function ReportPage() {
   const router = useRouter();
-  const { t, locale } = useLanguage();
-  const isZh = locale === "zh-CN";
+  const { t } = useLanguage();
   const [form, setForm] = useState<FormData>({
     portraitId: "",
     type: "UNAUTHORIZED_USE",
@@ -128,7 +127,7 @@ export default function ReportPage() {
               className="mt-1 block w-full rounded-lg border border-gray-300 dark:border-gray-700 px-4 py-2.5 text-sm focus:border-blue-500 dark:focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:focus:ring-blue-500 bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
             >
               {INFRINGEMENT_TYPES.map((t_item) => (
-                <option key={t_item.value} value={t_item.value}>{isZh ? t_item.labelZh : t_item.labelEn}</option>
+                <option key={t_item.value} value={t_item.value}>{t_item.label}</option>
               ))}
             </select>
           </div>
@@ -166,7 +165,7 @@ export default function ReportPage() {
             />
             {evidenceUrls.length > 0 && (
               <p className="mt-1 text-xs text-green-600 dark:text-green-400">
-                {isZh ? `已填写 ${evidenceUrls.length} 个证据链接` : `Filled ${evidenceUrls.length} evidence links`}
+                {t.report.evidenceCount?.replace("{count}", String(evidenceUrls.length))}
               </p>
             )}
           </div>
@@ -201,9 +200,7 @@ export default function ReportPage() {
               required
             />
             <p className={`mt-1 text-xs ${form.description.length >= 10 ? "text-green-600 dark:text-green-400" : "text-gray-400 dark:text-gray-500"}`}>
-              {isZh
-                ? `${form.description.length} / 10 字符（最低要求）`
-                : `${form.description.length} / 10 characters (minimum required)`}
+              {(t.report.charCount || "{count} / 10 characters (minimum required)").replace("{count}", String(form.description.length))}
             </p>
           </div>
 
