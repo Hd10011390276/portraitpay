@@ -243,7 +243,7 @@ async function compareWithAliyun(
 
   if (!res.ok) {
     const text = await res.text();
-    throw new Error(`Aliyun API error ${res.status}: ${text}`);
+    throw new Error(`Face verification provider error ${res.status}: ${text}`);
   }
 
   const data = await res.json();

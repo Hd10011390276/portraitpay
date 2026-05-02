@@ -33,7 +33,6 @@ const COUNTRIES = [
   { code: "BR", name: "🇧🇷 Brazil", available: true },
   { code: "MX", name: "🇲🇽 Mexico", available: true },
   { code: "OTHER", name: "🌍 Other (Contact us)", available: true },
-  { code: "CN", name: "🇨🇳 China (待开发)", available: false },
 ];
 
 export default function LawyerRegistrationPage() {

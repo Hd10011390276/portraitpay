@@ -2,7 +2,7 @@
  * Infringement Notifications
  *
  * Sends alert notifications to portrait owners when potential infringement is detected.
- * Supports: Email (Resend), SMS (预留), WeChat Official Account (预留).
+ * Supports: Email (Resend), SMS (reserved), WeChat Official Account (reserved).
  *
  * High-priority alerts (similarity > 0.95) bypass quiet hours.
  */
@@ -106,7 +106,7 @@ export async function sendInfringementAlertSms(_params: AlertEmailParams): Promi
  * Send WeChat Official Account template message (stub).
  */
 export async function sendInfringementAlertWechat(_params: AlertEmailParams): Promise<void> {
-  // STUB — integrate with 微信服务号模板消息 API
+  // STUB — integrate with WeChat Official Account template message API
   // POST https://api.weixin.qq.com/cgi-bin/message/template/send?access_token=ACCESS_TOKEN
   console.warn("[Notify] WeChat notification stub called");
 }

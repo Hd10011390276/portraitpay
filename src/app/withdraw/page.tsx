@@ -1,7 +1,6 @@
 /**
  * /withdraw — Withdrawal Application Page
  * Supports region-based payment methods:
- * - CN: WeChat Pay, Alipay, Bank Transfer
  * - US: PayPal, Credit Card (Stripe), Bank Transfer
  * - HK/TW/OTHER: PayPal, Bank Transfer
  */
@@ -50,15 +49,14 @@ const STATUS_COLOR: Record<string, string> = {
   FAILED: "text-red-600 bg-red-50",
 };
 
-const MIN_WITHDRAWAL_CNY = 100;
+
 const MIN_WITHDRAWAL_USD = 10;
 
-type PaymentMethod = "wechat" | "alipay" | "paypal" | "credit_card" | "bank";
-type Region = "CN" | "US" | "HK" | "TW" | "OTHER";
+type PaymentMethod = "paypal" | "credit_card" | "bank";
+type Region = "US" | "HK" | "TW" | "OTHER";
 
 const REGION_OPTIONS: { value: Region; flag: string }[] = [
   { value: "US", flag: "🇺🇸" },
-  { value: "CN", flag: "🇨🇳" },
   { value: "HK", flag: "🇭🇰" },
   { value: "TW", flag: "🇹🇼" },
   { value: "OTHER", flag: "🌍" },
@@ -66,12 +64,6 @@ const REGION_OPTIONS: { value: Region; flag: string }[] = [
 
 function getPaymentMethodsForRegion(region: Region, t: Record<string, any>) {
   switch (region) {
-    case "CN":
-      return [
-        { value: "wechat" as PaymentMethod, label: t.withdraw.weChatPay, icon: "💚" },
-        { value: "alipay" as PaymentMethod, label: t.withdraw.alipay, icon: "🔵" },
-        { value: "bank" as PaymentMethod, label: t.withdraw.bankTransfer, icon: "🏦" },
-      ];
     case "US":
       return [
         { value: "paypal" as PaymentMethod, label: t.withdraw.paypal, icon: "🟣" },
@@ -106,14 +98,14 @@ function WithdrawPageContent() {
   const [region, setRegion] = useState<Region>("US");
   const [amount, setAmount] = useState("");
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("paypal");
-  const [accountId, setAccountId] = useState(""); // WeChat/Alipay/PayPal/Email
+  const [accountId, setAccountId] = useState(""); // PayPal email / Account ID
   const [accountName, setAccountName] = useState(""); // Account holder name
   const [bankName, setBankName] = useState("");
   const [bankAccount, setBankAccount] = useState("");
 
-  const currency = locale === "zh-CN" ? "CNY" : "USD";
-  const minAmount = currency === "CNY" ? MIN_WITHDRAWAL_CNY : MIN_WITHDRAWAL_USD;
-  const currencySymbol = currency === "CNY" ? "¥" : "$";
+  const currency = "USD";
+  const minAmount = MIN_WITHDRAWAL_USD;
+  const currencySymbol = "$";
 
   const paymentMethods = getPaymentMethodsForRegion(region, t);
 
@@ -242,12 +234,8 @@ function WithdrawPageContent() {
     }
   };
 
-  const formatCurrency = (v: number) => {
-    if (currency === "CNY") {
-      return new Intl.NumberFormat("zh-CN", { style: "currency", currency: "CNY" }).format(v);
-    }
-    return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(v);
-  };
+  const formatCurrency = (v: number) =>
+    new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(v);
 
   const formatDate = (d: string) =>
     new Date(d).toLocaleDateString(locale === "zh-CN" ? "zh-CN" : "en-US", {
@@ -258,8 +246,6 @@ function WithdrawPageContent() {
 
   const getMethodIcon = (pm: string) => {
     switch (pm) {
-      case "wechat": return "💚";
-      case "alipay": return "🔵";
       case "paypal": return "🟣";
       case "credit_card": return "💳";
       case "bank": return "🏦";
@@ -269,8 +255,6 @@ function WithdrawPageContent() {
 
   const getMethodLabel = (pm: string) => {
     switch (pm) {
-      case "wechat": return t.withdraw.weChatPay;
-      case "alipay": return t.withdraw.alipay;
       case "paypal": return t.withdraw.paypal;
       case "credit_card": return t.withdraw.creditCard;
       case "bank": return t.withdraw.bankTransfer;
@@ -355,7 +339,7 @@ function WithdrawPageContent() {
                   >
                     <span className="text-lg">{opt.flag}</span>
                     <p className="text-xs font-medium text-gray-700 dark:text-gray-300 mt-0.5 leading-tight">
-                      {opt.value === "US" ? t.withdraw.regionUS : opt.value === "CN" ? t.withdraw.regionCN : opt.value === "HK" ? t.withdraw.regionHK : opt.value === "TW" ? t.withdraw.regionTW : t.withdraw.regionOther}
+                      {opt.value === "US" ? t.withdraw.regionUS : opt.value === "HK" ? t.withdraw.regionHK : opt.value === "TW" ? t.withdraw.regionTW : t.withdraw.regionOther}
                     </p>
                   </button>
                 ))}
@@ -381,28 +365,7 @@ function WithdrawPageContent() {
                   {t.withdraw.currentAvailable.replace("{balance}", formatCurrency(balance.availableBalance)).replace("{balanceFixed}", balance.availableBalance.toFixed(2))}
                 </p>
               )}
-              {/* Fee calculation for CNY withdrawals */}
-              {currency === "CNY" && amount && Number(amount) > 0 && (
-                <div className={`mt-2 p-3 rounded-lg text-xs ${paymentMethod === "wechat" ? "bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800" : "bg-gray-50 dark:bg-gray-800"}`}>
-                  <p className="font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    {locale === "zh-CN" ? "💰 费用计算（微信支付 / 支付宝）" : "💰 Fee Calculation (WeChat Pay / Alipay)"}
-                  </p>
-                  <div className="space-y-0.5 text-gray-600 dark:text-gray-400">
-                    <p>{locale === "zh-CN" ? "提现金额：" : "Withdrawal:"} {currencySymbol}{Number(amount).toFixed(2)}</p>
-                    <p>{locale === "zh-CN" ? "服务费（0.6%）：" : "Service Fee (0.6%):"} {currencySymbol}{(Number(amount) * 0.006).toFixed(2)}</p>
-                    <p>{locale === "zh-CN" ? "通道费：" : "Channel Fee:"} {currencySymbol}1.00</p>
-                    <p className="font-medium text-gray-800 dark:text-gray-200 pt-1 border-t border-gray-200 dark:border-gray-700 mt-1">
-                      {locale === "zh-CN" ? "预计到账：" : "Estimated Arrival:"} <span className="text-green-600 dark:text-green-400">{currencySymbol}{(Number(amount) - Number(amount) * 0.006 - 1).toFixed(2)}</span>
-                    </p>
-                  </div>
-                </div>
-              )}
-              {/* Minimum notice for CNY */}
-              {currency === "CNY" && (
-                <p className="text-xs text-orange-500 dark:text-orange-400 mt-1 flex items-center gap-1">
-                  <span>ℹ️</span> {locale === "zh-CN" ? `最低提现金额 ${currencySymbol}${MIN_WITHDRAWAL_CNY}` : `Minimum withdrawal ${currencySymbol}${MIN_WITHDRAWAL_CNY}`}
-                </p>
-              )}
+
             </div>
 
             {/* Payment Method */}
@@ -427,71 +390,17 @@ function WithdrawPageContent() {
               </div>
             </div>
 
-            {/* WeChat Pay Guide (CN region) */}
-            {region === "CN" && paymentMethod === "wechat" && (
-              <div className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950/30 dark:to-emerald-950/30 border border-green-200 dark:border-green-800 rounded-xl p-5">
-                <h3 className="font-semibold text-green-800 dark:text-green-300 mb-3 flex items-center gap-2">
-                  <span className="text-xl">💚</span> {locale === "zh-CN" ? "微信支付提现说明" : "WeChat Pay Withdrawal Guide"}
-                </h3>
-                {/* QR Code Placeholder */}
-                <div className="bg-white dark:bg-gray-900 rounded-lg p-4 mb-4 flex flex-col items-center">
-                  <div className="w-32 h-32 border-2 border-dashed border-green-300 dark:border-green-700 rounded-xl flex flex-col items-center justify-center mb-2">
-                    <div className="text-3xl mb-1">💚</div>
-                    <p className="text-xs text-gray-400 text-center px-2">
-                      {locale === "zh-CN" ? "商户二维码" : "Merchant QR"}
-                    </p>
-                  </div>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 text-center">
-                    {locale === "zh-CN"
-                      ? "商户号绑定后显示收款二维码"
-                      : "QR code shown after merchant ID is bound"}
-                  </p>
-                </div>
-                {/* Step-by-step instructions */}
-                <div className="space-y-2">
-                  <p className="text-sm font-medium text-green-800 dark:text-green-300 mb-2">
-                    {locale === "zh-CN" ? "提现步骤：" : "Withdrawal Steps:"}
-                  </p>
-                  {[
-                    { step: "1", title: locale === "zh-CN" ? "填写商户号" : "Enter Merchant ID", desc: locale === "zh-CN" ? "输入微信支付商户号（10位数字）" : "Enter your WeChat Pay merchant ID (10 digits)" },
-                    { step: "2", title: locale === "zh-CN" ? "验证账户" : "Verify Account", desc: locale === "zh-CN" ? "账户名需与实名认证信息一致" : "Account name must match your verified identity" },
-                    { step: "3", title: locale === "zh-CN" ? "提交申请" : "Submit Request", desc: locale === "zh-CN" ? "确认金额后提交，1-3个工作日到账" : "Confirm amount and submit, arrives in 1-3 business days" },
-                  ].map((item) => (
-                    <div key={item.step} className="flex items-start gap-3">
-                      <div className="w-5 h-5 rounded-full bg-green-600 text-white text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5">{item.step}</div>
-                      <div>
-                        <p className="text-sm font-medium text-green-900 dark:text-green-200">{item.title}</p>
-                        <p className="text-xs text-green-700 dark:text-green-400">{item.desc}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
 
-            {/* Account ID (WeChat/Alipay/PayPal/Credit Card) */}
+
+            {/* Account ID (PayPal / Credit Card) */}
             {paymentMethod !== "bank" && (
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  {paymentMethod === "wechat"
-                    ? t.withdraw.weChatPayAccount
-                    : paymentMethod === "alipay"
-                    ? t.withdraw.alipayAccount
-                    : paymentMethod === "paypal"
-                    ? t.withdraw.paypalAccount
-                    : t.withdraw.creditCardAccount}
+                  {paymentMethod === "paypal" ? t.withdraw.paypalAccount : t.withdraw.creditCardAccount}
                 </label>
                 <input
                   type="text"
-                  placeholder={
-                    paymentMethod === "wechat"
-                      ? t.withdraw.weChatPayIdPlaceholder
-                      : paymentMethod === "alipay"
-                      ? t.withdraw.alipayIdPlaceholder
-                      : paymentMethod === "paypal"
-                      ? t.withdraw.paypalPlaceholder
-                      : t.withdraw.creditCardPlaceholder
-                  }
+                  placeholder={paymentMethod === "paypal" ? t.withdraw.paypalPlaceholder : t.withdraw.creditCardPlaceholder}
                   className="w-full border border-gray-200 dark:border-gray-700 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
                   value={accountId}
                   onChange={(e) => setAccountId(e.target.value)}

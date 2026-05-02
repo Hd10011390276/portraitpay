@@ -1,10 +1,10 @@
 
 /**
  * POST /api/v1/kyc/webhook
- * 第三方 KYC 服务回调
+ * Third-party KYC service webhook handler
  *
- * 支持：阿里云、腾讯云、Onfido、Jumio
- * 建议：使用 HMAC 签名验签
+ * Supports: Aliyun, Tencent, Onfido, Jumio
+ * Recommendation: Use HMAC signature verification
  */
 import { NextRequest, NextResponse } from "next/server";
 import { kycService } from "@/lib/kyc/service";

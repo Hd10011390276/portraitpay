@@ -1,12 +1,12 @@
 /**
- * 腾讯云人脸核身（FaceID）集成
+ * Tencent Cloud FaceID integration
  *
- * 文档参考：https://cloud.tencent.com/document/product/1007
+ * Documentation: https://cloud.tencent.com/document/product/1007
  *
- * 使用方式：
- * 1. 开通腾讯云人脸核身服务
- * 2. 获取 SecretId / SecretKey / AppId
- * 3. 替换下方 STUBS 中的桩代码为真实 API 调用
+ * Usage:
+ * 1. Enable Tencent Cloud FaceID service
+ * 2. Get SecretId / SecretKey / AppId
+ * 3. Replace the STUBS below with real API calls
  */
 
 import type {
@@ -23,11 +23,11 @@ const STUBS = {
 };
 
 /**
- * 腾讯云人脸核身客户端
+ * Tencent Cloud FaceID client
  *
- * 真实实现需要：
- * 1. npm install tencentcloud-sdk-nodejs（已内置）
- * 2. 使用 FaceidClient / IntlElectricVerificationApi
+ * Real implementation requires:
+ * 1. npm install tencentcloud-sdk-nodejs (built-in)
+ * 2. Use FaceidClient / IntlElectricVerificationApi
  */
 export class TencentKYCProvider implements KYCProviderClient {
   private readonly secretId: string;
@@ -47,7 +47,7 @@ export class TencentKYCProvider implements KYCProviderClient {
     this.region = opts.region ?? "ap-guangzhou";
   }
 
-  // ─── 1. 初始化认证会话 ───────────────────────────────────────
+  // ─── 1. Initialize verification session ────────────────────
 
   async initSession(userId: string, level: KYCLevel): Promise<{
     sessionToken: string;
@@ -64,11 +64,11 @@ export class TencentKYCProvider implements KYCProviderClient {
     }
 
     /**
-     * 真实调用：腾讯云获取身份验证 Token
+     * Real API call: Tencent Cloud GetFaceIdToken
      * POST https://faceid.faceid.tencentcloudapi.com/
      * Action: GetFaceIdToken
      * {
-     *   "SessionToken": sessionToken, // 用户端 SDK 拿到
+     *   "SessionToken": sessionToken, // from client SDK
      *   "Level": level === 3 ? "LEVEL_3" : "LEVEL_2",
      * }
      */
@@ -80,7 +80,7 @@ export class TencentKYCProvider implements KYCProviderClient {
     };
   }
 
-  // ─── 2. 身份证 OCR ──────────────────────────────────────────
+  // ─── 2. ID Card OCR ─────────────────────────────────────────
 
   async submitOCR(
     idCardFrontUrl: string,
@@ -88,20 +88,20 @@ export class TencentKYCProvider implements KYCProviderClient {
   ): Promise<IDCardOCRResult> {
     if (STUBS.enabled) {
       return {
-        name: "张三",
-        gender: "男",
-        ethnicity: "汉",
+        name: "John Doe",
+        gender: "male",
+        ethnicity: "Han",
         birthDate: "1990-01-01",
-        address: "北京市朝阳区某某街道某某小区1号楼101室",
-        idCardNumber: "110101199001011234",
-        authority: "北京市公安局朝阳分局",
+        address: "123 Main St, Los Angeles, CA",
+        idCardNumber: "US123456789",
+        authority: "Los Angeles DMV",
         expireDate: "2030-01-01",
         confidence: { name: 99.8, idCardNumber: 99.9, address: 98.5 },
       };
     }
 
     /**
-     * 真实调用：腾讯云身份证 OCR
+     * Real call: Tencent Cloud ID Card OCR
      * POST https://ocr.api.qcloud.com/
      * Action: IDCardOCR
      * { "ImageUrl": idCardFrontUrl, "CardType": 0 }
@@ -109,7 +109,7 @@ export class TencentKYCProvider implements KYCProviderClient {
     throw new Error("Tencent OCR not implemented — set KYC_TENCENT_STUB=true for dev");
   }
 
-  // ─── 3. 人脸对照 ─────────────────────────────────────────────
+  // ─── 3. Face comparison ─────────────────────────────────────
 
   async submitFaceVerify(
     faceImageUrl: string,
@@ -126,15 +126,15 @@ export class TencentKYCProvider implements KYCProviderClient {
     }
 
     /**
-     * 真实调用：腾讯云人脸对照
+     * Real call: Tencent Cloud face comparison
      * POST https://faceid.faceid.tencentcloudapi.com/
      * Action: CompareFace
-     * { "ImageUrlA": faceImageUrl, "ImageUrlB": idCardNumber } // 或使用 faceid token
+     * { "ImageUrlA": faceImageUrl, "ImageUrlB": idCardNumber } // or use faceid token
      */
     throw new Error("Tencent FaceVerify not implemented — set KYC_TENCENT_STUB=true for dev");
   }
 
-  // ─── 4. 查询状态 ────────────────────────────────────────────
+  // ─── 4. Query status ────────────────────────────────────────
 
   async queryStatus(externalRef: string): Promise<{
     status: "PENDING" | "APPROVED" | "REJECTED";
@@ -147,14 +147,14 @@ export class TencentKYCProvider implements KYCProviderClient {
     }
 
     /**
-     * 真实调用：POST https://faceid.faceid.tencentcloudapi.com/
+     * Real call: POST https://faceid.faceid.tencentcloudapi.com/
      * Action: GetFaceIdResult
      * { "SessionToken": externalRef }
      */
     throw new Error("Tencent queryStatus not implemented — set KYC_TENCENT_STUB=true for dev");
   }
 
-  // ─── 5. 处理回调 ────────────────────────────────────────────
+  // ─── 5. Handle webhook ──────────────────────────────────────
 
   async handleWebhook(payload: Record<string, unknown>): Promise<{
     userId: string;
@@ -166,9 +166,9 @@ export class TencentKYCProvider implements KYCProviderClient {
     const externalRef = payload["session_id"] as string ?? "";
 
     const stateMap: Record<string, KYCState> = {
-      "0": "APPROVED",   // 通过
-      "-1": "REJECTED",  // 不通过
-      "-2": "PENDING",   // 疑似
+      "0": "APPROVED",
+      "-1": "REJECTED",
+      "-2": "PENDING",
     };
 
     return {

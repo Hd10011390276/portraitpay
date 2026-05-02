@@ -17,7 +17,6 @@ const USAGE_SCOPES = [
 
 const TERRITORIES = [
   { value: "global", label: "全球" },
-  { value: "china", label: "中国大陆" },
   { value: "asia", label: "亚洲" },
 ];
 

@@ -223,7 +223,6 @@ export default function PrivacyPage() {
                   {l.sections.contactEuRep}
                 </a>
               </li>
-              <li>{l.sections.contactWechat}</li>
             </ul>
           </section>
         </div>

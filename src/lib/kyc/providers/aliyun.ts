@@ -1,12 +1,12 @@
 /**
- * 阿里云实人认证（Face Verification）集成
+ * Aliyun Face Verification integration
  *
- * 文档参考：https://help.aliyun.com/zh/face-verification/
+ * Documentation: https://help.aliyun.com/zh/face-verification/
  *
- * 使用方式：
- * 1. 开通阿里云实人认证服务
- * 2. 获取 AccessKeyId / AccessKeySecret
- * 3. 替换下方 STUBS 中的桩代码为真实 API 调用
+ * Usage:
+ * 1. Enable Aliyun Face Verification service
+ * 2. Get AccessKeyId / AccessKeySecret
+ * 3. Replace the STUBS below with real API calls
  */
 
 import type {
@@ -18,29 +18,29 @@ import type {
 } from "../types";
 
 // ============================================================
-// 桩实现（开发/演示用）- 替换为真实阿里云 SDK 调用
+// Stub implementation (dev/demo) — replace with real Aliyun SDK calls
 // ============================================================
 
-// STUBS: 开发/演示模式 - 设为 false 以启用真实阿里云 API
-// 生产环境必须设为 false（配合真实 KYC_ALIYUN_ACCESS_KEY_ID/SECRET）
-// 开发时设为 true 或设置环境变量 KYC_ALIYUN_STUB=true
+// STUBS: dev/demo mode - set to false to enable real Aliyun API
+// Must be false in production (with real KYC_ALIYUN_ACCESS_KEY_ID/SECRET)
+// Set KYC_ALIYUN_STUB=true in development
 const STUBS = {
   enabled: false,
   autoApprove: true,
 };
 
 /**
- * 阿里云实人认证客户端
+ * Aliyun face verification client
  *
- * 真实实现需要：
- * 1. npm install @ AlibabaCloud/face-verification-sdk（或 REST API 调用）
- * 2. 使用阿里云 SDK 的 VerifyToken / CompareFace / RecognizeIdentityCard
+ * Real implementation requires:
+ * 1. npm install @ AlibabaCloud/face-verification-sdk (or use REST API)
+ * 2. Use VerifyToken / CompareFace / RecognizeIdentityCard from Aliyun SDK
  */
 export class AliyunKYCProvider implements KYCProviderClient {
   private readonly accessKeyId: string;
   private readonly accessKeySecret: string;
   private readonly region: string;
-  private readonly appId: string; // 实人认证方案 ID
+  private readonly appId: string;
 
   constructor(opts: {
     accessKeyId: string;
@@ -54,7 +54,7 @@ export class AliyunKYCProvider implements KYCProviderClient {
     this.appId = opts.appId;
   }
 
-  // ─── 1. 初始化认证会话 ───────────────────────────────────────
+  // ─── 1. Initialize verification session ────────────────────
 
   async initSession(userId: string, level: KYCLevel): Promise<{
     sessionToken: string;
@@ -73,12 +73,11 @@ export class AliyunKYCProvider implements KYCProviderClient {
     }
 
     /**
-     * 真实调用示例（REST）：
+     * Real API call example (REST):
      * POST https://faceverification.{region}.aliyuncs.com/
      * {
      *   "ProductKey": this.appId,
      *   "TicketId": ticketId,
-     *   "Model": level === 3 ? "FRN" : "LITE",  // 增强认证用 FRN
      *   "MetaInfo": Buffer.from(JSON.stringify({ userId, level })).toString("base64"),
      *   "SignedAt": new Date().toISOString(),
      * }
@@ -93,7 +92,7 @@ export class AliyunKYCProvider implements KYCProviderClient {
     };
   }
 
-  // ─── 2. 身份证 OCR 识别 ───────────────────────────────────────
+  // ─── 2. ID Card OCR ─────────────────────────────────────────
 
   async submitOCR(
     idCardFrontUrl: string,
@@ -105,29 +104,28 @@ export class AliyunKYCProvider implements KYCProviderClient {
     }
 
     /**
-     * 真实调用：阿里云 OCR 身份证识别
+     * Real call: Aliyun OCR ID card recognition
      * POST https://ocr.{region}.aliyuncs.com/api/recognize/idcard
-     * 或使用：@ AlibabaCloud/ocr-api
+     * Or use: @ AlibabaCloud/ocr-api
      */
     throw new Error("Aliyun OCR not implemented — set KYC_ALIYUN_STUB=true for dev");
   }
 
-  // ─── 3. 人脸核身（1:1 对比） ─────────────────────────────────
+  // ─── 3. Face verification (1:1 comparison) ─────────────────
 
   /**
-   * 调用阿里云 CompareFace API 比对肖像照与身份证照片
+   * Call Aliyun CompareFace API to compare portrait with ID card photo
    *
-   * 接口：POST https://facebody.{region}.aliyuncs.com/?Action=CompareFace
-   * 认证：POP HMAC-SHA1（与 face/compare/route.ts 一致）
+   * API: POST https://facebody.{region}.aliyuncs.com/?Action=CompareFace
+   * Auth: POP HMAC-SHA1 (same as face/compare/route.ts)
    *
-   * @param portraitUrl  肖像照 URL（R2 公网 URL）
-   * @param idCardUrl    身份证照片 URL（R2 公网 URL）
+   * @param portraitUrl  Portrait photo URL (R2 public URL)
+   * @param idCardUrl    ID card photo URL (R2 public URL)
    */
   async submitFaceVerify(
     portraitUrl: string,
     idCardUrl: string
   ): Promise<FaceVerifyResult> {
-    // Stub 模式：开发环境返回通过
     if (STUBS.enabled || !this.accessKeyId || !this.accessKeySecret) {
       console.log("[Aliyun] submitFaceVerify: using STUB (enabled=", STUBS.enabled, ")");
       return this.stubFaceVerify();
@@ -144,8 +142,8 @@ export class AliyunKYCProvider implements KYCProviderClient {
     const timestamp = new Date().toISOString().replace(/\.\d+Z$/, "Z");
     const nonce = crypto.randomUUID();
 
-    // ── POP 签名（RFC 2104 HMAC-SHA1） ─────────────────────────
-    // CompareFace 需要两个 ImageURL 参数：ImageURL1=肖像照, ImageURL2=身份证照
+    // ── POP signature (RFC 2104 HMAC-SHA1) ───────────────────
+    // CompareFace requires two ImageURL params: ImageURL1=portrait, ImageURL2=idCard
     const sortedParams = new URLSearchParams({
       SignatureMethod: "HMAC-SHA1",
       SignatureNonce: nonce,
@@ -181,7 +179,7 @@ export class AliyunKYCProvider implements KYCProviderClient {
 
     const url = `https://${host}/?Signature=${encodedSig}&${queryString}`;
 
-    // ── 发起请求 ───────────────────────────────────────────────
+    // ── Make request ───────────────────────────────────────────
     let data: Record<string, unknown>;
     try {
       const res = await fetch(url, {
@@ -193,18 +191,17 @@ export class AliyunKYCProvider implements KYCProviderClient {
       if (!res.ok) {
         const text = await res.text();
         console.error("[Aliyun] CompareFace HTTP error:", res.status, text);
-        throw new Error(`Aliyun API error ${res.status}: ${text}`);
+        throw new Error(`Face verification provider error ${res.status}: ${text}`);
       }
 
       data = await res.json() as Record<string, unknown>;
       console.log("[Aliyun] CompareFace response:", JSON.stringify(data));
     } catch (err) {
       console.error("[Aliyun] CompareFace request failed:", err);
-      throw new Error("阿里云人脸核身请求失败，请稍后重试");
+      throw new Error("Face verification request failed, please try again later");
     }
 
-    // ── 解析结果 ───────────────────────────────────────────────
-    // 响应格式：{ Data: { Similarity: number, Confidence: number } }
+    // ── Parse result ───────────────────────────────────────────
     const similarity = (data.Data as Record<string, unknown>)?.Similarity as number
       ?? (data.Similarity as number)
       ?? 0;
@@ -213,8 +210,8 @@ export class AliyunKYCProvider implements KYCProviderClient {
       ?? (data.Confidence as number)
       ?? 0;
 
-    // 阿里云 CompareFace 返回 0-100 的相似度分数
-    // ≥80 认为通过（1:1 对照），60-80 需人工复核，<60 不通过
+    // Aliyun CompareFace returns similarity score 0-100
+    // >=80: pass (1:1 comparison), 60-80: manual review, <60: fail
     const verifyResult: "PASS" | "FAIL" | "REVIEW" =
       similarity >= 80 ? "PASS" : similarity >= 60 ? "REVIEW" : "FAIL";
 
@@ -223,7 +220,7 @@ export class AliyunKYCProvider implements KYCProviderClient {
     return {
       verifyScore: Math.round(similarity),
       verifyResult,
-      similarity: Math.round(similarity) / 100, // 转为 0-1 格式
+      similarity: Math.round(similarity) / 100,
       livenessScore: Math.round(confidence) / 100,
       livenessResult,
     };
@@ -236,7 +233,7 @@ export class AliyunKYCProvider implements KYCProviderClient {
       .replace(/~/g, "%7E");
   }
 
-  // ─── 4. 查询状态 ────────────────────────────────────────────
+  // ─── 4. Query status ────────────────────────────────────────
 
   async queryStatus(externalRef: string): Promise<{
     status: "PENDING" | "APPROVED" | "REJECTED";
@@ -249,13 +246,13 @@ export class AliyunKYCProvider implements KYCProviderClient {
     }
 
     /**
-     * 真实调用：POST https://faceverification.{region}.aliyuncs.com/
+     * Real call: POST https://faceverification.{region}.aliyuncs.com/
      * { "TicketId": externalRef, "ProductKey": this.appId }
      */
     throw new Error("Aliyun queryStatus not implemented — set KYC_ALIYUN_STUB=true for dev");
   }
 
-  // ─── 5. 处理回调 ────────────────────────────────────────────
+  // ─── 5. Handle webhook ─────────────────────────────────────
 
   async handleWebhook(payload: Record<string, unknown>): Promise<{
     userId: string;
@@ -263,7 +260,7 @@ export class AliyunKYCProvider implements KYCProviderClient {
     externalRef: string;
     result?: IDCardOCRResult & FaceVerifyResult;
   }> {
-    // 阿里云回调格式示例
+    // Aliyun callback format example
     // { "TicketId": "...", "Status": "PASS", "Reason": "...", "VerifyResult": {...} }
     const status = payload["Status"] as string;
     const userId = payload["userId"] as string ?? "unknown";
@@ -282,18 +279,18 @@ export class AliyunKYCProvider implements KYCProviderClient {
     };
   }
 
-  // ─── 桩方法 ─────────────────────────────────────────────────
+  // ─── Stub methods ───────────────────────────────────────────
 
   private stubOCR(): IDCardOCRResult {
     console.log("[KYC STUB] stubOCR called, STUBS.enabled =", STUBS.enabled);
     return {
-      name: "张三",
-      gender: "男",
-      ethnicity: "汉",
+      name: "John Doe",
+      gender: "male",
+      ethnicity: "Han",
       birthDate: "1990-01-01",
-      address: "北京市朝阳区某某街道某某小区1号楼101室",
-      idCardNumber: "110101199001011234",
-      authority: "北京市公安局朝阳分局",
+      address: "123 Main St, Los Angeles, CA",
+      idCardNumber: "US123456789",
+      authority: "Los Angeles DMV",
       expireDate: "2030-01-01",
       confidence: { name: 99.8, idCardNumber: 99.9, address: 98.5 },
     };

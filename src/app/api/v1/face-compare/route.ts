@@ -1,12 +1,12 @@
 /**
  * POST /api/v1/face-compare
  *
- * 服务端人脸比对 — 在服务器端调用云厂商 API 进行 1:1 人脸比对
- * 不再依赖前端 face-api.js（可被绕过）
+ * Server-side face comparison — calls cloud provider APIs for 1:1 face matching
+ * Does not rely on frontend face-api.js (can be bypassed)
  *
  * Body (FormData):
- *   portrait: File  — 肖像照片
- *   idCard: File  — 证件照片
+ *   portrait: File  — portrait photo
+ *   idCard: File  — ID card photo
  *
  * Response:
  *   { success: true, score: 98.5, result: "PASS" }
@@ -28,7 +28,7 @@ function createProvider() {
 }
 
 // ============================================================
-// Aliyun 阿里云实人认证 — 人脸比对
+// Aliyun face verification
 // ============================================================
 
 async function aliyunCompareFace(
@@ -90,7 +90,7 @@ async function aliyunCompareFace(
 
   if (!res.ok) {
     const text = await res.text();
-    throw new Error(`Aliyun API error ${res.status}: ${text}`);
+    throw new Error(`Face verification provider error ${res.status}: ${text}`);
   }
 
   const data = await res.json();
@@ -138,7 +138,7 @@ async function hmacSha1Base64(key: string, data: string): Promise<string> {
 }
 
 // ============================================================
-// Tencent 腾讯云人脸核身 — 人脸比对
+// Tencent Cloud face verification
 // ============================================================
 
 async function tencentCompareFace(
@@ -209,7 +209,7 @@ async function tencentCompareFace(
 
   if (!res.ok) {
     const text = await res.text();
-    throw new Error(`Tencent API error ${res.status}: ${text}`);
+    throw new Error(`Face verification provider error ${res.status}: ${text}`);
   }
 
   const data = await res.json();
