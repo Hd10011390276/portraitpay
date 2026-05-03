@@ -199,7 +199,10 @@ export default function UploadPortraitPage() {
         body: uploadFormData,
       });
       const s3Json = await s3Res.json();
-      if (!s3Res.ok || !s3Json.success) throw new Error(s3Json.error || "S3 upload failed");
+      if (!s3Res.ok || !s3Json.success) {
+        const errMsg = s3Json.error || "图片上传失败，请重试";
+        throw new Error(errMsg);
+      }
       const originalImageUrl = s3Json.data.originalImageUrl;
 
       // 3.5 立即做人脸比对（上传肖像+身份证后自动触发）
@@ -208,7 +211,7 @@ export default function UploadPortraitPage() {
         const verifyRes = await fetch(`/api/portraits/${id}/verify-face`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ portraitImageUrl: originalImageUrl, idCardFrontUrl }),
+          body: JSON.stringify({ originalImageUrl, idCardFrontUrl }),
         });
         const verifyJson = await verifyRes.json();
         if (!verifyRes.ok || !verifyJson.success) {
@@ -227,7 +230,10 @@ export default function UploadPortraitPage() {
         body: JSON.stringify({ originalImageUrl, imageHash, idCardFrontUrl }),
       });
       const updateJson = await updateRes.json();
-      if (!updateJson.success) throw new Error(updateJson.error);
+      if (!updateRes.ok || !updateJson.success) {
+        const msg = updateJson.error || `保存失败 (${updateRes.status})，请重试`;
+        throw new Error(msg);
+      }
 
       // 5. Save face embedding (for similarity search, not identity verification)
       try {
