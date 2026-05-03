@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Revenue Service
  * Handles revenue calculation, split, and settlement logic
  */
@@ -12,7 +12,7 @@ import {
   type EarningsSummary,
 } from "./types";
 
-// 鈹€鈹€鈹€ Revenue Split Calculation 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
+// ─── Revenue Split Calculation ──────────────────────────────────────────────
 
 /**
  * Calculate revenue split for a given gross amount
@@ -26,7 +26,7 @@ export function calculateSplit(grossAmount: number): RevenueSplit {
   return { gross, platformFee, ownerRevenue };
 }
 
-// 鈹€鈹€鈹€ Create Transaction (on authorization payment) 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
+// ─── Create Transaction (on authorization payment) ──────────────────────────
 
 export type CreateTransactionInput = {
   userId: string;
@@ -36,7 +36,7 @@ export type CreateTransactionInput = {
   authorizationId?: string;
   metadata?: Record<string, unknown>;
   stripePaymentIntentId?: string;
-  portraitOwnerId?: string; // 鑲栧儚鎵€鏈夎€咃紙鏀舵鏂癸級
+  portraitOwnerId?: string; // 肖像所有者（收款方）
 };
 
 /**
@@ -45,14 +45,14 @@ export type CreateTransactionInput = {
  */
 export async function createRevenueTransaction(input: CreateTransactionInput) {
   const {
-    userId,          // 浠樻鏂?
+    userId,          // 付款方
     type,
     amount,
     currency = "CNY",
     authorizationId,
     metadata,
     stripePaymentIntentId,
-    portraitOwnerId, // 鑲栧儚鎵€鏈夎€?= 鏀舵鏂?
+    portraitOwnerId, // 肖像所有者 = 收款方
   } = input;
 
   const split = calculateSplit(amount);
@@ -105,7 +105,7 @@ export async function createRevenueTransaction(input: CreateTransactionInput) {
   return ownerTransaction;
 }
 
-// 鈹€鈹€鈹€ Earnings Summary 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
+// ─── Earnings Summary ────────────────────────────────────────────────────────
 
 /**
  * Get earnings summary for a user (as portrait owner receiving royalties)
@@ -171,7 +171,7 @@ async function getWithdrawnAmount(userId: string, currency: string): Promise<num
   return result._sum.amount?.toNumber() ?? 0;
 }
 
-// 鈹€鈹€鈹€ Get Earnings Transactions 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
+// ─── Get Earnings Transactions ───────────────────────────────────────────────
 
 export async function getEarningsTransactions(
   userId: string,
@@ -246,7 +246,7 @@ export async function getEarningsTransactions(
   };
 }
 
-// 鈹€鈹€鈹€ Withdrawal Validation 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
+// ─── Withdrawal Validation ────────────────────────────────────────────────────
 
 export type WithdrawalValidation = {
   valid: boolean;
@@ -264,7 +264,7 @@ export async function validateWithdrawal(
   if (amount < MIN_WITHDRAWAL_AMOUNT) {
     return {
       valid: false,
-      error: `鏈€浣庢彁鐜伴噾棰濅负 楼${MIN_WITHDRAWAL_AMOUNT}`,
+      error: `最低提现金额为 ¥${MIN_WITHDRAWAL_AMOUNT}`,
     };
   }
 
@@ -273,7 +273,7 @@ export async function validateWithdrawal(
   if (amount > summary.availableBalance) {
     return {
       valid: false,
-      error: `鍙彁鐜颁綑棰濅笉瓒筹紝褰撳墠鍙彁鐜?楼${summary.availableBalance.toFixed(2)}`,
+      error: `可提现余额不足，当前可提现 ¥${summary.availableBalance.toFixed(2)}`,
     };
   }
 
@@ -285,7 +285,7 @@ export async function validateWithdrawal(
   if (pendingCount > 0) {
     return {
       valid: false,
-      error: "鎮ㄦ湁寰呭鐞嗙殑鎻愮幇鐢宠锛岃绛夊緟澶勭悊瀹屾垚鍚庡啀鐢宠",
+      error: "您有待处理的提现申请，请等待处理完成后再申请",
     };
   }
 
@@ -295,14 +295,14 @@ export async function validateWithdrawal(
   if (day >= 1 && day <= 5) {
     return {
       valid: false,
-      error: "姣忔湀1鏃ヨ嚦5鏃ヤ负瀵硅处鍛ㄦ湡锛屾殏鍋滄彁鐜扮敵璇凤紝璇风◢鍚庡啀璇?,
+      error: "每月1日至5日为对账周期，暂停提现申请，请稍后再试",
     };
   }
 
   return { valid: true };
 }
 
-// 鈹€鈹€鈹€ Monthly Settlement Generation 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
+// ─── Monthly Settlement Generation ──────────────────────────────────────────
 
 /**
  * Generate monthly settlement for a user

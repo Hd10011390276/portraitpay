@@ -1,4 +1,4 @@
-﻿// Data Export Service
+// Data Export Service
 // Exports earnings reports and authorization records to CSV or PDF
 
 import { prisma } from "@/lib/prisma";
@@ -6,7 +6,7 @@ import PDFDocument from "pdfkit";
 import { format } from "date-fns";
 import { zhCN } from "date-fns/locale";
 
-// 鈹€鈹€鈹€ Types 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
+// ─── Types ───────────────────────────────────────────────────────────────────
 
 export type ExportFormat = "csv" | "pdf";
 
@@ -23,7 +23,7 @@ export type ExportAuthorizationsOptions = {
   format: ExportFormat;
 };
 
-// 鈹€鈹€鈹€ CSV Utilities 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
+// ─── CSV Utilities ───────────────────────────────────────────────────────────
 
 function escapeCSV(value: unknown): string {
   if (value === null || value === undefined) return "";
@@ -38,7 +38,7 @@ function toCSVRow(values: unknown[]): string {
   return values.map(escapeCSV).join(",");
 }
 
-// 鈹€鈹€鈹€ Export Earnings 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
+// ─── Export Earnings ─────────────────────────────────────────────────────────
 
 /**
  * Export earnings transactions as CSV string or PDF buffer.
@@ -87,17 +87,17 @@ function buildEarningsCSV(
   // Header
   lines.push(
     toCSVRow([
-      "浜ゆ槗ID",
-      "绫诲瀷",
-      "閲戦(CNY)",
-      "鐘舵€?,
-      "鑲栧儚鏍囬",
-      "鎺堟潈鏂?,
-      "鎺堟潈鏂归偖绠?,
-      "鎬绘敹鐩?鍚钩鍙拌垂)",
-      "骞冲彴鎵嬬画璐?,
-      "鐢ㄦ埛瀹為檯鏀剁泭",
-      "鍒涘缓鏃堕棿",
+      "交易ID",
+      "类型",
+      "金额(CNY)",
+      "状态",
+      "肖像标题",
+      "授权方",
+      "授权方邮箱",
+      "总收益(含平台费)",
+      "平台手续费",
+      "用户实际收益",
+      "创建时间",
     ])
   );
 
@@ -106,7 +106,7 @@ function buildEarningsCSV(
     lines.push(
       toCSVRow([
         t.id,
-        t.type === "ROYALTY_PAYOUT" ? "鏀剁泭鍒嗘垚" : "鎺堟潈璐拱",
+        t.type === "ROYALTY_PAYOUT" ? "收益分成" : "授权购买",
         t.amount.toNumber(),
         t.status,
         t.authorization?.portrait?.title ?? "-",
@@ -143,17 +143,17 @@ async function buildEarningsPDF(
       doc
         .fontSize(20)
         .font("Helvetica-Bold")
-        .text("PortraitPay 鏀剁泭鎶ュ憡", { align: "center" });
+        .text("PortraitPay 收益报告", { align: "center" });
       doc.moveDown(0.5);
 
       const period = [
-        startDate ? format(startDate, "yyyy-MM-dd") : "鍏ㄩ儴",
-        endDate ? format(endDate, "yyyy-MM-dd") : "鑷充粖",
+        startDate ? format(startDate, "yyyy-MM-dd") : "全部",
+        endDate ? format(endDate, "yyyy-MM-dd") : "至今",
       ].join(" ~ ");
       doc
         .fontSize(10)
         .fillColor("#666")
-        .text(`鎶ヨ〃鍛ㄦ湡锛?{period}銆€銆€鐢熸垚鏃堕棿锛?{format(new Date(), "yyyy-MM-dd HH:mm")}`, {
+        .text(`报表周期：${period}　　生成时间：${format(new Date(), "yyyy-MM-dd HH:mm")}`, {
           align: "center",
         });
       doc.moveDown(1);
@@ -178,21 +178,21 @@ async function buildEarningsPDF(
         .fontSize(12)
         .fillColor("#000")
         .font("Helvetica-Bold")
-        .text("鏀剁泭姹囨€?);
+        .text("收益汇总");
       doc.moveDown(0.3);
       doc
         .font("Helvetica")
         .fontSize(10)
-        .text(`鎬讳氦鏄撶瑪鏁帮細${transactions.length} 绗擿);
-      doc.text(`鎬绘敹鐩婏紙鐢ㄦ埛鍑€鏀跺叆锛夛細楼${totalRevenue.toFixed(2)}`);
-      doc.text(`鎬绘巿鏉冮噾棰濓紙鍚钩鍙拌垂锛夛細楼${totalGross.toFixed(2)}`);
-      doc.text(`骞冲彴鎵嬬画璐癸細楼${totalFee.toFixed(2)}`);
+        .text(`总交易笔数：${transactions.length} 笔`);
+      doc.text(`总收益（用户净收入）：¥${totalRevenue.toFixed(2)}`);
+      doc.text(`总授权金额（含平台费）：¥${totalGross.toFixed(2)}`);
+      doc.text(`平台手续费：¥${totalFee.toFixed(2)}`);
       doc.moveDown(1);
 
       // Table header
       const tableTop = doc.y;
       const colWidths = [80, 70, 60, 80, 120];
-      const headers = ["鏃ユ湡", "绫诲瀷", "閲戦", "鑲栧儚", "鎺堟潈鏂?];
+      const headers = ["日期", "类型", "金额", "肖像", "授权方"];
       let x = 50;
       doc.font("Helvetica-Bold").fontSize(9);
       headers.forEach((h, i) => {
@@ -215,8 +215,8 @@ async function buildEarningsPDF(
 
         const row = [
           format(new Date(t.createdAt), "MM-dd"),
-          t.type === "ROYALTY_PAYOUT" ? "鏀剁泭鍒嗘垚" : "鎺堟潈璐拱",
-          `楼${t.amount.toNumber().toFixed(2)}`,
+          t.type === "ROYALTY_PAYOUT" ? "收益分成" : "授权购买",
+          `¥${t.amount.toNumber().toFixed(2)}`,
           (t.authorization?.portrait?.title ?? "-").substring(0, 15),
           (t.authorization?.grantee?.displayName ?? "-").substring(0, 15),
         ];
@@ -235,7 +235,7 @@ async function buildEarningsPDF(
         .fontSize(8)
         .fillColor("#999")
         .text(
-          `鏈姤鍛婄敱 PortraitPay AI 绯荤粺鑷姩鐢熸垚锛屼粎渚涚敤鎴峰弬鑰冿紝涓嶄綔涓烘硶寰嬪嚟璇併€俙,
+          `本报告由 PortraitPay AI 系统自动生成，仅供用户参考，不作为法律凭证。`,
           50,
           780,
           { align: "center" }
@@ -248,7 +248,7 @@ async function buildEarningsPDF(
   });
 }
 
-// 鈹€鈹€鈹€ Export Authorizations 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
+// ─── Export Authorizations ───────────────────────────────────────────────────
 
 export async function exportAuthorizations(options: ExportAuthorizationsOptions): Promise<string | Buffer> {
   const { userId, status, format: fmt } = options;
@@ -279,19 +279,19 @@ function buildAuthorizationsCSV(authorizations: any[]): string {
   const lines: string[] = [];
   lines.push(
     toCSVRow([
-      "鎺堟潈ID",
-      "鐘舵€?,
-      "鑲栧儚鏍囬",
-      "鎺堟潈鏂?,
-      "鎺堟潈鏂归偖绠?,
-      "琚巿鏉冩柟",
-      "琚巿鏉冩柟閭",
-      "鎺堟潈绫诲瀷",
-      "鎺堟潈璐?CNY)",
-      "寮€濮嬫棩鏈?,
-      "缁撴潫鏃ユ湡",
-      "閾句笂鍝堝笇",
-      "鍒涘缓鏃堕棿",
+      "授权ID",
+      "状态",
+      "肖像标题",
+      "授权方",
+      "授权方邮箱",
+      "被授权方",
+      "被授权方邮箱",
+      "授权类型",
+      "授权费(CNY)",
+      "开始日期",
+      "结束日期",
+      "链上哈希",
+      "创建时间",
     ])
   );
 
@@ -308,7 +308,7 @@ function buildAuthorizationsCSV(authorizations: any[]): string {
         a.licenseType,
         a.licenseFee.toNumber(),
         a.startDate ? format(new Date(a.startDate), "yyyy-MM-dd") : "-",
-        a.endDate ? format(new Date(a.endDate), "yyyy-MM-dd") : "姘镐箙",
+        a.endDate ? format(new Date(a.endDate), "yyyy-MM-dd") : "永久",
         a.contractHash ?? "-",
         format(new Date(a.createdAt), "yyyy-MM-dd HH:mm:ss"),
       ])
@@ -330,29 +330,29 @@ async function buildAuthorizationsPDF(authorizations: any[], userId: string): Pr
       doc
         .fontSize(20)
         .font("Helvetica-Bold")
-        .text("PortraitPay 鎺堟潈璁板綍", { align: "center" });
+        .text("PortraitPay 授权记录", { align: "center" });
       doc.moveDown(0.5);
       doc
         .fontSize(10)
         .fillColor("#666")
-        .text(`瀵煎嚭鏃堕棿锛?{format(new Date(), "yyyy-MM-dd HH:mm")}`, { align: "center" });
+        .text(`导出时间：${format(new Date(), "yyyy-MM-dd HH:mm")}`, { align: "center" });
       doc.moveDown(1);
 
       // Summary
       const active = authorizations.filter((a) => a.status === "ACTIVE").length;
       const pending = authorizations.filter((a) => a.status === "PENDING").length;
-      doc.fontSize(12).fillColor("#000").font("Helvetica-Bold").text("鎺堟潈姹囨€?);
+      doc.fontSize(12).fillColor("#000").font("Helvetica-Bold").text("授权汇总");
       doc.moveDown(0.3);
       doc
         .font("Helvetica")
         .fontSize(10)
-        .text(`鎬昏褰曟暟锛?{authorizations.length}  |  鐢熸晥涓細${active}  |  寰呭鏍革細${pending}`);
+        .text(`总记录数：${authorizations.length}  |  生效中：${active}  |  待审核：${pending}`);
       doc.moveDown(1);
 
       // Table
       const tableTop = doc.y;
       const colWidths = [70, 55, 70, 100, 100, 70];
-      const headers = ["鏃ユ湡", "鐘舵€?, "绫诲瀷", "鑲栧儚", "鎺堟潈鏂?琚巿鏉冩柟", "鎺堟潈璐?];
+      const headers = ["日期", "状态", "类型", "肖像", "授权方/被授权方", "授权费"];
       let x = 50;
       doc.font("Helvetica-Bold").fontSize(9);
       headers.forEach((h, i) => {
@@ -387,7 +387,7 @@ async function buildAuthorizationsPDF(authorizations: any[], userId: string): Pr
           a.licenseType,
           (a.portrait?.title ?? "-").substring(0, 12),
           (otherParty as string).substring(0, 12),
-          `楼${a.licenseFee.toNumber()}`,
+          `¥${a.licenseFee.toNumber()}`,
         ];
 
         x = 50;
@@ -403,7 +403,7 @@ async function buildAuthorizationsPDF(authorizations: any[], userId: string): Pr
       doc
         .fontSize(8)
         .fillColor("#999")
-        .text("鏈姤鍛婄敱 PortraitPay AI 绯荤粺鑷姩鐢熸垚銆?, 50, 780, { align: "center" });
+        .text("本报告由 PortraitPay AI 系统自动生成。", 50, 780, { align: "center" });
 
       doc.end();
     } catch (err) {

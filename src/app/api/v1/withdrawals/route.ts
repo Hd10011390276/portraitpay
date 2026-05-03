@@ -1,4 +1,4 @@
-﻿
+
 /**
  * GET  /api/v1/withdrawals     - List user's withdrawal applications
  * POST /api/v1/withdrawals     - Create a new withdrawal application
@@ -14,7 +14,7 @@ export const dynamic = "force-dynamic";
 
 
 const CreateWithdrawalSchema = z.object({
-  amount: z.number().positive(`鏈€浣庢彁鐜伴噾棰濅负 楼${MIN_WITHDRAWAL_AMOUNT}`),
+  amount: z.number().positive(`最低提现金额为 ¥${MIN_WITHDRAWAL_AMOUNT}`),
   currency: z.string().default("CNY"),
   paymentMethod: z.enum(["wechat", "alipay", "paypal", "bank"]).default("bank"),
   // For digital wallets
@@ -26,7 +26,7 @@ const CreateWithdrawalSchema = z.object({
   accountHolder: z.string().optional(),
 });
 
-// 鈹€鈹€鈹€ GET 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
+// ─── GET ──────────────────────────────────────────────────────────────────────
 
 export async function GET(request: NextRequest) {
   try {
@@ -78,7 +78,7 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// 鈹€鈹€鈹€ POST 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
+// ─── POST ────────────────────────────────────────────────────────────────────
 
 export async function POST(request: NextRequest) {
   try {
@@ -126,7 +126,7 @@ export async function POST(request: NextRequest) {
         accountHolder: finalAccountHolder,
         status: "PENDING",
         // Store payment method in bankName for digital wallets
-        // bankAccount full is encrypted in production 鈥?store hashed
+        // bankAccount full is encrypted in production — store hashed
       },
     });
 
