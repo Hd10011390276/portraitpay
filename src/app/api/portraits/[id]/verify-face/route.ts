@@ -24,17 +24,23 @@ export async function POST(request: NextRequest, context: RouteContext) {
       select: { ownerId: true, originalImageUrl: true, idCardFrontUrl: true },
     });
 
+    console.log(`[verify-face] Looking up portrait id=${id}`);
     if (!portrait) {
+      console.log(`[verify-face] Portrait ${id} not found in database`);
       return NextResponse.json({ success: false, error: "Portrait not found" }, { status: 404 });
     }
+    console.log(`[verify-face] Portrait found: ownerId=${portrait.ownerId}, hasOriginalImage=${!!portrait.originalImageUrl}, hasIdCard=${!!portrait.idCardFrontUrl}`);
 
     if (portrait.ownerId !== session.userId) {
       return NextResponse.json({ success: false, error: "Forbidden" }, { status: 403 });
     }
 
     const body = await request.json().catch(() => ({}));
-    const portraitImageUrl = body.portraitImageUrl ?? portrait.originalImageUrl;
+    console.log(`[verify-face] Request body keys: ${Object.keys(body).join(', ')}`);
+    console.log(`[verify-face] portrait.originalImageUrl from DB: ${portrait.originalImageUrl}`);
+    const portraitImageUrl = body.originalImageUrl ?? portrait.originalImageUrl;
     const idCardFrontUrl = body.idCardFrontUrl ?? portrait.idCardFrontUrl;
+    console.log(`[verify-face] Final portraitImageUrl: ${portraitImageUrl}, idCardFrontUrl: ${idCardFrontUrl}`);
 
     if (!portraitImageUrl) {
       return NextResponse.json(
@@ -69,13 +75,13 @@ export async function POST(request: NextRequest, context: RouteContext) {
 
     if (code === "FACE_MISMATCH") {
       return NextResponse.json(
-        { success: false, error: errMsg, code: "PP-FACE-001" },
+        { success: false, error: "人脸与身份证照片不匹配，请确认上传的是同一人清晰的照片。", code: "PP-FACE-001" },
         { status: 403 }
       );
     }
 
     return NextResponse.json(
-      { success: false, error: "人脸核验失败：" + errMsg, code: code ?? "PP-FACE-002" },
+      { success: false, error: "人脸核验服务暂时不可用，请稍后重试。", code: code ?? "PP-FACE-002" },
       { status: 500 }
     );
   }
