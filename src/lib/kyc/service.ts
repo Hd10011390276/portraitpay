@@ -547,7 +547,50 @@ export class KYCService {
     return result.count;
   }
 
-  // ─── 11. Mint 时人脸核验 ─────────────────────────────────────
+  // ─── 11. 直接人脸比对（上传时调用，不依赖 KYC approval） ─────────
+
+  /**
+   * 在上传肖像时调用，直接比对肖像照和身份证照片。
+   * 不需要平台 KYC approval，直接调用 CompareFace API。
+   */
+  async verifyFaceAtUpload(
+    portraitImageUrl: string,
+    idCardFrontUrl: string
+  ): Promise<{ success: true; faceResult: FaceVerifyResult }> {
+    if (!portraitImageUrl?.trim()) {
+      const err = new Error("Portrait image not found");
+      (err as any).code = "PORTRAIT_IMAGE_MISSING";
+      throw err;
+    }
+    if (!idCardFrontUrl?.trim()) {
+      const err = new Error("ID card front photo not found");
+      (err as any).code = "ID_CARD_MISSING";
+      throw err;
+    }
+
+    try {
+      const faceResult = await this.provider.submitFaceVerify(
+        portraitImageUrl,
+        idCardFrontUrl
+      );
+      if (faceResult.verifyResult === "FAIL") {
+        const err = new Error(
+          "Face verification failed - portrait does not match ID card (score: " +
+            faceResult.verifyScore + ")"
+        );
+        (err as any).code = "FACE_MISMATCH";
+        throw err;
+      }
+      return { success: true, faceResult };
+    } catch (err) {
+      if ((err as any).code === "FACE_MISMATCH") throw err;
+      const e = err instanceof Error ? err : new Error(String(err));
+      (e as any).code = "COMPARE_ERROR";
+      throw e;
+    }
+  }
+
+  // ─── 12. Mint 时人脸核验 ─────────────────────────────────────
 
   /**
    * Face verification at mint time.

@@ -202,6 +202,21 @@ export default function UploadPortraitPage() {
       if (!s3Res.ok || !s3Json.success) throw new Error(s3Json.error || "S3 upload failed");
       const originalImageUrl = s3Json.data.originalImageUrl;
 
+      // 3.5 立即做人脸比对（上传肖像+身份证后自动触发）
+      if (idCardFrontUrl) {
+        setProgress("人脸核验中...");
+        const verifyRes = await fetch(`/api/portraits/${id}/verify-face`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ portraitImageUrl: originalImageUrl, idCardFrontUrl }),
+        });
+        const verifyJson = await verifyRes.json();
+        if (!verifyRes.ok || !verifyJson.success) {
+          throw new Error(verifyJson.error ?? "人脸核验失败，请重新上传清晰的肖像照和身份证");
+        }
+        console.log("[face-verify] Passed! Score:", verifyJson.data.verifyScore);
+      }
+
       await savePortraitLocally(id, croppedFile);
 
       // 4. Register URL
