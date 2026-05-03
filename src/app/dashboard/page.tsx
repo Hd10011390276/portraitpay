@@ -68,7 +68,7 @@ function DashboardContent({ user }: { user: User }) {
             },
             {
               label: t.dashboard.stats.monthlyEarnings,
-              value: `¥${(summary.availableBalance || 0).toLocaleString()}`,
+              value: `$${(summary.availableBalance || 0).toLocaleString()}`,
               delta: "",
               color: "text-green-600",
               bg: "bg-green-50 dark:bg-green-900/20",
@@ -267,7 +267,7 @@ function DashboardContent({ user }: { user: User }) {
                         tx.amount >= 0 ? "text-green-600" : "text-red-600"
                       }`}
                     >
-                      {tx.amount >= 0 ? "+" : ""}¥{Math.abs(tx.amount).toLocaleString()}
+                      {tx.amount >= 0 ? "+" : ""}${Math.abs(tx.amount).toLocaleString()}
                     </p>
                   </div>
                 ))}

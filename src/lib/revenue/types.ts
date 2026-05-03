@@ -2,7 +2,7 @@
 
 export const PLATFORM_FEE_RATE = 0.01; // 1% platform fee
 export const OWNER_SPLIT_RATE = 0.99;   // 99% to portrait owner
-export const MIN_WITHDRAWAL_AMOUNT = 100; // ¥100 minimum
+export const MIN_WITHDRAWAL_AMOUNT = 100; // $100 minimum
 
 export const WITHDRAWAL_SETTLEMENT_DAYS = [1, 2, 3]; // 1-3 business days
 

@@ -136,7 +136,7 @@ export default function OwnerAuthorizationsPage() {
                           <span className="font-medium">地域：</span>{app.territorialScope} | <span className="font-medium">期限：</span>{app.usageDuration}天
                         </p>
                         <p className="text-sm text-gray-700">
-                          <span className="font-medium">申请费用：</span>¥{app.proposedFee} {app.currency}
+                          <span className="font-medium">申请费用：</span>${app.proposedFee} {app.currency}
                         </p>
                         <p className="text-sm text-gray-600 mt-2">{app.purpose}</p>
                       </div>

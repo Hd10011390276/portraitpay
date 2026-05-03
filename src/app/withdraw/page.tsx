@@ -349,7 +349,7 @@ function WithdrawPageContent() {
             {/* Amount */}
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                {t.withdraw.amount.replace("¥", currencySymbol).replace("$", currencySymbol)}
+                {t.withdraw.amount.replace("$", currencySymbol).replace("$", currencySymbol)}
               </label>
               <input
                 type="number"
@@ -460,7 +460,7 @@ function WithdrawPageContent() {
             )}
 
             <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 text-xs text-gray-500 dark:text-gray-400 space-y-1">
-              <p>• {t.withdraw.withdrawNote1.replace("{min}", minAmount.toString()).replace("¥", currencySymbol).replace("$", currencySymbol)}</p>
+              <p>• {t.withdraw.withdrawNote1.replace("{min}", minAmount.toString()).replace("$", currencySymbol).replace("$", currencySymbol)}</p>
               <p>• {t.withdraw.withdrawNote2}</p>
               <p>• {t.withdraw.withdrawNote3}</p>
             </div>

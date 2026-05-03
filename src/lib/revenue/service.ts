@@ -264,7 +264,7 @@ export async function validateWithdrawal(
   if (amount < MIN_WITHDRAWAL_AMOUNT) {
     return {
       valid: false,
-      error: `最低提现金额为 ¥${MIN_WITHDRAWAL_AMOUNT}`,
+      error: `最低提现金额为 $${MIN_WITHDRAWAL_AMOUNT}`,
     };
   }
 
@@ -273,7 +273,7 @@ export async function validateWithdrawal(
   if (amount > summary.availableBalance) {
     return {
       valid: false,
-      error: `可提现余额不足，当前可提现 ¥${summary.availableBalance.toFixed(2)}`,
+      error: `可提现余额不足，当前可提现 $${summary.availableBalance.toFixed(2)}`,
     };
   }
 

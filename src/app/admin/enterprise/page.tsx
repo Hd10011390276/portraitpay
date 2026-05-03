@@ -194,7 +194,7 @@ export default function AdminEnterprisePage() {
                       </div>
                       <div className="mt-2 text-sm text-gray-600 space-y-1">
                         <p><span className="font-medium">使用范围：</span>{auth.usageScope?.join("、")}</p>
-                        <p><span className="font-medium">申请费用：</span>¥{auth.proposedFee} {auth.currency}</p>
+                        <p><span className="font-medium">申请费用：</span>${auth.proposedFee} {auth.currency}</p>
                         <p><span className="font-medium">用途说明：</span>{auth.purpose}</p>
                       </div>
                       <div className="flex gap-3 mt-4">

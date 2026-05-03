@@ -184,9 +184,9 @@ async function buildEarningsPDF(
         .font("Helvetica")
         .fontSize(10)
         .text(`总交易笔数：${transactions.length} 笔`);
-      doc.text(`总收益（用户净收入）：¥${totalRevenue.toFixed(2)}`);
-      doc.text(`总授权金额（含平台费）：¥${totalGross.toFixed(2)}`);
-      doc.text(`平台手续费：¥${totalFee.toFixed(2)}`);
+      doc.text(`总收益（用户净收入）：$${totalRevenue.toFixed(2)}`);
+      doc.text(`总授权金额（含平台费）：$${totalGross.toFixed(2)}`);
+      doc.text(`平台手续费：$${totalFee.toFixed(2)}`);
       doc.moveDown(1);
 
       // Table header
@@ -216,7 +216,7 @@ async function buildEarningsPDF(
         const row = [
           format(new Date(t.createdAt), "MM-dd"),
           t.type === "ROYALTY_PAYOUT" ? "收益分成" : "授权购买",
-          `¥${t.amount.toNumber().toFixed(2)}`,
+          `$${t.amount.toNumber().toFixed(2)}`,
           (t.authorization?.portrait?.title ?? "-").substring(0, 15),
           (t.authorization?.grantee?.displayName ?? "-").substring(0, 15),
         ];
@@ -387,7 +387,7 @@ async function buildAuthorizationsPDF(authorizations: any[], userId: string): Pr
           a.licenseType,
           (a.portrait?.title ?? "-").substring(0, 12),
           (otherParty as string).substring(0, 12),
-          `¥${a.licenseFee.toNumber()}`,
+          `$${a.licenseFee.toNumber()}`,
         ];
 
         x = 50;

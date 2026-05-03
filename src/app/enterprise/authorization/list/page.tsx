@@ -127,7 +127,7 @@ export default function AuthorizationListPage() {
                               使用范围：{app.usageScope?.join("、")}
                             </p>
                             <p className="text-sm text-gray-500">
-                              申请费用：¥{app.proposedFee} {app.currency}
+                              申请费用：${app.proposedFee} {app.currency}
                             </p>
                             <p className="text-xs text-gray-400 mt-1">
                               提交时间：{new Date(app.createdAt).toLocaleDateString("zh-CN")}
@@ -183,7 +183,7 @@ export default function AuthorizationListPage() {
                           <h3 className="font-semibold text-gray-900">{auth.portrait?.title}</h3>
                           <p className="text-sm text-gray-500">所有者：{auth.portrait?.owner?.displayName}</p>
                           <p className="text-sm text-gray-500">
-                            授权期限：{auth.usageDuration}天 | 费用：¥{auth.proposedFee}
+                            授权期限：{auth.usageDuration}天 | 费用：${auth.proposedFee}
                           </p>
                           <p className="text-xs text-green-600 mt-1">证书编号：{auth.certificateNo}</p>
                         </div>

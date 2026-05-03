@@ -49,7 +49,7 @@ function MiniBarChart({ data }: { data: { label: string; value: number }[] }) {
               <div
                 className="w-full rounded-t-md bg-gradient-to-t from-blue-500 to-blue-400 transition-all hover:from-blue-600 hover:to-blue-500"
                 style={{ height: `${Math.max(heightPct, 4)}%` }}
-                title={`${d.label}: ¥${d.value.toLocaleString()}`}
+                title={`${d.label}: $${d.value.toLocaleString()}`}
               />
             </div>
             <span className="text-xs text-gray-400 dark:text-gray-500 rotate-0">{d.label}</span>
