@@ -72,12 +72,21 @@ export async function POST(request: NextRequest, context: RouteContext) {
     // Upload to R2
     let objectUrl: string;
     try {
+      console.log(`[upload/direct] R2 config check:
+        bucket=${process.env.AWS_S3_BUCKET}
+        region=${process.env.AWS_REGION ?? process.env.AWS_S3_REGION}
+        accessKeyId=${process.env.AWS_ACCESS_KEY_ID ? "(set)" : "(MISSING)"}
+        secretAccessKey=${process.env.AWS_SECRET_ACCESS_KEY ? "(set)" : "(MISSING)"}
+        endpoint=${process.env.AWS_ENDPOINT ?? "(not set)"}`);
+
       console.log(`[upload/direct] Calling uploadFile for key: ${key}`);
       objectUrl = await uploadFile(imageBuffer, key, "image/jpeg");
       console.log(`[upload/direct] uploadFile returned: ${objectUrl}`);
     } catch (uploadErr) {
       console.error("[upload/direct] R2 upload failed:", uploadErr);
-      return NextResponse.json({ success: false, error: "Upload to storage failed" }, { status: 500 });
+      const errMsg = uploadErr instanceof Error ? `${uploadErr.message}: ${JSON.stringify(uploadErr)}` : String(uploadErr);
+      console.error("[upload/direct] R2 error details:", errMsg);
+      return NextResponse.json({ success: false, error: "Upload to storage failed: " + errMsg }, { status: 500 });
     }
 
     // Update portrait record based on upload type
