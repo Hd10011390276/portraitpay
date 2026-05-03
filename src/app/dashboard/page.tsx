@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
@@ -68,7 +68,7 @@ function DashboardContent({ user }: { user: User }) {
             },
             {
               label: t.dashboard.stats.monthlyEarnings,
-              value: `¥${(summary.availableBalance || 0).toLocaleString()}`,
+              value: `楼${(summary.availableBalance || 0).toLocaleString()}`,
               delta: "",
               color: "text-green-600",
               bg: "bg-green-50 dark:bg-green-900/20",
@@ -107,7 +107,7 @@ function DashboardContent({ user }: { user: User }) {
 
   return (
     <DashboardShell
-      title={`${t.dashboard.welcome}${user?.name ?? user?.email.split("@")[0]} 👋`}
+      title={`${t.dashboard.welcome}${user?.name ?? user?.email.split("@")[0]} 馃憢`}
       subtitle={t.dashboard.console}
       action={
         <Link
@@ -179,7 +179,7 @@ function DashboardContent({ user }: { user: User }) {
                       {(p.thumbnailUrl || p.originalImageUrl) ? (
                         <img src={p.thumbnailUrl || p.originalImageUrl} alt="" className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; (e.target as HTMLImageElement).nextElementSibling?.classList.remove('hidden'); }} />
                       ) : null}
-                      <span className={(p.thumbnailUrl || p.originalImageUrl) ? 'hidden' : ''}>👤</span>
+                      <span className={(p.thumbnailUrl || p.originalImageUrl) ? 'hidden' : ''}>馃懁</span>
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
@@ -267,7 +267,7 @@ function DashboardContent({ user }: { user: User }) {
                         tx.amount >= 0 ? "text-green-600" : "text-red-600"
                       }`}
                     >
-                      {tx.amount >= 0 ? "+" : ""}¥{Math.abs(tx.amount).toLocaleString()}
+                      {tx.amount >= 0 ? "+" : ""}楼{Math.abs(tx.amount).toLocaleString()}
                     </p>
                   </div>
                 ))}
@@ -282,19 +282,19 @@ function DashboardContent({ user }: { user: User }) {
             {
               label: t.dashboard.uploadPortrait,
               href: "/portraits/upload",
-              icon: "📤",
+              icon: "馃摛",
               desc: t.dashboard.uploadDesc,
             },
             {
               label: t.dashboard.quickAction.viewEarnings,
               href: "/earnings",
-              icon: "💰",
+              icon: "馃挵",
               desc: t.dashboard.viewEarningsDesc,
             },
             {
               label: t.dashboard.quickAction.reportInfringement,
               href: "/report",
-              icon: "🚨",
+              icon: "馃毃",
               desc: t.dashboard.reportInfringementDesc,
             },
           ].map((action) => (
@@ -317,7 +317,7 @@ function DashboardContent({ user }: { user: User }) {
           <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
             <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 dark:border-gray-800">
               <div className="flex items-center gap-2">
-                <span className="text-xl">🏛️</span>
+                <span className="text-xl">馃彌锔?/span>
                 <h2 className="font-semibold text-gray-900 dark:text-white">
                   {t.dashboard.verifiedLawFirms}
                 </h2>
@@ -334,7 +334,7 @@ function DashboardContent({ user }: { user: User }) {
                 <div key={lawyer.id} className="p-4 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
                   <div className="flex items-start gap-3">
                     <div className="w-10 h-10 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-lg flex-shrink-0">
-                      🏛️
+                      馃彌锔?
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">
@@ -345,13 +345,13 @@ function DashboardContent({ user }: { user: User }) {
                       </p>
                       <div className="mt-2 flex flex-col gap-1">
                         <p className="text-xs text-gray-600 dark:text-gray-300">
-                          👤 {lawyer.contactName}
+                          馃懁 {lawyer.contactName}
                         </p>
                         <p className="text-xs text-gray-600 dark:text-gray-300">
-                          📧 {lawyer.contactEmail}
+                          馃摟 {lawyer.contactEmail}
                         </p>
                         <p className="text-xs text-gray-600 dark:text-gray-300">
-                          📞 {lawyer.contactPhone}
+                          馃摓 {lawyer.contactPhone}
                         </p>
                       </div>
                     </div>

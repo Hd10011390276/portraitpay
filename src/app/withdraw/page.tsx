@@ -1,5 +1,5 @@
-/**
- * /withdraw — Withdrawal Application Page
+﻿/**
+ * /withdraw 鈥?Withdrawal Application Page
  * Supports region-based payment methods:
  * - US: PayPal, Credit Card (Stripe), Bank Transfer
  * - HK/TW/OTHER: PayPal, Bank Transfer
@@ -56,27 +56,27 @@ type PaymentMethod = "paypal" | "credit_card" | "bank";
 type Region = "US" | "HK" | "TW" | "OTHER";
 
 const REGION_OPTIONS: { value: Region; flag: string }[] = [
-  { value: "US", flag: "🇺🇸" },
-  { value: "HK", flag: "🇭🇰" },
-  { value: "TW", flag: "🇹🇼" },
-  { value: "OTHER", flag: "🌍" },
+  { value: "US", flag: "馃嚭馃嚫" },
+  { value: "HK", flag: "馃嚟馃嚢" },
+  { value: "TW", flag: "馃嚬馃嚰" },
+  { value: "OTHER", flag: "馃實" },
 ];
 
 function getPaymentMethodsForRegion(region: Region, t: Record<string, any>) {
   switch (region) {
     case "US":
       return [
-        { value: "paypal" as PaymentMethod, label: t.withdraw.paypal, icon: "🟣" },
-        { value: "credit_card" as PaymentMethod, label: t.withdraw.creditCard, icon: "💳" },
-        { value: "bank" as PaymentMethod, label: t.withdraw.bankTransfer, icon: "🏦" },
+        { value: "paypal" as PaymentMethod, label: t.withdraw.paypal, icon: "馃煟" },
+        { value: "credit_card" as PaymentMethod, label: t.withdraw.creditCard, icon: "馃挸" },
+        { value: "bank" as PaymentMethod, label: t.withdraw.bankTransfer, icon: "馃彟" },
       ];
     case "HK":
     case "TW":
     case "OTHER":
     default:
       return [
-        { value: "paypal" as PaymentMethod, label: t.withdraw.paypal, icon: "🟣" },
-        { value: "bank" as PaymentMethod, label: t.withdraw.bankTransfer, icon: "🏦" },
+        { value: "paypal" as PaymentMethod, label: t.withdraw.paypal, icon: "馃煟" },
+        { value: "bank" as PaymentMethod, label: t.withdraw.bankTransfer, icon: "馃彟" },
       ];
   }
 }
@@ -246,10 +246,10 @@ function WithdrawPageContent() {
 
   const getMethodIcon = (pm: string) => {
     switch (pm) {
-      case "paypal": return "🟣";
-      case "credit_card": return "💳";
-      case "bank": return "🏦";
-      default: return "💰";
+      case "paypal": return "馃煟";
+      case "credit_card": return "馃挸";
+      case "bank": return "馃彟";
+      default: return "馃挵";
     }
   };
 
@@ -272,7 +272,7 @@ function WithdrawPageContent() {
         <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl p-6 text-white">
           <p className="text-blue-100 text-sm mb-1">{t.withdraw.availableBalance}</p>
           <p className="text-3xl sm:text-4xl font-bold">
-            {loading ? "—" : formatCurrency(balance?.availableBalance ?? 0)}
+            {loading ? "鈥? : formatCurrency(balance?.availableBalance ?? 0)}
           </p>
           <p className="text-blue-200 text-xs mt-2">{t.withdraw.balanceNote}</p>
         </div>
@@ -349,7 +349,7 @@ function WithdrawPageContent() {
             {/* Amount */}
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                {t.withdraw.amount.replace("¥", currencySymbol).replace("$", currencySymbol)}
+                {t.withdraw.amount.replace("楼", currencySymbol).replace("$", currencySymbol)}
               </label>
               <input
                 type="number"
@@ -460,9 +460,9 @@ function WithdrawPageContent() {
             )}
 
             <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 text-xs text-gray-500 dark:text-gray-400 space-y-1">
-              <p>• {t.withdraw.withdrawNote1.replace("{min}", minAmount.toString()).replace("¥", currencySymbol).replace("$", currencySymbol)}</p>
-              <p>• {t.withdraw.withdrawNote2}</p>
-              <p>• {t.withdraw.withdrawNote3}</p>
+              <p>鈥?{t.withdraw.withdrawNote1.replace("{min}", minAmount.toString()).replace("楼", currencySymbol).replace("$", currencySymbol)}</p>
+              <p>鈥?{t.withdraw.withdrawNote2}</p>
+              <p>鈥?{t.withdraw.withdrawNote3}</p>
             </div>
 
             <button
@@ -494,7 +494,7 @@ function WithdrawPageContent() {
                       <p className="text-sm font-medium text-gray-900 dark:text-white">{formatCurrency(w.amount)}</p>
                       <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 truncate">
                         {getMethodIcon(w.paymentMethod ?? "bank")} {getMethodLabel(w.paymentMethod ?? "bank")}
-                        {w.bankAccountLast4 ? ` ****${w.bankAccountLast4}` : ""} · {formatDate(w.createdAt)}
+                        {w.bankAccountLast4 ? ` ****${w.bankAccountLast4}` : ""} 路 {formatDate(w.createdAt)}
                       </p>
                       {w.rejectionReason && (
                         <p className="text-xs text-red-500 dark:text-red-400 mt-0.5">{t.withdraw.rejectionReason.replace("{reason}", w.rejectionReason)}</p>
@@ -516,7 +516,7 @@ function WithdrawPageContent() {
 
 function LoadingFallback() {
   return (
-    <DashboardShell title="提现" subtitle="PortraitPay AI · 收益提现申请">
+    <DashboardShell title="鎻愮幇" subtitle="PortraitPay AI 路 鏀剁泭鎻愮幇鐢宠">
       <div className="animate-pulse space-y-4">
         <div className="h-32 bg-gray-200 dark:bg-gray-800 rounded-2xl" />
         <div className="h-48 bg-gray-200 dark:bg-gray-800 rounded-xl" />

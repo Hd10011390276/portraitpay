@@ -1,11 +1,11 @@
-
+﻿
 /**
  * POST /api/v1/payments/initiate
  * Initialize a Stripe payment for license authorization
  *
  * Body:
  *   authorizationId: string
- *   amount: number (in cents, e.g. 5000 = ¥50.00)
+ *   amount: number (in cents, e.g. 5000 = 楼50.00)
  *   currency?: string (default: "cny")
  *   description?: string
  */

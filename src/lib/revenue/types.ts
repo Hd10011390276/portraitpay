@@ -1,23 +1,23 @@
-// Revenue & Payment Type Definitions
+﻿// Revenue & Payment Type Definitions
 
 export const PLATFORM_FEE_RATE = 0.01; // 1% platform fee
 export const OWNER_SPLIT_RATE = 0.99;   // 99% to portrait owner
-export const MIN_WITHDRAWAL_AMOUNT = 100; // ¥100 minimum
+export const MIN_WITHDRAWAL_AMOUNT = 100; // 楼100 minimum
 
 export const WITHDRAWAL_SETTLEMENT_DAYS = [1, 2, 3]; // 1-3 business days
 
 export type RevenueSplit = {
-  gross: number;       // 总收益（含平台费）
-  platformFee: number;  // 平台1%
-  ownerRevenue: number; // 肖像所有者99%
+  gross: number;       // 鎬绘敹鐩婏紙鍚钩鍙拌垂锛?
+  platformFee: number;  // 骞冲彴1%
+  ownerRevenue: number; // 鑲栧儚鎵€鏈夎€?9%
 };
 
 export type EarningsSummary = {
-  totalRevenue: number;       // 历史总收益（用户净收入）
-  monthRevenue: number;      // 本月收益
-  pendingRevenue: number;    // 待结算
-  availableBalance: number; // 可提现余额
-  totalWithdrawals: number;  // 已提现总额
+  totalRevenue: number;       // 鍘嗗彶鎬绘敹鐩婏紙鐢ㄦ埛鍑€鏀跺叆锛?
+  monthRevenue: number;      // 鏈湀鏀剁泭
+  pendingRevenue: number;    // 寰呯粨绠?
+  availableBalance: number; // 鍙彁鐜颁綑棰?
+  totalWithdrawals: number;  // 宸叉彁鐜版€婚
   currency: string;
 };
 
