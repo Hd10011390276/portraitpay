@@ -90,17 +90,6 @@ export async function POST(request: NextRequest, context: RouteContext) {
       );
     }
 
-    // Check for duplicate hash across other portraits
-    const duplicate = await prisma.portrait.findFirst({
-      where: { imageHash, NOT: { id } },
-    });
-    if (duplicate) {
-      return NextResponse.json(
-        { success: false, error: "This image hash is already registered to another portrait", code: "PP-3002" },
-        { status: 409 }
-      );
-    }
-
     // ── Face Verification: verify portrait matches user's ID card ──────────────────
     console.log("[Mint] Starting face verification before minting...");
     try {
@@ -222,10 +211,38 @@ export async function POST(request: NextRequest, context: RouteContext) {
       },
     });
 
-    // ── Send email notification (non-blocking) ────────────────────────────
+    // ── Send email notification (non-blocking, with certificate PDF) ───────────
     if (portrait.owner?.email) {
-      sendPortraitCertifiedEmail({
-        name: portrait.owner.name ?? portrait.owner.email.split("@")[0],
+      const { sendPortraitCertifiedEmail: sendEmailWithCert } = await import("@/lib/email");
+      const { buildPortraitCertificate } = await import("@/lib/export/portrait-certificate");
+      const path = await import("path");
+
+      const certNo = `PPC-${new Date().getFullYear()}${String(new Date().getMonth() + 1).padStart(2, "0")}${String(new Date().getDate()).padStart(2, "0")}-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
+      const templatePath = path.join(process.cwd(), "public", "images", "blockchain-certificate-template.png");
+      const ownerName = portrait.owner.name ?? portrait.owner.email.split("@")[0];
+
+      let certBuffer: Buffer | undefined;
+      try {
+        certBuffer = await buildPortraitCertificate(
+          {
+            portraitTitle: updated.title ?? "Portrait",
+            ownerName,
+            ownerEmail: portrait.owner.email,
+            imageHash,
+            blockchainTxHash: certificationResult.txHash,
+            ipfsCid: metadataIpfsResult.cid,
+            network,
+            certifiedAt: certificationResult.certifiedAt,
+            certificateNo: certNo,
+          },
+          templatePath
+        ) as unknown as Buffer;
+      } catch (e) {
+        console.error("[Mint] Certificate generation failed (non-blocking):", e);
+      }
+
+      sendEmailWithCert({
+        name: ownerName,
         email: portrait.owner.email,
         portraitTitle: updated.title ?? "Portrait",
         imageHash,
@@ -233,7 +250,9 @@ export async function POST(request: NextRequest, context: RouteContext) {
         ipfsCid: metadataIpfsResult.cid,
         network,
         certifiedAt: certificationResult.certifiedAt.toString(),
-      });
+        certificateBuffer: certBuffer,
+        certificateNo: certNo,
+      }).catch((e: unknown) => console.error("[Mint] Failed to send certified email:", e));
     }
 
     return NextResponse.json({

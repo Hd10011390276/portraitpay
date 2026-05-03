@@ -134,7 +134,7 @@ model Portrait {
 
   originalImageUrl String?
   thumbnailUrl     String?
-  imageHash        String? @unique
+  imageHash        String?
 
   blockchainTxHash  String?   @unique
   blockchainNetwork String?   @default("sepolia")
@@ -170,7 +170,6 @@ model Portrait {
 
   @@index([ownerId])
   @@index([status])
-  @@index([imageHash])
 }
 
 // ============================================================

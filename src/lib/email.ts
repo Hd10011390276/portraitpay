@@ -19,6 +19,11 @@ export interface EmailOptions {
   subject: string;
   html: string;
   text?: string;
+  attachments?: {
+    filename: string;
+    content: Buffer | string;
+    contentType?: string;
+  }[];
 }
 
 export interface ContactEmailData {
@@ -76,6 +81,7 @@ async function sendViaSMTP(opts: EmailOptions): Promise<void> {
     subject: opts.subject,
     text: opts.text,
     html: opts.html,
+    attachments: opts.attachments,
   });
 
   console.log("[Email] Sent via SMTP:", info.messageId, "to:", opts.to);
@@ -181,10 +187,12 @@ interface PortraitCertifiedEmailParams {
   ipfsCid: string;
   network: string;
   certifiedAt: string;
+  certificateBuffer?: Buffer;
+  certificateNo?: string;
 }
 
 export async function sendPortraitCertifiedEmail(params: PortraitCertifiedEmailParams): Promise<void> {
-  const { name, email, portraitTitle, imageHash, blockchainTxHash, ipfsCid, network, certifiedAt } = params;
+  const { name, email, portraitTitle, imageHash, blockchainTxHash, ipfsCid, network, certifiedAt, certificateBuffer, certificateNo } = params;
   const explorerUrl = network === "base" ? "https://basescan.org/tx/" : "https://etherscan.io/tx/";
   const txUrl = `${explorerUrl}${blockchainTxHash}`;
   const ipfsUrl = `https://ipfs.io/ipfs/${ipfsCid}`;
@@ -230,6 +238,15 @@ export async function sendPortraitCertifiedEmail(params: PortraitCertifiedEmailP
       subject: `✅ 肖像认证成功 - ${portraitTitle}`,
       html,
       text,
+      attachments: certificateBuffer
+        ? [
+            {
+              filename: `portrait-certificate-${certificateNo ?? portraitTitle.replace(/\s+/g, "-")}.pdf`,
+              content: certificateBuffer,
+              contentType: "application/pdf",
+            },
+          ]
+        : undefined,
     });
     console.log("[sendPortraitCertifiedEmail] Sent to:", email);
   } catch (err) {

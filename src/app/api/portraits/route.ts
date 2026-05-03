@@ -98,28 +98,28 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  const session = await getSessionFromRequest(request);
+
+  if (!session?.userId) {
+    return NextResponse.json(
+      { success: false, error: "Unauthorized" },
+      { status: 401 }
+    );
+  }
+
+  const body = await request.json();
+  const parsed = CreatePortraitSchema.safeParse(body);
+
+  if (!parsed.success) {
+    return NextResponse.json(
+      { success: false, error: "Validation failed", details: parsed.error.flatten() },
+      { status: 400 }
+    );
+  }
+
+  const { title, description, category, tags, isPublic, imageHash } = parsed.data;
+
   try {
-    const session = await getSessionFromRequest(request);
-
-    if (!session?.userId) {
-      return NextResponse.json(
-        { success: false, error: "Unauthorized" },
-        { status: 401 }
-      );
-    }
-
-    const body = await request.json();
-    const parsed = CreatePortraitSchema.safeParse(body);
-
-    if (!parsed.success) {
-      return NextResponse.json(
-        { success: false, error: "Validation failed", details: parsed.error.flatten() },
-        { status: 400 }
-      );
-    }
-
-    const { title, description, category, tags, isPublic, imageHash } = parsed.data;
-
     const portrait = await prisma.portrait.create({
       data: {
         title,
@@ -140,15 +140,8 @@ export async function POST(request: NextRequest) {
     );
   } catch (error) {
     console.error("[POST /api/portraits]", error);
-    // Handle unique constraint violation on imageHash
-    if (typeof error === 'object' && error !== null && 'code' in error && (error as { code: string }).code === 'P2002') {
-      return NextResponse.json(
-        { success: false, error: "This image is already registered. Each portrait must have a unique photo.", code: "PP-1001" },
-        { status: 409 }
-      );
-    }
     return NextResponse.json(
-      { success: false, error: "Internal server error" },
+      { success: false, error: "创建肖像记录失败，请重试。" },
       { status: 500 }
     );
   }
