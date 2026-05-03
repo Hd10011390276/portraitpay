@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import React, { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
@@ -35,7 +35,7 @@ interface PageMeta {
   totalPages: number;
 }
 
-// 鈹€鈹€鈹€ Mini SVG Bar Chart 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
+// ─── Mini SVG Bar Chart ────────────────────────────────────────────────────────
 
 function MiniBarChart({ data }: { data: { label: string; value: number }[] }) {
   const max = Math.max(...data.map((d) => d.value), 1);
@@ -49,7 +49,7 @@ function MiniBarChart({ data }: { data: { label: string; value: number }[] }) {
               <div
                 className="w-full rounded-t-md bg-gradient-to-t from-blue-500 to-blue-400 transition-all hover:from-blue-600 hover:to-blue-500"
                 style={{ height: `${Math.max(heightPct, 4)}%` }}
-                title={`${d.label}: 楼${d.value.toLocaleString()}`}
+                title={`${d.label}: ¥${d.value.toLocaleString()}`}
               />
             </div>
             <span className="text-xs text-gray-400 dark:text-gray-500 rotate-0">{d.label}</span>
@@ -60,7 +60,7 @@ function MiniBarChart({ data }: { data: { label: string; value: number }[] }) {
   );
 }
 
-// 鈹€鈹€鈹€ Stat Card 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
+// ─── Stat Card ─────────────────────────────────────────────────────────────────
 
 function StatCard({ label, value, color, highlight, delta }: {
   label: string; value: string; color: string; highlight?: boolean; delta?: string;
@@ -77,7 +77,7 @@ function StatCard({ label, value, color, highlight, delta }: {
   );
 }
 
-// 鈹€鈹€鈹€ Main Page 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
+// ─── Main Page ─────────────────────────────────────────────────────────────────
 
 export default function EarningsPage() {
   const [user, setUser] = useState<any>(null);
@@ -140,9 +140,9 @@ export default function EarningsPage() {
           currency: "CNY",
         });
         setTransactions([
-          { id: "1", type: "LICENSE_PURCHASE", status: "COMPLETED", amount: 2400, currency: "CNY", createdAt: new Date().toISOString(), portrait: { id: "1", title: "Official Portrait 鈥?Jane D." }, granteeName: "鏌愮鎶€鍏徃", grossAmount: 2800, platformFee: 400 },
-          { id: "2", type: "ROYALTY_PAYOUT", status: "COMPLETED", amount: 480, currency: "CNY", createdAt: new Date(Date.now() - 86400000).toISOString(), portrait: { id: "2", title: "Studio Portrait 鈥?S.K." }, granteeName: "鐗堟潈姹?, grossAmount: 600, platformFee: 120 },
-          { id: "3", type: "LICENSE_RENEWAL", status: "COMPLETED", amount: 960, currency: "CNY", createdAt: new Date(Date.now() - 172800000).toISOString(), portrait: { id: "1", title: "Official Portrait 鈥?Jane D." }, granteeName: "鏌愮鎶€鍏徃", grossAmount: 1200, platformFee: 240 },
+          { id: "1", type: "LICENSE_PURCHASE", status: "COMPLETED", amount: 2400, currency: "CNY", createdAt: new Date().toISOString(), portrait: { id: "1", title: "Official Portrait — Jane D." }, granteeName: "某科技公司", grossAmount: 2800, platformFee: 400 },
+          { id: "2", type: "ROYALTY_PAYOUT", status: "COMPLETED", amount: 480, currency: "CNY", createdAt: new Date(Date.now() - 86400000).toISOString(), portrait: { id: "2", title: "Studio Portrait — S.K." }, granteeName: "版权池", grossAmount: 600, platformFee: 120 },
+          { id: "3", type: "LICENSE_RENEWAL", status: "COMPLETED", amount: 960, currency: "CNY", createdAt: new Date(Date.now() - 172800000).toISOString(), portrait: { id: "1", title: "Official Portrait — Jane D." }, granteeName: "某科技公司", grossAmount: 1200, platformFee: 240 },
         ]);
         setMeta({ page: 1, limit: 20, total: 3, totalPages: 1 });
       } finally {
@@ -211,11 +211,11 @@ export default function EarningsPage() {
               if (!win) alert(t.earnings.popupBlocked);
             }}
             className="inline-flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 text-sm font-medium rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors shadow-sm">
-            馃摛 CSV
+            📤 CSV
           </button>
           <a href="/withdraw"
             className="inline-flex items-center gap-2 px-5 py-2 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700 transition-colors shadow-sm">
-            馃挵 {t.earnings.applyWithdraw}
+            💰 {t.earnings.applyWithdraw}
           </a>
         </div>
       }
@@ -224,7 +224,7 @@ export default function EarningsPage() {
         {/* Error banner */}
         {error && (
           <div className="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-xl p-4 text-sm text-red-700 dark:text-red-400">
-            鈿狅笍 {error}
+            ⚠️ {error}
           </div>
         )}
 
@@ -298,7 +298,7 @@ export default function EarningsPage() {
             </div>
 
             <div className="bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-950/30 dark:to-purple-950/30 rounded-xl border border-blue-100 dark:border-blue-900/50 p-5">
-              <h3 className="font-semibold text-gray-900 dark:text-white mb-2">馃挕 {t.earnings.boostEarnings}</h3>
+              <h3 className="font-semibold text-gray-900 dark:text-white mb-2">💡 {t.earnings.boostEarnings}</h3>
               <p className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed">
                 {t.earnings.boostEarningsDesc}
               </p>
@@ -331,7 +331,7 @@ export default function EarningsPage() {
                 <input type="date" value={filter.startDate ?? ""}
                   onChange={(e) => setFilter((f) => ({ ...f, startDate: e.target.value || undefined }))}
                   className="border border-gray-200 dark:border-gray-700 rounded-lg px-2 py-1.5 text-xs bg-white dark:bg-gray-800 text-gray-900 dark:text-white" />
-                <span className="text-gray-400">鈥?/span>
+                <span className="text-gray-400">—</span>
                 <input type="date" value={filter.endDate ?? ""}
                   onChange={(e) => setFilter((f) => ({ ...f, endDate: e.target.value || undefined }))}
                   className="border border-gray-200 dark:border-gray-700 rounded-lg px-2 py-1.5 text-xs bg-white dark:bg-gray-800 text-gray-900 dark:text-white" />
@@ -350,7 +350,7 @@ export default function EarningsPage() {
             </div>
           ) : transactions.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16 text-center">
-              <div className="text-5xl mb-4">馃摥</div>
+              <div className="text-5xl mb-4">📭</div>
               <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-1">{t.earnings.noEarnings}</h3>
               <p className="text-sm text-gray-400">{t.earnings.uploadPortraitToStart}</p>
               <Link href="/portraits/upload"
@@ -379,7 +379,7 @@ export default function EarningsPage() {
                           <td className="px-5 py-4">
                             <div className="flex items-center gap-3">
                               <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-100 to-purple-100 dark:from-blue-900/30 dark:to-purple-900/30 flex items-center justify-center text-lg flex-shrink-0">
-                                馃懁
+                                👤
                               </div>
                               <div className="min-w-0">
                                 <p className="text-sm font-medium text-gray-900 dark:text-white truncate max-w-xs">

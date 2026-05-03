@@ -1,17 +1,17 @@
-﻿"use client";
+"use client";
 /**
- * 鑲栧儚鎵€鏈夎€呮巿鏉冨鎵归〉闈?
+ * 肖像所有者授权审批页面
  * /owner/authorizations
- * 鏌ョ湅鏀跺埌鐨勬巿鏉冪敵璇凤紝纭/鎷掔粷
+ * 查看收到的授权申请，确认/拒绝
  */
 import { useState, useEffect } from "react";
 
 const STATUS_LABELS: Record<string, { label: string; color: string }> = {
-  PENDING_PORTRAIT_OWNER: { label: "寰呮偍纭", color: "bg-yellow-100 text-yellow-800" },
-  PENDING_PLATFORM_REVIEW: { label: "骞冲彴瀹℃牳涓?, color: "bg-blue-100 text-blue-800" },
-  APPROVED: { label: "宸叉壒鍑?, color: "bg-green-100 text-green-800" },
-  REJECTED: { label: "宸叉嫆缁?, color: "bg-red-100 text-red-800" },
-  REVOKED: { label: "宸叉挙閿€", color: "bg-gray-100 text-gray-800" },
+  PENDING_PORTRAIT_OWNER: { label: "待您确认", color: "bg-yellow-100 text-yellow-800" },
+  PENDING_PLATFORM_REVIEW: { label: "平台审核中", color: "bg-blue-100 text-blue-800" },
+  APPROVED: { label: "已批准", color: "bg-green-100 text-green-800" },
+  REJECTED: { label: "已拒绝", color: "bg-red-100 text-red-800" },
+  REVOKED: { label: "已撤销", color: "bg-gray-100 text-gray-800" },
 };
 
 export default function OwnerAuthorizationsPage() {
@@ -52,7 +52,7 @@ export default function OwnerAuthorizationsPage() {
   }
 
   async function handleReject(applicationId: string) {
-    const reason = prompt("璇疯緭鍏ユ嫆缁濆師鍥狅紙鍙€夛級锛?);
+    const reason = prompt("请输入拒绝原因（可选）：");
     setActionLoading(applicationId);
     try {
       const res = await fetch(`/api/v1/authorizations/enterprise/apply/${applicationId}/reject`, {
@@ -74,8 +74,8 @@ export default function OwnerAuthorizationsPage() {
   return (
     <div className="min-h-screen bg-gray-50 py-8 px-4">
       <div className="max-w-5xl mx-auto">
-        <h1 className="text-2xl font-bold text-gray-900 mb-2">鎺堟潈瀹℃壒</h1>
-        <p className="text-gray-500 mb-6">绠＄悊鎮ㄦ敹鍒扮殑鑲栧儚鎺堟潈鐢宠</p>
+        <h1 className="text-2xl font-bold text-gray-900 mb-2">授权审批</h1>
+        <p className="text-gray-500 mb-6">管理您收到的肖像授权申请</p>
 
         <div className="mb-4 flex gap-2 flex-wrap">
           <select
@@ -83,7 +83,7 @@ export default function OwnerAuthorizationsPage() {
             onChange={e => setFilterStatus(e.target.value)}
             className="border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:ring-2 focus:ring-purple-500"
           >
-            <option value="">鍏ㄩ儴鐘舵€?/option>
+            <option value="">全部状态</option>
             {Object.entries(STATUS_LABELS).map(([k, v]) => (
               <option key={k} value={k}>{v.label}</option>
             ))}
@@ -92,9 +92,9 @@ export default function OwnerAuthorizationsPage() {
 
         <div className="space-y-4">
           {loading ? (
-            <div className="text-center py-12 text-gray-400">鍔犺浇涓?..</div>
+            <div className="text-center py-12 text-gray-400">加载中...</div>
           ) : applications.length === 0 ? (
-            <div className="text-center py-12 text-gray-400 bg-white rounded-xl">鏆傛棤鎺堟潈鐢宠</div>
+            <div className="text-center py-12 text-gray-400 bg-white rounded-xl">暂无授权申请</div>
           ) : (
             applications.map(app => {
               const status = STATUS_LABELS[app.status] ?? { label: app.status, color: "bg-gray-100" };
@@ -106,7 +106,7 @@ export default function OwnerAuthorizationsPage() {
                       {app.portrait?.thumbnailUrl ? (
                         <img src={app.portrait.thumbnailUrl} alt="" className="w-full h-full object-cover" />
                       ) : (
-                        <div className="w-full h-full flex items-center justify-center text-gray-400 text-xs">鏃犲浘</div>
+                        <div className="w-full h-full flex items-center justify-center text-gray-400 text-xs">无图</div>
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
@@ -114,13 +114,13 @@ export default function OwnerAuthorizationsPage() {
                         <div>
                           <h3 className="font-semibold text-gray-900">{app.portrait?.title}</h3>
                           <p className="text-sm text-gray-500 mt-0.5">
-                            鐢宠浼佷笟锛歿app.enterprise?.companyName ?? "鏈煡"}
+                            申请企业：{app.enterprise?.companyName ?? "未知"}
                           </p>
                           <p className="text-sm text-gray-500">
-                            缁熶竴绀句細淇＄敤浠ｇ爜锛歿app.enterprise?.unifiedCreditCode}
+                            统一社会信用代码：{app.enterprise?.unifiedCreditCode}
                           </p>
                           <p className="text-sm text-gray-500">
-                            鑱旂郴浜猴細{app.enterprise?.contactName} ({app.enterprise?.contactEmail})
+                            联系人：{app.enterprise?.contactName} ({app.enterprise?.contactEmail})
                           </p>
                         </div>
                         <span className={`px-3 py-1 rounded-full text-xs font-medium ${status.color}`}>
@@ -130,13 +130,13 @@ export default function OwnerAuthorizationsPage() {
 
                       <div className="mt-3 bg-gray-50 rounded-lg p-3 space-y-1.5">
                         <p className="text-sm text-gray-700">
-                          <span className="font-medium">浣跨敤鑼冨洿锛?/span>{app.usageScope?.join("銆?)}
+                          <span className="font-medium">使用范围：</span>{app.usageScope?.join("、")}
                         </p>
                         <p className="text-sm text-gray-700">
-                          <span className="font-medium">鍦板煙锛?/span>{app.territorialScope} | <span className="font-medium">鏈熼檺锛?/span>{app.usageDuration}澶?
+                          <span className="font-medium">地域：</span>{app.territorialScope} | <span className="font-medium">期限：</span>{app.usageDuration}天
                         </p>
                         <p className="text-sm text-gray-700">
-                          <span className="font-medium">鐢宠璐圭敤锛?/span>楼{app.proposedFee} {app.currency}
+                          <span className="font-medium">申请费用：</span>¥{app.proposedFee} {app.currency}
                         </p>
                         <p className="text-sm text-gray-600 mt-2">{app.purpose}</p>
                       </div>
@@ -148,14 +148,14 @@ export default function OwnerAuthorizationsPage() {
                             disabled={actionLoading === app.id}
                             className="px-5 py-2 bg-purple-600 text-white rounded-lg text-sm font-medium hover:bg-purple-700 disabled:opacity-50"
                           >
-                            {actionLoading === app.id ? "澶勭悊涓?.." : "鉁?纭鎺堟潈"}
+                            {actionLoading === app.id ? "处理中..." : "✅ 确认授权"}
                           </button>
                           <button
                             onClick={() => handleReject(app.id)}
                             disabled={actionLoading === app.id}
                             className="px-5 py-2 border border-red-300 text-red-600 rounded-lg text-sm font-medium hover:bg-red-50 disabled:opacity-50"
                           >
-                            鉂?鎷掔粷
+                            ❌ 拒绝
                           </button>
                         </div>
                       )}

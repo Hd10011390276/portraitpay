@@ -1,8 +1,8 @@
-﻿"use client";
+"use client";
 /**
- * 绠＄悊鍛?- 浼佷笟璧勮川瀹℃牳椤甸潰
+ * 管理员 - 企业资质审核页面
  * /admin/enterprise
- * 瀹℃牳浼佷笟璁よ瘉鐢宠
+ * 审核企业认证申请
  */
 import { useState, useEffect } from "react";
 
@@ -35,7 +35,7 @@ export default function AdminEnterprisePage() {
   async function reviewEnterprise(id: string, action: "APPROVE" | "REJECT") {
     let rejectionReason = "";
     if (action === "REJECT") {
-      rejectionReason = prompt("璇峰～鍐欐嫆缁濆師鍥狅細") ?? "";
+      rejectionReason = prompt("请填写拒绝原因：") ?? "";
       if (!rejectionReason) return;
     }
     setActionLoading(id);
@@ -60,9 +60,9 @@ export default function AdminEnterprisePage() {
     let actualFee = 0;
     let rejectionReason = "";
     if (action === "APPROVE") {
-      actualFee = parseFloat(prompt("璇疯緭鍏ュ疄闄呮巿鏉冭垂鐢紙CNY锛夛細") ?? "0") || 0;
+      actualFee = parseFloat(prompt("请输入实际授权费用（CNY）：") ?? "0") || 0;
     } else {
-      rejectionReason = prompt("璇峰～鍐欐嫆缁濆師鍥狅細") ?? "";
+      rejectionReason = prompt("请填写拒绝原因：") ?? "";
       if (!rejectionReason) return;
     }
     setActionLoading(id);
@@ -78,7 +78,7 @@ export default function AdminEnterprisePage() {
       const json = await res.json();
       if (json.success) {
         setPendingAuths(prev => prev.filter(a => a.id !== id));
-        alert(action === "APPROVE" ? "宸叉壒鍑嗭紒" : "宸叉嫆缁?);
+        alert(action === "APPROVE" ? "已批准！" : "已拒绝");
       } else {
         alert(json.error);
       }
@@ -90,12 +90,12 @@ export default function AdminEnterprisePage() {
   return (
     <div className="min-h-screen bg-gray-50 py-8 px-4">
       <div className="max-w-6xl mx-auto">
-        <h1 className="text-2xl font-bold text-gray-900 mb-6">浼佷笟绠＄悊</h1>
+        <h1 className="text-2xl font-bold text-gray-900 mb-6">企业管理</h1>
 
         <div className="flex gap-1 bg-white border border-gray-200 p-1 rounded-xl w-fit mb-6">
           {[
-            { key: "pending", label: "浼佷笟璧勮川寰呭鏍?, dot: "馃吘锔? },
-            { key: "review", label: "鎺堟潈鐢宠寰呭鏍?, dot: "馃搵" },
+            { key: "pending", label: "企业资质待审核", dot: "🅾️" },
+            { key: "review", label: "授权申请待审核", dot: "📋" },
           ].map(t => (
             <button
               key={t.key}
@@ -109,13 +109,13 @@ export default function AdminEnterprisePage() {
           ))}
         </div>
 
-        {/* 浼佷笟璧勮川瀹℃牳 */}
+        {/* 企业资质审核 */}
         {tab === "pending" && (
           <div className="space-y-4">
             {loading ? (
-              <div className="text-center py-12 text-gray-400">鍔犺浇涓?..</div>
+              <div className="text-center py-12 text-gray-400">加载中...</div>
             ) : pendingEnterprises.length === 0 ? (
-              <div className="text-center py-12 text-gray-400 bg-white rounded-xl">鏆傛棤寰呭鏍镐紒涓?/div>
+              <div className="text-center py-12 text-gray-400 bg-white rounded-xl">暂无待审核企业</div>
             ) : (
               pendingEnterprises.map(ent => (
                 <div key={ent.id} className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
@@ -123,20 +123,20 @@ export default function AdminEnterprisePage() {
                     <div className="space-y-2">
                       <h3 className="font-bold text-lg text-gray-900">{ent.companyName}</h3>
                       <div className="grid grid-cols-2 md:grid-cols-3 gap-x-8 gap-y-1 text-sm text-gray-600">
-                        <p>缁熶竴绀句細淇＄敤浠ｇ爜锛?span className="font-mono text-gray-800">{ent.unifiedCreditCode}</span></p>
-                        <p>娉曚汉锛歿ent.legalPersonName}</p>
-                        <p>娉ㄥ唽璧勬湰锛歿ent.registeredCapital ?? "鏈煡"}</p>
-                        <p>鎴愮珛鏃ユ湡锛歿ent.establishedDate ? new Date(ent.establishedDate).toLocaleDateString() : "鏈煡"}</p>
-                        <p>钀ヤ笟鏈熼檺锛歿ent.businessTerm ?? "闀挎湡"}</p>
-                        <p>鑱旂郴浜猴細{ent.contactName} ({ent.contactPhone})</p>
-                        <p>閭锛歿ent.contactEmail}</p>
-                        {ent.isAgency && <p className="text-purple-600 font-medium">馃彚 缁忕邯鍏徃</p>}
-                        <p className="md:col-span-2">缁忚惀鑼冨洿锛歿ent.businessScope ?? "鏈煡"}</p>
+                        <p>统一社会信用代码：<span className="font-mono text-gray-800">{ent.unifiedCreditCode}</span></p>
+                        <p>法人：{ent.legalPersonName}</p>
+                        <p>注册资本：{ent.registeredCapital ?? "未知"}</p>
+                        <p>成立日期：{ent.establishedDate ? new Date(ent.establishedDate).toLocaleDateString() : "未知"}</p>
+                        <p>营业期限：{ent.businessTerm ?? "长期"}</p>
+                        <p>联系人：{ent.contactName} ({ent.contactPhone})</p>
+                        <p>邮箱：{ent.contactEmail}</p>
+                        {ent.isAgency && <p className="text-purple-600 font-medium">🏢 经纪公司</p>}
+                        <p className="md:col-span-2">经营范围：{ent.businessScope ?? "未知"}</p>
                       </div>
                       <div className="mt-3">
-                        <p className="text-xs text-gray-400 mb-1">钀ヤ笟鎵х収锛?a href={ent.licenseImageUrl} target="_blank" className="text-purple-600 hover:underline">鏌ョ湅</a></p>
+                        <p className="text-xs text-gray-400 mb-1">营业执照：<a href={ent.licenseImageUrl} target="_blank" className="text-purple-600 hover:underline">查看</a></p>
                         {ent.legalPersonIdCardFrontUrl && (
-                          <p className="text-xs text-gray-400">娉曚汉韬唤璇侊細<a href={ent.legalPersonIdCardFrontUrl} target="_blank" className="text-purple-600 hover:underline">姝ｉ潰</a> | <a href={ent.legalPersonIdCardBackUrl} target="_blank" className="text-purple-600 hover:underline">鑳岄潰</a></p>
+                          <p className="text-xs text-gray-400">法人身份证：<a href={ent.legalPersonIdCardFrontUrl} target="_blank" className="text-purple-600 hover:underline">正面</a> | <a href={ent.legalPersonIdCardBackUrl} target="_blank" className="text-purple-600 hover:underline">背面</a></p>
                         )}
                       </div>
                     </div>
@@ -146,19 +146,19 @@ export default function AdminEnterprisePage() {
                         disabled={actionLoading === ent.id}
                         className="px-5 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700 disabled:opacity-50"
                       >
-                        鉁?閫氳繃
+                        ✅ 通过
                       </button>
                       <button
                         onClick={() => reviewEnterprise(ent.id, "REJECT")}
                         disabled={actionLoading === ent.id}
                         className="px-5 py-2 border border-red-300 text-red-600 rounded-lg text-sm font-medium hover:bg-red-50 disabled:opacity-50"
                       >
-                        鉂?鎷掔粷
+                        ❌ 拒绝
                       </button>
                     </div>
                   </div>
                   <p className="text-xs text-gray-400 mt-3">
-                    鎻愪氦鏃堕棿锛歿new Date(ent.createdAt).toLocaleString("zh-CN")}
+                    提交时间：{new Date(ent.createdAt).toLocaleString("zh-CN")}
                   </p>
                 </div>
               ))
@@ -166,13 +166,13 @@ export default function AdminEnterprisePage() {
           </div>
         )}
 
-        {/* 鎺堟潈鐢宠瀹℃牳 */}
+        {/* 授权申请审核 */}
         {tab === "review" && (
           <div className="space-y-4">
             {loading ? (
-              <div className="text-center py-12 text-gray-400">鍔犺浇涓?..</div>
+              <div className="text-center py-12 text-gray-400">加载中...</div>
             ) : pendingAuths.length === 0 ? (
-              <div className="text-center py-12 text-gray-400 bg-white rounded-xl">鏆傛棤寰呭鏍告巿鏉?/div>
+              <div className="text-center py-12 text-gray-400 bg-white rounded-xl">暂无待审核授权</div>
             ) : (
               pendingAuths.map(auth => (
                 <div key={auth.id} className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
@@ -180,22 +180,22 @@ export default function AdminEnterprisePage() {
                     <div className="w-20 h-20 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
                       {auth.portrait?.thumbnailUrl ? (
                         <img src={auth.portrait.thumbnailUrl} alt="" className="w-full h-full object-cover" />
-                      ) : <div className="w-full h-full flex items-center justify-center text-gray-400 text-xs">鏃犲浘</div>}
+                      ) : <div className="w-full h-full flex items-center justify-center text-gray-400 text-xs">无图</div>}
                     </div>
                     <div className="flex-1">
                       <div className="flex justify-between items-start">
                         <div>
-                          <h3 className="font-semibold text-gray-900">鑲栧儚锛歿auth.portrait?.title}</h3>
-                          <p className="text-sm text-gray-500">鎵€鏈夎€咃細{auth.portrait?.owner?.displayName} ({auth.portrait?.owner?.email})</p>
+                          <h3 className="font-semibold text-gray-900">肖像：{auth.portrait?.title}</h3>
+                          <p className="text-sm text-gray-500">所有者：{auth.portrait?.owner?.displayName} ({auth.portrait?.owner?.email})</p>
                         </div>
                         <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-xs font-medium">
-                          寰呭钩鍙板鏍?
+                          待平台审核
                         </span>
                       </div>
                       <div className="mt-2 text-sm text-gray-600 space-y-1">
-                        <p><span className="font-medium">浣跨敤鑼冨洿锛?/span>{auth.usageScope?.join("銆?)}</p>
-                        <p><span className="font-medium">鐢宠璐圭敤锛?/span>楼{auth.proposedFee} {auth.currency}</p>
-                        <p><span className="font-medium">鐢ㄩ€旇鏄庯細</span>{auth.purpose}</p>
+                        <p><span className="font-medium">使用范围：</span>{auth.usageScope?.join("、")}</p>
+                        <p><span className="font-medium">申请费用：</span>¥{auth.proposedFee} {auth.currency}</p>
+                        <p><span className="font-medium">用途说明：</span>{auth.purpose}</p>
                       </div>
                       <div className="flex gap-3 mt-4">
                         <button
@@ -203,14 +203,14 @@ export default function AdminEnterprisePage() {
                           disabled={actionLoading === auth.id}
                           className="px-5 py-2 bg-purple-600 text-white rounded-lg text-sm font-medium hover:bg-purple-700 disabled:opacity-50"
                         >
-                          {actionLoading === auth.id ? "澶勭悊涓?.." : "鉁?鎵瑰噯骞剁敓鎴愯瘉涔?}
+                          {actionLoading === auth.id ? "处理中..." : "✅ 批准并生成证书"}
                         </button>
                         <button
                           onClick={() => reviewAuth(auth.id, "REJECT")}
                           disabled={actionLoading === auth.id}
                           className="px-5 py-2 border border-red-300 text-red-600 rounded-lg text-sm font-medium hover:bg-red-50 disabled:opacity-50"
                         >
-                          鉂?鎷掔粷
+                          ❌ 拒绝
                         </button>
                       </div>
                     </div>
