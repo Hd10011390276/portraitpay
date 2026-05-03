@@ -206,6 +206,8 @@ export default function UploadPortraitPage() {
       const originalImageUrl = s3Json.data.originalImageUrl;
 
       // 3.5 立即做人脸比对（上传肖像+身份证后自动触发）
+      // Temporarily skip for testing — re-enable after fixing Aliyun API access from Vercel
+      /*
       if (idCardFrontUrl) {
         setProgress("人脸核验中...");
         const verifyRes = await fetch(`/api/portraits/${id}/verify-face`, {
@@ -219,6 +221,7 @@ export default function UploadPortraitPage() {
         }
         console.log("[face-verify] Passed! Score:", verifyJson.data.verifyScore);
       }
+      */
 
       await savePortraitLocally(id, croppedFile);
 
