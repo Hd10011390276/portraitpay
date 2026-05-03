@@ -63,22 +63,10 @@ const REGION_OPTIONS: { value: Region; flag: string }[] = [
 ];
 
 function getPaymentMethodsForRegion(region: Region, t: Record<string, any>) {
-  switch (region) {
-    case "US":
-      return [
-        { value: "paypal" as PaymentMethod, label: t.withdraw.paypal, icon: "🟣" },
-        { value: "credit_card" as PaymentMethod, label: t.withdraw.creditCard, icon: "💳" },
-        { value: "bank" as PaymentMethod, label: t.withdraw.bankTransfer, icon: "🏦" },
-      ];
-    case "HK":
-    case "TW":
-    case "OTHER":
-    default:
-      return [
-        { value: "paypal" as PaymentMethod, label: t.withdraw.paypal, icon: "🟣" },
-        { value: "bank" as PaymentMethod, label: t.withdraw.bankTransfer, icon: "🏦" },
-      ];
-  }
+  // Only PayPal available
+  return [
+    { value: "paypal" as PaymentMethod, label: t.withdraw.paypal, icon: "🟣" },
+  ];
 }
 
 function WithdrawPageContent() {
@@ -277,39 +265,6 @@ function WithdrawPageContent() {
           <p className="text-blue-200 text-xs mt-2">{t.withdraw.balanceNote}</p>
         </div>
 
-        {/* Stripe Account Status Banner (US region only) */}
-        {!loading && region === "US" && (
-          <div className={`rounded-xl p-4 border ${
-            stripeAccount?.hasStripeAccount
-              ? "bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800"
-              : "bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800"
-          }`}>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center ${stripeAccount?.hasStripeAccount ? "bg-green-100" : "bg-yellow-100"}`}>
-                  {stripeAccount?.hasStripeAccount ? (
-                    <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                    </svg>
-                  ) : (
-                    <svg className="w-4 h-4 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                    </svg>
-                  )}
-                </div>
-                <div>
-                  <p className={`text-sm font-medium ${stripeAccount?.hasStripeAccount ? "text-green-800 dark:text-green-300" : "text-yellow-800 dark:text-yellow-300"}`}>
-                    {stripeAccount?.hasStripeAccount ? t.withdraw.stripeReady : t.withdraw.stripeNotReady}
-                  </p>
-                  <p className={`text-xs ${stripeAccount?.hasStripeAccount ? "text-green-600 dark:text-green-400" : "text-yellow-600 dark:text-yellow-400"}`}>
-                    {stripeAccount?.hasStripeAccount ? t.withdraw.stripeReadyDesc : t.withdraw.stripeSetupRequired}
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
         {/* Withdrawal Form */}
         <div className="bg-white dark:bg-gray-900 rounded-xl p-6">
           <h2 className="font-semibold text-gray-800 dark:text-white mb-5">{t.withdraw.fillWithdrawInfo}</h2>
@@ -322,30 +277,6 @@ function WithdrawPageContent() {
           )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Region Selector */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t.withdraw.selectRegion}</label>
-              <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
-                {REGION_OPTIONS.map((opt) => (
-                  <button
-                    key={opt.value}
-                    type="button"
-                    onClick={() => setRegion(opt.value)}
-                    className={`p-2 rounded-xl border-2 transition-all text-center ${
-                      region === opt.value
-                        ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20"
-                        : "border-gray-200 dark:border-gray-700 hover:border-blue-300"
-                    }`}
-                  >
-                    <span className="text-lg">{opt.flag}</span>
-                    <p className="text-xs font-medium text-gray-700 dark:text-gray-300 mt-0.5 leading-tight">
-                      {opt.value === "US" ? t.withdraw.regionUS : opt.value === "HK" ? t.withdraw.regionHK : opt.value === "TW" ? t.withdraw.regionTW : t.withdraw.regionOther}
-                    </p>
-                  </button>
-                ))}
-              </div>
-            </div>
-
             {/* Amount */}
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
