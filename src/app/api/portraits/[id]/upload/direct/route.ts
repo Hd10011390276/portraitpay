@@ -18,6 +18,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
     }
 
     const { id } = await context.params;
+    console.log(`[upload/direct] START id=${id} userId=${session.userId}`);
 
     const portrait = await prisma.portrait.findUnique({
       where: { id, deletedAt: null },
@@ -25,10 +26,13 @@ export async function POST(request: NextRequest, context: RouteContext) {
     });
 
     if (!portrait) {
+      console.log(`[upload/direct] Portrait ${id} not found`);
       return NextResponse.json({ success: false, error: "Portrait not found" }, { status: 404 });
     }
+    console.log(`[upload/direct] Portrait found, status=${portrait.status}`);
 
     if (portrait.ownerId !== session.userId) {
+      console.log(`[upload/direct] Forbidden: ownerId=${portrait.ownerId} != userId=${session.userId}`);
       return NextResponse.json({ success: false, error: "Forbidden" }, { status: 403 });
     }
 
@@ -49,16 +53,20 @@ export async function POST(request: NextRequest, context: RouteContext) {
       const file = formData.get("image") as File | null;
       uploadType = (formData.get("type") as string) || "portrait";
       if (!file) {
+        console.log(`[upload/direct] No file provided`);
         return NextResponse.json({ success: false, error: "No image provided" }, { status: 400 });
       }
       filename = file.name || filename;
       const arrayBuffer = await file.arrayBuffer();
       imageBuffer = Buffer.from(arrayBuffer);
+      console.log(`[upload/direct] File parsed: name=${filename} size=${imageBuffer.length}`);
     } catch (formErr) {
+      console.log(`[upload/direct] Form data parse failed: ${formErr}`);
       return NextResponse.json({ success: false, error: "Failed to parse form data" }, { status: 400 });
     }
 
     if (!imageBuffer || imageBuffer.length === 0) {
+      console.log(`[upload/direct] Empty image buffer`);
       return NextResponse.json({ success: false, error: "Empty image" }, { status: 400 });
     }
 
@@ -67,26 +75,22 @@ export async function POST(request: NextRequest, context: RouteContext) {
     const key = isIdCard
       ? `portraits/${id}/idcard-front-${Date.now()}.jpg`
       : generateImageKey(id, "original");
-    console.log(`[upload/direct] id=${id} isIdCard=${isIdCard} key=${key}`);
+    console.log(`[upload/direct] Generated key=${key} isIdCard=${isIdCard}`);
 
     // Upload to R2
     let objectUrl: string;
     try {
-      console.log(`[upload/direct] R2 config check:
-        bucket=${process.env.AWS_S3_BUCKET}
-        region=${process.env.AWS_REGION ?? process.env.AWS_S3_REGION}
-        accessKeyId=${process.env.AWS_ACCESS_KEY_ID ? "(set)" : "(MISSING)"}
-        secretAccessKey=${process.env.AWS_SECRET_ACCESS_KEY ? "(set)" : "(MISSING)"}
-        endpoint=${process.env.AWS_ENDPOINT ?? "(not set)"}`);
-
-      console.log(`[upload/direct] Calling uploadFile for key: ${key}`);
+      console.log(`[upload/direct] Uploading to R2 with key=${key}`);
       objectUrl = await uploadFile(imageBuffer, key, "image/jpeg");
-      console.log(`[upload/direct] uploadFile returned: ${objectUrl}`);
+      console.log(`[upload/direct] uploadFile success: ${objectUrl}`);
     } catch (uploadErr) {
-      console.error("[upload/direct] R2 upload failed:", uploadErr);
-      const errMsg = uploadErr instanceof Error ? `${uploadErr.message}: ${JSON.stringify(uploadErr)}` : String(uploadErr);
-      console.error("[upload/direct] R2 error details:", errMsg);
-      return NextResponse.json({ success: false, error: "Upload to storage failed: " + errMsg }, { status: 500 });
+      console.error(`[upload/direct] R2 upload failed: ${uploadErr}`);
+      const errMsg = uploadErr instanceof Error ? uploadErr.message : String(uploadErr);
+      const isConfigError = errMsg.includes("MISSING") || errMsg.includes("credential") || errMsg.includes("AccessDenied");
+      const userMsg = isConfigError
+        ? "图片存储服务配置错误，请联系技术支持。"
+        : `图片上传失败：${errMsg.slice(0, 100)}`;
+      return NextResponse.json({ success: false, error: userMsg }, { status: 500 });
     }
 
     // Update portrait record based on upload type
@@ -103,7 +107,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
       where: { id },
       data: updateData,
     });
-    console.log(`[upload/direct] Portrait updated successfully`);
+    console.log(`[upload/direct] Portrait updated successfully, originalImageUrl=${updated.originalImageUrl}`);
 
     return NextResponse.json({
       success: true,
@@ -115,9 +119,8 @@ export async function POST(request: NextRequest, context: RouteContext) {
       },
     });
   } catch (error) {
-    console.error("[POST /api/portraits/[id]/upload/direct]", error);
+    console.error("[POST /api/portraits/[id]/upload/direct] Unhandled error:", error);
     const message = error instanceof Error ? error.message : String(error);
-    console.error("[upload/direct] Full error:", message, error);
     return NextResponse.json(
       { success: false, error: "Internal server error: " + message },
       { status: 500 }
