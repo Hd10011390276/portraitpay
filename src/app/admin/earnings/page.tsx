@@ -134,8 +134,8 @@ export default function AdminEarningsPage() {
     }
   };
 
-  const formatCurrency = (v: number, c = "CNY") =>
-    new Intl.NumberFormat("zh-CN", { style: "currency", currency: c }).format(v);
+  const formatCurrency = (v: number, c = "USD") =>
+    new Intl.NumberFormat("en-US", { style: "currency", currency: c }).format(v);
 
   const formatDate = (d: string) =>
     new Date(d).toLocaleDateString("zh-CN", { year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit" });

@@ -106,7 +106,7 @@ export default function EarningsPage() {
   }, []);
 
   const fetchSummary = useCallback(async () => {
-    const res = await fetch("/api/v1/earnings/summary?currency=CNY");
+    const res = await fetch("/api/v1/earnings/summary?currency=USD");
     if (!res.ok) throw new Error("Failed to fetch summary");
     return res.json();
   }, []);
@@ -137,12 +137,12 @@ export default function EarningsPage() {
           pendingRevenue: 1200,
           availableBalance: 12600,
           totalWithdrawals: 18000,
-          currency: "CNY",
+          currency: "USD",
         });
         setTransactions([
-          { id: "1", type: "LICENSE_PURCHASE", status: "COMPLETED", amount: 2400, currency: "CNY", createdAt: new Date().toISOString(), portrait: { id: "1", title: "Official Portrait — Jane D." }, granteeName: "某科技公司", grossAmount: 2800, platformFee: 400 },
-          { id: "2", type: "ROYALTY_PAYOUT", status: "COMPLETED", amount: 480, currency: "CNY", createdAt: new Date(Date.now() - 86400000).toISOString(), portrait: { id: "2", title: "Studio Portrait — S.K." }, granteeName: "版权池", grossAmount: 600, platformFee: 120 },
-          { id: "3", type: "LICENSE_RENEWAL", status: "COMPLETED", amount: 960, currency: "CNY", createdAt: new Date(Date.now() - 172800000).toISOString(), portrait: { id: "1", title: "Official Portrait — Jane D." }, granteeName: "某科技公司", grossAmount: 1200, platformFee: 240 },
+          { id: "1", type: "LICENSE_PURCHASE", status: "COMPLETED", amount: 2400, currency: "USD", createdAt: new Date().toISOString(), portrait: { id: "1", title: "Official Portrait — Jane D." }, granteeName: "某科技公司", grossAmount: 2800, platformFee: 400 },
+          { id: "2", type: "ROYALTY_PAYOUT", status: "COMPLETED", amount: 480, currency: "USD", createdAt: new Date(Date.now() - 86400000).toISOString(), portrait: { id: "2", title: "Studio Portrait — S.K." }, granteeName: "版权池", grossAmount: 600, platformFee: 120 },
+          { id: "3", type: "LICENSE_RENEWAL", status: "COMPLETED", amount: 960, currency: "USD", createdAt: new Date(Date.now() - 172800000).toISOString(), portrait: { id: "1", title: "Official Portrait — Jane D." }, granteeName: "某科技公司", grossAmount: 1200, platformFee: 240 },
         ]);
         setMeta({ page: 1, limit: 20, total: 3, totalPages: 1 });
       } finally {
@@ -165,8 +165,8 @@ export default function EarningsPage() {
     }
   };
 
-  const formatCurrency = (amount: number, currency = "CNY") =>
-    new Intl.NumberFormat("zh-CN", { style: "currency", currency, minimumFractionDigits: 2 }).format(amount);
+  const formatCurrency = (amount: number, currency = "USD") =>
+    new Intl.NumberFormat("en-US", { style: "currency", currency, minimumFractionDigits: 2 }).format(amount);
 
   const formatDate = (dateStr: string) =>
     new Date(dateStr).toLocaleDateString("zh-CN", { year: "numeric", month: "2-digit", day: "2-digit" });
@@ -207,7 +207,7 @@ export default function EarningsPage() {
         <div className="flex items-center gap-3">
           <button
             onClick={async () => {
-              const win = window.open("/api/v1/export/earnings?currency=CNY", "_blank");
+              const win = window.open("/api/v1/export/earnings?currency=USD", "_blank");
               if (!win) alert(t.earnings.popupBlocked);
             }}
             className="inline-flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 text-sm font-medium rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors shadow-sm">
