@@ -27,4 +27,4 @@ jobs:
           git config --global user.name "Hd10011390276"
 
       - name: Deploy to Vercel
-        run: npx vercel --prod --yes --token ${{ secrets.VERCEL_TOKEN }}
+        run: npx vercel --prod --yes --token ${{ secrets.VERCEL_TOKEN_2 }}
