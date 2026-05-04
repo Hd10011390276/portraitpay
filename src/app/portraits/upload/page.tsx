@@ -185,8 +185,8 @@ export default function UploadPortraitPage() {
         if (!idCardRes.ok || !idCardJson.success) {
           console.error("[ID card] Upload failed:", idCardJson.error);
         } else {
-          idCardFrontUrl = idCardJson.data.idCardFrontUrl ?? idCardJson.data.originalImageUrl;
-          sessionStorage.setItem(`idCardFront_${id}`, idCardFrontUrl);
+          idCardFrontUrl = idCardJson.data.idCardFrontUrl ?? idCardJson.data.originalImageUrl ?? "";
+          if (idCardFrontUrl) sessionStorage.setItem(`idCardFront_${id}`, idCardFrontUrl);
         }
       }
 
@@ -215,9 +215,15 @@ export default function UploadPortraitPage() {
         });
         const verifyJson = await verifyRes.json();
         if (!verifyRes.ok || !verifyJson.success) {
-          throw new Error(verifyJson.error ?? t.upload?.faceVerifyFailed);
+          // Face verification failed — show warning but DO NOT abort upload
+          // User can still upload portrait; faceVerifiedAt will remain null
+          // They will need to pass KYC before certifying on blockchain
+          setProgress(t.upload?.faceVerifyFailed ?? "Face verification failed - portrait uploaded but KYC required before blockchain certification");
+          await new Promise(res => setTimeout(res, 3000)); // show warning for 3s
+          console.warn("[face-verify] Failed — continuing upload flow without face verification:", verifyJson.error);
+        } else {
+          console.log("[face-verify] Passed! Score:", verifyJson.data.verifyScore);
         }
-        console.log("[face-verify] Passed! Score:", verifyJson.data.verifyScore);
       }
 
       await savePortraitLocally(id, croppedFile);

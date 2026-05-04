@@ -37,6 +37,7 @@ export default function PortraitsPage() {
   const [certifyingId, setCertifyingId] = useState<string | null>(null);
   const [certifyStatus, setCertifyStatus] = useState<{ id: string; message: string } | null>(null);
   const [search, setSearch] = useState("");
+  const [kycStatus, setKycStatus] = useState<string>("NOT_STARTED");
 
   const STATUS_OPTIONS = [
     { value: "", label: t.portraits.all },
@@ -54,6 +55,12 @@ export default function PortraitsPage() {
         if (!res.ok) { window.location.href = "/login"; return; }
         const json = await res.json();
         setUser(json.data?.user || json.user || null);
+        // Also fetch KYC status
+        try {
+          const kycRes = await fetch("/api/v1/kyc/status", { credentials: "include" });
+          const kycJson = await kycRes.json();
+          if (kycJson.success) setKycStatus(kycJson.data.status);
+        } catch {}
       } catch { window.location.href = "/login"; }
       finally { setChecking(false); }
     };
@@ -149,6 +156,30 @@ export default function PortraitsPage() {
       }
     >
       <div className="space-y-6">
+        {/* KYC warning banner */}
+        {kycStatus !== "APPROVED" && (
+          <div className="bg-yellow-50 dark:bg-yellow-900/30 border border-yellow-200 dark:border-yellow-800 rounded-xl p-4 flex items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <span className="text-2xl">⚠️</span>
+              <div>
+                <p className="text-sm font-medium text-yellow-800 dark:text-yellow-200">
+                  {t.portraits?.bannerKycRequired ?? "您尚未完成身份认证，上链功能受限"}
+                </p>
+                <p className="text-xs text-yellow-700 dark:text-yellow-300">
+                  完成身份认证后即可进行区块链上链
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={() => router.push("/kyc")}
+              className="flex-shrink-0 px-4 py-2 bg-yellow-600 hover:bg-yellow-700 text-white text-sm font-medium rounded-lg transition-colors"
+            >
+              {t.portraits?.bannerGoVerify ?? "去认证"}
+            </button>
+          </div>
+        )}
+
+
         {/* Certification status banner */}
         {certifyStatus && (
           <div className="bg-purple-50 dark:bg-purple-900/30 border border-purple-200 dark:border-purple-800 rounded-xl p-4 flex items-center gap-3">

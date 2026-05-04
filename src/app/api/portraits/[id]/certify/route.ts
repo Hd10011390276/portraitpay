@@ -161,6 +161,8 @@ export async function POST(request: NextRequest, context: RouteContext) {
     const metadata = buildPortraitMetadata(
       {
         ...portrait,
+        category: "portrait",
+        tags: [],
         imageHash,
         ipfsCid: null,
         blockchainTxHash: null,
@@ -211,18 +213,49 @@ export async function POST(request: NextRequest, context: RouteContext) {
       },
     });
 
-    // ── Step 10: Send email notification (non-blocking) ──────────
+    // ── Step 10: Send email notification with certificate PDF (non-blocking) ──────────
     if (portrait.owner?.email) {
-      sendPortraitCertifiedEmail({
-        name: portrait.owner.name ?? portrait.owner.email.split("@")[0],
+      const { sendPortraitCertifiedEmail: sendEmailWithCert } = await import("@/lib/email");
+      const { buildPortraitCertificate } = await import("@/lib/export/portrait-certificate");
+      const path = await import("path");
+
+      const certNo = `PPC-${new Date().getFullYear()}${String(new Date().getMonth() + 1).padStart(2, "0")}${String(new Date().getDate()).padStart(2, "0")}-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
+      const templatePath = path.join(process.cwd(), "public", "images", "blockchain-certificate-template.png");
+      const ownerName = portrait.owner.name ?? portrait.owner.email.split("@")[0];
+
+
+      let certBuffer: Buffer | undefined;
+      try {
+        certBuffer = await buildPortraitCertificate(
+          {
+            portraitTitle: updated.title ?? "Portrait",
+            ownerName,
+            ownerEmail: portrait.owner.email,
+            imageHash,
+            blockchainTxHash: certificationResult.txHash,
+            ipfsCid: metadataIpfsResult.cid,
+            network,
+            certifiedAt: certificationResult.certifiedAt,
+            certificateNo: certNo,
+          },
+          templatePath
+        ) as unknown as Buffer;
+      } catch (e) {
+        console.error("[Certify] Certificate generation failed (non-blocking):", e);
+      }
+
+      sendEmailWithCert({
+        name: ownerName,
         email: portrait.owner.email,
-        portraitTitle: updated.title ?? "肖像",
+        portraitTitle: updated.title ?? "Portrait",
         imageHash,
         blockchainTxHash: certificationResult.txHash,
         ipfsCid: metadataIpfsResult.cid,
         network,
         certifiedAt: certificationResult.certifiedAt.toString(),
-      });
+        certificateBuffer: certBuffer,
+        certificateNo: certNo,
+      }).catch((e: unknown) => console.error("[Certify] Failed to send certified email:", e));
     }
 
     return NextResponse.json({
