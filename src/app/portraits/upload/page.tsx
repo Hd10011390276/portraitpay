@@ -333,7 +333,7 @@ export default function UploadPortraitPage() {
                 <p className="text-sm font-medium text-gray-600 dark:text-gray-300">
                   {t.upload?.clickToUploadIdFront}
                 </p>
-                <p className="text-xs text-gray-400 mt-1">{t.upload?.idDocSupported}
+                <p className="text-xs text-gray-400 mt-1">{t.upload?.idDocSupported}</p>
                 <input
                   type="file"
                   accept="image/jpeg,image/png,image/webp"

@@ -172,7 +172,7 @@ export default function LoginPage() {
             ].map((t) => (
               <button
                 key={t.key}
-                onClick={() => { setTab(t.key as Tab); setGlobalError(""); setEmailErrors({}); setPhoneErrors({}); }}
+                onClick={() => { setGlobalError(""); setEmailErrors({}); setPhoneErrors({}); }}
                 className={`flex-1 py-2.5 sm:py-3 text-xs sm:text-sm font-medium transition-colors
                   ${tab === t.key
                     ? "text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400 bg-blue-50/50 dark:bg-blue-900/20"
