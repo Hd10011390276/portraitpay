@@ -42,7 +42,7 @@ export function UsagePreferences({
   onProhibitedContentChange,
 }: UsagePreferencesProps) {
   const { locale } = useLanguage();
-  const isZh = locale === "zh-CN";
+  const isZh = locale === "zh-CN" || locale === "zh-Hant";
 
   const toggleScope = (value: string) => {
     if (allowedScopes.includes(value)) {
