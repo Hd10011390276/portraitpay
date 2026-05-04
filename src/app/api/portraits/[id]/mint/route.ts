@@ -191,9 +191,57 @@ export async function POST(request: NextRequest, context: RouteContext) {
       );
       console.log(`[Mint] ✅ Minted on Sepolia! Tx: ${certificationResult.txHash}`);
     } catch (err) {
-      console.error("[Mint] Blockchain mint failed:", err);
+      const errMsg = err instanceof Error ? err.message : String(err);
+      console.error("[Mint] Blockchain mint failed:", errMsg);
+
+      // Check if this imageHash was already certified on-chain (by any portrait)
+      if (errMsg.includes("already registered") || errMsg.includes("already minted")) {
+        const existingPortrait = await prisma.portrait.findFirst({
+          where: { imageHash, blockchainTxHash: { not: null } },
+          select: {
+            id: true,
+            title: true,
+            imageHash: true,
+            blockchainTxHash: true,
+            blockchainNetwork: true,
+            ipfsCid: true,
+            certifiedAt: true,
+          },
+        });
+
+        if (existingPortrait) {
+          // Update THIS portrait with the existing blockchain data instead of re-minting
+          const updated = await prisma.portrait.update({
+            where: { id },
+            data: {
+              imageHash,
+              ipfsCid: existingPortrait.ipfsCid,
+              blockchainTxHash: existingPortrait.blockchainTxHash,
+              blockchainNetwork: existingPortrait.blockchainNetwork,
+              certifiedAt: existingPortrait.certifiedAt,
+              status: "ACTIVE",
+            },
+          });
+
+          console.log(`[Mint] Reusing existing blockchain certificate from portrait ${existingPortrait.id}`);
+          return NextResponse.json({
+            success: true,
+            data: {
+              portraitId: updated.id,
+              imageHash,
+              ipfsCid: existingPortrait.ipfsCid,
+              blockchainTxHash: existingPortrait.blockchainTxHash,
+              blockNumber: null,
+              network: existingPortrait.blockchainNetwork ?? network,
+              certifiedAt: existingPortrait.certifiedAt,
+              reusedCertificate: true,
+            },
+          });
+        }
+      }
+
       return NextResponse.json(
-        { success: false, error: "Blockchain transaction failed. Please try again.", code: "PP-5001" },
+        { success: false, error: "区块链上链失败：" + errMsg, code: "PP-5001" },
         { status: 503 }
       );
     }
