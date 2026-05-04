@@ -7,6 +7,9 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import { useLanguage } from "@/context/LanguageContext";
+import { LanguageToggle } from "@/components/layout/LanguageToggle";
+import ThemeToggle from "@/components/ThemeToggle";
 
 interface Transaction {
   id: string;
@@ -48,7 +51,16 @@ interface Stats {
   totalWithdrawnAmount: number;
 }
 
-const TX_TYPE: Record<string, string> = {
+const TX_TYPE_EN: Record<string, string> = {
+  LICENSE_PURCHASE: "License Purchase",
+  LICENSE_RENEWAL: "Renewal",
+  ROYALTY_PAYOUT: "Royalty Payout",
+  PLATFORM_COMMISSION: "Platform Commission",
+  WITHDRAWAL: "Withdrawal",
+  SETTLEMENT: "Settlement",
+};
+
+const TX_TYPE_ZH: Record<string, string> = {
   LICENSE_PURCHASE: "授权购买",
   LICENSE_RENEWAL: "续期",
   ROYALTY_PAYOUT: "版税分成",
@@ -57,7 +69,15 @@ const TX_TYPE: Record<string, string> = {
   SETTLEMENT: "结算",
 };
 
-const TX_STATUS: Record<string, { text: string; color: string }> = {
+const TX_STATUS_EN: Record<string, { text: string; color: string }> = {
+  PENDING: { text: "Pending", color: "text-yellow-600 bg-yellow-50" },
+  COMPLETED: { text: "Completed", color: "text-green-600 bg-green-50" },
+  FAILED: { text: "Failed", color: "text-red-600 bg-red-50" },
+  REFUNDED: { text: "Refunded", color: "text-orange-600 bg-orange-50" },
+  DISPUTED: { text: "Disputed", color: "text-purple-600 bg-purple-50" },
+};
+
+const TX_STATUS_ZH: Record<string, { text: string; color: string }> = {
   PENDING: { text: "待处理", color: "text-yellow-600 bg-yellow-50" },
   COMPLETED: { text: "已完成", color: "text-green-600 bg-green-50" },
   FAILED: { text: "失败", color: "text-red-600 bg-red-50" },
@@ -65,7 +85,16 @@ const TX_STATUS: Record<string, { text: string; color: string }> = {
   DISPUTED: { text: "争议中", color: "text-purple-600 bg-purple-50" },
 };
 
-const WD_STATUS: Record<string, { text: string; color: string }> = {
+const WD_STATUS_EN: Record<string, { text: string; color: string }> = {
+  PENDING: { text: "Pending Review", color: "text-yellow-600 bg-yellow-50" },
+  PROCESSING: { text: "Processing", color: "text-blue-600 bg-blue-50" },
+  APPROVED: { text: "Approved", color: "text-green-600 bg-green-50" },
+  REJECTED: { text: "Rejected", color: "text-red-600 bg-red-50" },
+  COMPLETED: { text: "Completed", color: "text-gray-600 bg-gray-50" },
+  FAILED: { text: "Failed", color: "text-red-600 bg-red-50" },
+};
+
+const WD_STATUS_ZH: Record<string, { text: string; color: string }> = {
   PENDING: { text: "待审核", color: "text-yellow-600 bg-yellow-50" },
   PROCESSING: { text: "处理中", color: "text-blue-600 bg-blue-50" },
   APPROVED: { text: "已通过", color: "text-green-600 bg-green-50" },
@@ -76,6 +105,15 @@ const WD_STATUS: Record<string, { text: string; color: string }> = {
 
 export default function AdminEarningsPage() {
   const router = useRouter();
+  const { t, locale } = useLanguage();
+  const isZh = locale === "zh-CN" || locale === "zh-Hant";
+
+  const TX_TYPE = isZh ? TX_TYPE_ZH : TX_TYPE_EN;
+  const TX_STATUS = isZh ? TX_STATUS_ZH : TX_STATUS_EN;
+  const WD_STATUS = isZh ? WD_STATUS_ZH : WD_STATUS_EN;
+
+  const tc = t.adminEarnings || {};
+
   const [tab, setTab] = useState<"transactions" | "withdrawals">("transactions");
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [withdrawals, setWithdrawals] = useState<Withdrawal[]>([]);
@@ -85,7 +123,6 @@ export default function AdminEarningsPage() {
   const [wdMeta, setWdMeta] = useState<{ page: number; totalPages: number; total: number } | null>(null);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
 
-  // Filters
   const [filterStatus, setFilterStatus] = useState("");
   const [filterType, setFilterType] = useState("");
 
@@ -138,7 +175,7 @@ export default function AdminEarningsPage() {
     new Intl.NumberFormat("en-US", { style: "currency", currency: c }).format(v);
 
   const formatDate = (d: string) =>
-    new Date(d).toLocaleDateString("zh-CN", { year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit" });
+    new Date(d).toLocaleDateString(isZh ? "zh-CN" : "en-US", { year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit" });
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">
@@ -148,8 +185,16 @@ export default function AdminEarningsPage() {
         <div className="flex items-center gap-4">
           <button onClick={() => router.push("/dashboard")} className="text-gray-500 hover:text-gray-700">←</button>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">收益管理</h1>
-            <p className="text-sm text-gray-500">管理员后台 · 交易记录与提现审核</p>
+            <h1 className="text-2xl font-bold text-gray-900">
+              {tc.pageTitle || (isZh ? "收益管理" : "Revenue Management")}
+            </h1>
+            <p className="text-sm text-gray-500">
+              {tc.pageSubtitle || (isZh ? "管理员后台 · 交易记录与提现审核" : "Admin Dashboard · Transactions & Withdrawal Review")}
+            </p>
+          </div>
+          <div className="ml-auto flex items-center gap-2">
+            <LanguageToggle />
+            <ThemeToggle />
           </div>
         </div>
 
@@ -157,18 +202,24 @@ export default function AdminEarningsPage() {
         {stats && (
           <div className="grid grid-cols-3 gap-4">
             <div className="bg-white rounded-xl p-5">
-              <p className="text-xs text-gray-500 uppercase mb-1">待处理提现</p>
-              <p className="text-2xl font-bold text-yellow-600">{stats.pendingCount} 笔</p>
+              <p className="text-xs text-gray-500 uppercase mb-1">
+                {tc.pendingWithdrawals || (isZh ? "待处理提现" : "Pending Withdrawals")}
+              </p>
+              <p className="text-2xl font-bold text-yellow-600">{stats.pendingCount} {tc.items || (isZh ? "笔" : "items")}</p>
               <p className="text-sm text-gray-600">{formatCurrency(stats.totalPendingAmount)}</p>
             </div>
             <div className="bg-white rounded-xl p-5">
-              <p className="text-xs text-gray-500 uppercase mb-1">已成功提现</p>
+              <p className="text-xs text-gray-500 uppercase mb-1">
+                {tc.totalWithdrawn || (isZh ? "已成功提现" : "Total Withdrawn")}
+              </p>
               <p className="text-2xl font-bold text-green-600">{formatCurrency(stats.totalWithdrawnAmount)}</p>
             </div>
             <div className="bg-white rounded-xl p-5">
-              <p className="text-xs text-gray-500 uppercase mb-1">平台总收入</p>
+              <p className="text-xs text-gray-500 uppercase mb-1">
+                {tc.platformRevenue || (isZh ? "平台总收入" : "Platform Revenue")}
+              </p>
               <p className="text-2xl font-bold text-blue-600">—</p>
-              <p className="text-xs text-gray-400">（从 PLATFORM_COMMISSION 交易汇总）</p>
+              <p className="text-xs text-gray-400">{tc.platformRevenueNote || (isZh ? "（从 PLATFORM_COMMISSION 交易汇总）" : "(Aggregated from PLATFORM_COMMISSION transactions)")}</p>
             </div>
           </div>
         )}
@@ -183,14 +234,14 @@ export default function AdminEarningsPage() {
                 tab === t ? "bg-blue-600 text-white" : "text-gray-600 hover:bg-gray-100"
               }`}
             >
-              {t === "transactions" ? "所有交易" : "提现申请"}
+              {t === "transactions" ? (tc.allTransactions || (isZh ? "所有交易" : "All Transactions")) : (tc.withdrawalRequests || (isZh ? "提现申请" : "Withdrawal Requests"))}
             </button>
           ))}
         </div>
 
         {/* Filters */}
         <div className="bg-white rounded-xl p-4 flex flex-wrap gap-3 items-center">
-          <span className="text-sm font-medium text-gray-700">筛选</span>
+          <span className="text-sm font-medium text-gray-700">{tc.filter || (isZh ? "筛选" : "Filter")}</span>
           {tab === "transactions" ? (
             <>
               <select
@@ -198,7 +249,7 @@ export default function AdminEarningsPage() {
                 value={filterType}
                 onChange={(e) => setFilterType(e.target.value)}
               >
-                <option value="">全部类型</option>
+                <option value="">{tc.allTypes || (isZh ? "全部类型" : "All Types")}</option>
                 {Object.entries(TX_TYPE).map(([k, v]) => (
                   <option key={k} value={k}>{v}</option>
                 ))}
@@ -208,7 +259,7 @@ export default function AdminEarningsPage() {
                 value={filterStatus}
                 onChange={(e) => setFilterStatus(e.target.value)}
               >
-                <option value="">全部状态</option>
+                <option value="">{tc.allStatuses || (isZh ? "全部状态" : "All Statuses")}</option>
                 {Object.entries(TX_STATUS).map(([k, v]) => (
                   <option key={k} value={k}>{v.text}</option>
                 ))}
@@ -220,7 +271,7 @@ export default function AdminEarningsPage() {
               value={filterStatus}
               onChange={(e) => setFilterStatus(e.target.value)}
             >
-              <option value="">全部状态</option>
+              <option value="">{tc.allStatuses || (isZh ? "全部状态" : "All Statuses")}</option>
               {Object.entries(WD_STATUS).map(([k, v]) => (
                 <option key={k} value={k}>{v.text}</option>
               ))}
@@ -233,7 +284,7 @@ export default function AdminEarningsPage() {
               else loadWithdrawals();
             }}
           >
-            刷新
+            {tc.refresh || (isZh ? "刷新" : "Refresh")}
           </button>
         </div>
 
@@ -244,16 +295,25 @@ export default function AdminEarningsPage() {
               <table className="w-full text-sm">
                 <thead className="bg-gray-50 border-b">
                   <tr>
-                    {["交易ID", "用户", "类型", "金额", "状态", "关联肖像", "时间", "Stripe ID"].map((h) => (
+                    {[
+                      tc.colTxId || (isZh ? "交易ID" : "Transaction ID"),
+                      tc.colUser || (isZh ? "用户" : "User"),
+                      tc.colType || (isZh ? "类型" : "Type"),
+                      tc.colAmount || (isZh ? "金额" : "Amount"),
+                      tc.colStatus || (isZh ? "状态" : "Status"),
+                      tc.colPortrait || (isZh ? "关联肖像" : "Portrait"),
+                      tc.colTime || (isZh ? "时间" : "Time"),
+                      tc.colStripeId || (isZh ? "Stripe ID" : "Stripe ID"),
+                    ].map((h) => (
                       <th key={h} className="text-left px-4 py-3 font-medium text-gray-600 whitespace-nowrap">{h}</th>
                     ))}
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-50">
                   {loading ? (
-                    <tr><td colSpan={8} className="text-center py-8 text-gray-400">加载中...</td></tr>
+                    <tr><td colSpan={8} className="text-center py-8 text-gray-400">{tc.loading || (isZh ? "加载中..." : "Loading...")}</td></tr>
                   ) : transactions.length === 0 ? (
-                    <tr><td colSpan={8} className="text-center py-8 text-gray-400">暂无数据</td></tr>
+                    <tr><td colSpan={8} className="text-center py-8 text-gray-400">{tc.noData || (isZh ? "暂无数据" : "No data")}</td></tr>
                   ) : (
                     transactions.map((tx) => {
                       const st = TX_STATUS[tx.status] ?? { text: tx.status, color: "text-gray-600 bg-gray-50" };
@@ -287,12 +347,12 @@ export default function AdminEarningsPage() {
             {/* Pagination */}
             {txMeta && txMeta.totalPages > 1 && (
               <div className="px-4 py-3 border-t flex items-center justify-between text-sm text-gray-500">
-                <span>共 {txMeta.total} 条</span>
+                <span>{tc.total || (isZh ? "共" : "Total")} {txMeta.total} {tc.records || (isZh ? "条" : "records")}</span>
                 <div className="flex gap-2">
                   <button disabled={txMeta.page <= 1} className="px-3 py-1 border rounded disabled:opacity-40"
-                    onClick={() => loadTransactions(txMeta.page - 1)}>上一页</button>
+                    onClick={() => loadTransactions(txMeta.page - 1)}>{tc.prevPage || (isZh ? "上一页" : "Previous")}</button>
                   <button disabled={txMeta.page >= txMeta.totalPages} className="px-3 py-1 border rounded disabled:opacity-40"
-                    onClick={() => loadTransactions(txMeta.page + 1)}>下一页</button>
+                    onClick={() => loadTransactions(txMeta.page + 1)}>{tc.nextPage || (isZh ? "下一页" : "Next")}</button>
                 </div>
               </div>
             )}
@@ -306,16 +366,23 @@ export default function AdminEarningsPage() {
               <table className="w-full text-sm">
                 <thead className="bg-gray-50 border-b">
                   <tr>
-                    {["用户", "金额", "收款信息", "状态", "申请时间", "操作"].map((h) => (
+                    {[
+                      tc.colUser || (isZh ? "用户" : "User"),
+                      tc.colAmount || (isZh ? "金额" : "Amount"),
+                      tc.colBankInfo || (isZh ? "收款信息" : "Bank Info"),
+                      tc.colStatus || (isZh ? "状态" : "Status"),
+                      tc.colApplyTime || (isZh ? "申请时间" : "Applied"),
+                      tc.colAction || (isZh ? "操作" : "Action"),
+                    ].map((h) => (
                       <th key={h} className="text-left px-4 py-3 font-medium text-gray-600">{h}</th>
                     ))}
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-50">
                   {loading ? (
-                    <tr><td colSpan={6} className="text-center py-8 text-gray-400">加载中...</td></tr>
+                    <tr><td colSpan={6} className="text-center py-8 text-gray-400">{tc.loading || (isZh ? "加载中..." : "Loading...")}</td></tr>
                   ) : withdrawals.length === 0 ? (
-                    <tr><td colSpan={6} className="text-center py-8 text-gray-400">暂无数据</td></tr>
+                    <tr><td colSpan={6} className="text-center py-8 text-gray-400">{tc.noData || (isZh ? "暂无数据" : "No data")}</td></tr>
                   ) : (
                     withdrawals.map((w) => {
                       const st = WD_STATUS[w.status] ?? { text: w.status, color: "text-gray-600 bg-gray-50" };
@@ -346,14 +413,14 @@ export default function AdminEarningsPage() {
                                   onClick={() => handleWithdrawalAction(w.id, "approve")}
                                   className="px-3 py-1 text-xs bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50"
                                 >
-                                  通过
+                                  {tc.approve || (isZh ? "通过" : "Approve")}
                                 </button>
                                 <button
                                   disabled={actionLoading === w.id}
-                                  onClick={() => handleWithdrawalAction(w.id, "reject", "信息审核不通过")}
+                                  onClick={() => handleWithdrawalAction(w.id, "reject", tc.rejectReasonDefault || (isZh ? "信息审核不通过" : "Information verification failed"))}
                                   className="px-3 py-1 text-xs bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50"
                                 >
-                                  拒绝
+                                  {tc.reject || (isZh ? "拒绝" : "Reject")}
                                 </button>
                               </div>
                             ) : (
@@ -370,12 +437,12 @@ export default function AdminEarningsPage() {
 
             {wdMeta && wdMeta.totalPages > 1 && (
               <div className="px-4 py-3 border-t flex items-center justify-between text-sm text-gray-500">
-                <span>共 {wdMeta.total} 条</span>
+                <span>{tc.total || (isZh ? "共" : "Total")} {wdMeta.total} {tc.records || (isZh ? "条" : "records")}</span>
                 <div className="flex gap-2">
                   <button disabled={wdMeta.page <= 1} className="px-3 py-1 border rounded disabled:opacity-40"
-                    onClick={() => loadWithdrawals(wdMeta.page - 1)}>上一页</button>
+                    onClick={() => loadWithdrawals(wdMeta.page - 1)}>{tc.prevPage || (isZh ? "上一页" : "Previous")}</button>
                   <button disabled={wdMeta.page >= wdMeta.totalPages} className="px-3 py-1 border rounded disabled:opacity-40"
-                    onClick={() => loadWithdrawals(wdMeta.page + 1)}>下一页</button>
+                    onClick={() => loadWithdrawals(wdMeta.page + 1)}>{tc.nextPage || (isZh ? "下一页" : "Next")}</button>
                 </div>
               </div>
             )}
