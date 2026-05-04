@@ -31,7 +31,6 @@ interface Portrait {
 
 export default function OwnerPage() {
   const { t, locale } = useLanguage();
-  const isZh = locale === "zh-CN";
 
   const [user, setUser] = useState<User | null>(null);
   const [checking, setChecking] = useState(true);
@@ -54,25 +53,22 @@ export default function OwnerPage() {
         setUser(json.data?.user || json.user || null);
       } catch { window.location.href = "/login"; }
       finally { setChecking(false); }
-    };
+    }
     checkAuth();
   }, []);
 
   useEffect(() => {
     if (!user) return;
-
     const fetchData = async () => {
       try {
         const [portraitsRes, transfersRes] = await Promise.all([
           fetch("/api/portraits", { credentials: "include" }),
           fetch("/api/v1/transfers", { credentials: "include" }),
         ]);
-
         if (portraitsRes.ok) {
           const portraitsData = await portraitsRes.json();
           setPortraits(portraitsData.data || []);
         }
-
         if (transfersRes.ok) {
           const transfersData = await transfersRes.json();
           setTransfers(transfersData.data || []);
@@ -81,17 +77,16 @@ export default function OwnerPage() {
         console.error("Failed to fetch data:", err);
       }
     };
-
     fetchData();
   }, [user]);
 
   const handleInitiateTransfer = () => {
     if (!selectedPortraitId) {
-      setError(isZh ? "请选择要转让的肖像" : "Please select a portrait to transfer");
+      setError(t.owner.selectPortraitRequired);
       return;
     }
     if (!toEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(toEmail)) {
-      setError(isZh ? "请输入有效的邮箱地址" : "Please enter a valid email address");
+      setError(t.owner.enterValidEmail);
       return;
     }
     setShowConfirm(true);
@@ -100,39 +95,30 @@ export default function OwnerPage() {
   const handleConfirmTransfer = async () => {
     setSubmitting(true);
     setError("");
-
     try {
       const res = await fetch("/api/v1/transfers", {
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          portraitId: selectedPortraitId,
-          toEmail,
-        }),
+        body: JSON.stringify({ portraitId: selectedPortraitId, toEmail }),
       });
-
       const data = await res.json();
-
       if (!res.ok) {
-        setError(data.error || (isZh ? "转让失败，请稍后重试" : "Transfer failed, please try again"));
+        setError(data.error || t.owner.transferFailed);
         setShowConfirm(false);
         return;
       }
-
       setSuccess(true);
       setShowConfirm(false);
       setSelectedPortraitId("");
       setToEmail("");
-
-      // Refresh transfers
       const transfersRes = await fetch("/api/v1/transfers", { credentials: "include" });
       if (transfersRes.ok) {
         const transfersData = await transfersRes.json();
         setTransfers(transfersData.data || []);
       }
     } catch {
-      setError(isZh ? "网络错误，请检查网络连接" : "Network error, please check your connection");
+      setError(t.owner.networkError);
     } finally {
       setSubmitting(false);
     }
@@ -146,10 +132,10 @@ export default function OwnerPage() {
       REJECTED: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400",
     };
     const labels = {
-      PENDING: isZh ? "待确认" : "Pending",
-      COMPLETED: isZh ? "已完成" : "Completed",
-      CANCELLED: isZh ? "已取消" : "Cancelled",
-      REJECTED: isZh ? "已拒绝" : "Rejected",
+      PENDING: t.owner.pending,
+      COMPLETED: t.owner.completed,
+      CANCELLED: t.owner.cancelled,
+      REJECTED: t.owner.rejected,
     };
     return (
       <span className={`px-2 py-0.5 text-xs font-medium rounded-full ${styles[status]}`}>
@@ -178,10 +164,10 @@ export default function OwnerPage() {
         <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
           <div className="p-6 border-b border-gray-100 dark:border-gray-800">
             <h2 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-              🔄 {isZh ? "发起转让" : "Initiate Transfer"}
+              🔄 {t.owner.initiateTransfer}
             </h2>
             <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-              {isZh ? "选择一个肖像并输入受让人的邮箱地址" : "Select a portrait and enter the recipient's email address"}
+              {t.owner.initiateTransferDesc}
             </p>
           </div>
 
@@ -189,20 +175,16 @@ export default function OwnerPage() {
             {/* Portrait selector */}
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                {isZh ? "选择肖像" : "Select Portrait"}
+                {t.owner.selectPortrait}
               </label>
               <select
                 value={selectedPortraitId}
                 onChange={(e) => setSelectedPortraitId(e.target.value)}
                 className="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
-                <option value="">
-                  {isZh ? "-- 选择肖像 --" : "-- Select Portrait --"}
-                </option>
+                <option value="">{t.owner.selectPortraitOption}</option>
                 {portraits.map((p) => (
-                  <option key={p.id} value={p.id}>
-                    {p.title} ({p.status})
-                  </option>
+                  <option key={p.id} value={p.id}>{p.title} ({p.status})</option>
                 ))}
               </select>
             </div>
@@ -210,13 +192,13 @@ export default function OwnerPage() {
             {/* Recipient email */}
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                {isZh ? "受让人邮箱" : "Recipient Email"}
+                {t.owner.recipientEmail}
               </label>
               <input
                 type="email"
                 value={toEmail}
                 onChange={(e) => setToEmail(e.target.value)}
-                placeholder={isZh ? "输入受让人的邮箱地址" : "Enter recipient's email address"}
+                placeholder={t.owner.recipientEmailPlaceholder}
                 className="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
@@ -229,7 +211,7 @@ export default function OwnerPage() {
 
             {success && (
               <div className="p-3 bg-green-50 border border-green-200 rounded-lg text-sm text-green-600">
-                ✅ {isZh ? "转让请求已发送！" : "Transfer request sent!"}
+                ✅ {t.owner.transferRequestSent}
               </div>
             )}
 
@@ -238,7 +220,7 @@ export default function OwnerPage() {
               disabled={submitting}
               className="w-full px-6 py-2.5 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {submitting ? (isZh ? "处理中..." : "Processing...") : (isZh ? "发起转让" : "Initiate Transfer")}
+              {submitting ? t.owner.processing : t.owner.initiateTransfer}
             </button>
           </div>
         </div>
@@ -248,26 +230,24 @@ export default function OwnerPage() {
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
             <div className="bg-white dark:bg-gray-800 rounded-xl p-6 max-w-md w-full mx-4 shadow-xl">
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                {isZh ? "确认转让" : "Confirm Transfer"}
+                {t.owner.confirmTransfer}
               </h3>
               <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
-                {isZh
-                  ? `确定要将此肖像转让给 ${toEmail} 吗？此操作不可撤销。`
-                  : `Are you sure you want to transfer this portrait to ${toEmail}? This action cannot be undone.`}
+                {t.owner.confirmTransferDesc.replace("{email}", toEmail)}
               </p>
               <div className="flex gap-3">
                 <button
                   onClick={() => setShowConfirm(false)}
                   className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 font-medium rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                 >
-                  {isZh ? "取消" : "Cancel"}
+                  {t.owner.cancel}
                 </button>
                 <button
                   onClick={handleConfirmTransfer}
                   disabled={submitting}
                   className="flex-1 px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
                 >
-                  {submitting ? (isZh ? "处理中..." : "Processing...") : (isZh ? "确认" : "Confirm")}
+                  {submitting ? t.owner.processing : t.owner.confirm}
                 </button>
               </div>
             </div>
@@ -278,13 +258,13 @@ export default function OwnerPage() {
         <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
           <div className="p-6 border-b border-gray-100 dark:border-gray-800">
             <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-              {isZh ? "转让历史" : "Transfer History"}
+              {t.owner.transferHistory}
             </h2>
           </div>
 
           {transfers.length === 0 ? (
             <div className="p-8 text-center text-gray-500 dark:text-gray-400 text-sm">
-              {isZh ? "暂无转让记录" : "No transfer history"}
+              {t.owner.noTransferHistory}
             </div>
           ) : (
             <div className="divide-y divide-gray-100 dark:divide-gray-800">
@@ -298,10 +278,10 @@ export default function OwnerPage() {
                       {transfer.portraitTitle}
                     </p>
                     <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                      {isZh ? "受让人" : "To"}: {transfer.toEmail}
+                      {t.owner.to}: {transfer.toEmail}
                     </p>
                     <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
-                      {new Date(transfer.createdAt).toLocaleDateString(isZh ? "zh-CN" : "en-US", {
+                      {new Date(transfer.createdAt).toLocaleDateString(locale === "zh-CN" || locale === "zh-Hant" ? "zh-CN" : "en-US", {
                         timeZone: "Asia/Shanghai",
                       })}
                     </p>

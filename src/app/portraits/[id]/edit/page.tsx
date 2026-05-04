@@ -27,7 +27,8 @@ interface PortraitDetail {
 export default function EditPortraitPage() {
   const params = useParams();
   const router = useRouter();
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
+  const isZh = locale === "zh-CN" || locale === "zh-Hant";
   const id = params.id as string;
 
   const [portrait, setPortrait] = useState<PortraitDetail | null>(null);
@@ -65,7 +66,7 @@ export default function EditPortraitPage() {
 
   const validate = () => {
     const errs: Record<string, string> = {};
-    if (!form.title.trim()) errs.title = "Title is required";
+    if (!form.title.trim()) errs.title = t.portraits?.detail?.titleIsRequired || t.upload?.titleIsRequired || "Title is required";
     setErrors(errs);
     return Object.keys(errs).length === 0;
   };
@@ -92,13 +93,13 @@ export default function EditPortraitPage() {
 
       const json = await res.json();
       if (json.success) {
-        setSaveMsg("✅ Saved successfully");
+        setSaveMsg(t.portraits?.detail?.savedSuccessfully || t.upload?.savedSuccessfully || "✅ Saved successfully");
         setTimeout(() => router.push(`/portraits/${id}`), 1500);
       } else {
         setSaveMsg(`❌ ${json.error}`);
       }
     } catch {
-      setSaveMsg("❌ Network error");
+      setSaveMsg("❌ " + (t.portraits?.detail?.networkError || t.upload?.networkError || "Network error"));
     } finally {
       setSaving(false);
     }
@@ -114,11 +115,11 @@ export default function EditPortraitPage() {
 
   if (!portrait) {
     return (
-      <DashboardShell title="Portrait Not Found" subtitle="">
+      <DashboardShell title={t.portraits?.detail?.portraitNotFound || t.upload?.portraitNotFound || "Portrait Not Found"} subtitle="">
         <div className="text-center py-24">
-          <p className="text-gray-500">Portrait not found.</p>
+          <p className="text-gray-500">{t.portraits?.detail?.portraitNotFound || t.upload?.portraitNotFound || "Portrait not found."}</p>
           <Link href="/portraits" className="text-blue-600 hover:underline mt-4 inline-block">
-            ← Back to Portraits
+            ← {t.portraits?.detail?.backToPortraits || t.upload?.backToPortraits || "Back to Portraits"}
           </Link>
         </div>
       </DashboardShell>
@@ -127,21 +128,25 @@ export default function EditPortraitPage() {
 
   return (
     <DashboardShell
-      title={t?.ipRegister?.editTitle || "Edit Portrait"}
-      subtitle={t?.ipRegister?.editSubtitle || "Update portrait details"}
+      title={t.portraits?.detail?.editTitle || t.upload?.editTitle || "Edit Portrait"}
+      subtitle={t.portraits?.detail?.editSubtitle || t.upload?.editSubtitle || "Update portrait details"}
     >
       <div className="max-w-3xl">
         <form onSubmit={handleSubmit} className="flex flex-col gap-8">
           {/* Current image preview */}
           {portrait.originalImageUrl && (
             <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 p-4">
-              <p className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Current Image</p>
+              <p className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">
+                {t.portraits?.detail?.currentImage || t.upload?.currentImage || "Current Image"}
+              </p>
               <img
                 src={portrait.originalImageUrl}
                 alt={portrait.title}
                 className="w-32 h-32 object-cover rounded-lg"
               />
-              <p className="text-xs text-gray-400 mt-2">To change the image, please archive this portrait and upload a new one.</p>
+              <p className="text-xs text-gray-400 mt-2">
+                {t.portraits?.detail?.changeImageHint || t.upload?.changeImageHint || "To change the image, please archive this portrait and upload a new one."}
+              </p>
             </div>
           )}
 
@@ -150,7 +155,7 @@ export default function EditPortraitPage() {
             <div className="flex flex-col gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Title <span className="text-red-500">*</span>
+                  {t.portraits?.detail?.titleLabel || t.upload?.titleLabel || "Title"} <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
@@ -167,7 +172,9 @@ export default function EditPortraitPage() {
 
               {/* Description */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Description</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  {t.portraits?.detail?.descriptionLabel || t.upload?.descriptionLabel || "Description"}
+                </label>
                 <textarea
                   value={form.description}
                   onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
@@ -179,32 +186,34 @@ export default function EditPortraitPage() {
 
               {/* Category */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Category</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  {t.portraits?.detail?.categoryLabel || t.upload?.categoryLabel || "Category"}
+                </label>
                 <select
                   value={form.category}
                   onChange={(e) => setForm((f) => ({ ...f, category: e.target.value }))}
                   className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
                 >
-                  <option value="general">{t?.upload?.categoryGeneral || "General"}</option>
-                  <option value="celebrity">{t?.upload?.categoryCelebrity || "Celebrity"}</option>
-                  <option value="artist">{t?.upload?.categoryArtist || "Artist"}</option>
-                  <option value="athlete">{t?.upload?.categoryAthlete || "Athlete"}</option>
-                  <option value="business">{t?.upload?.categoryBusiness || "Business"}</option>
-                  <option value="political">{t?.upload?.categoryPolitical || "Political"}</option>
-                  <option value="other">{t?.upload?.categoryOther || "Other"}</option>
+                  <option value="general">{t.upload?.categoryGeneral || "General"}</option>
+                  <option value="celebrity">{t.upload?.categoryCelebrity || "Celebrity"}</option>
+                  <option value="artist">{t.upload?.categoryArtist || "Artist"}</option>
+                  <option value="athlete">{t.upload?.categoryAthlete || "Athlete"}</option>
+                  <option value="business">{t.upload?.categoryBusiness || "Business"}</option>
+                  <option value="political">{t.upload?.categoryPolitical || "Political"}</option>
+                  <option value="other">{t.upload?.categoryOther || "Other"}</option>
                 </select>
               </div>
 
               {/* Tags */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Tags <span className="text-xs text-gray-400">(comma-separated)</span>
+                  {t.portraits?.detail?.tagsLabel || t.upload?.tagsLabel || "Tags"} <span className="text-xs text-gray-400">(comma-separated)</span>
                 </label>
                 <input
                   type="text"
                   value={form.tags}
                   onChange={(e) => setForm((f) => ({ ...f, tags: e.target.value }))}
-                  placeholder="portrait, official, 2024"
+                  placeholder={t.portraits?.detail?.tagsPlaceholder || t.upload?.tagsPlaceholder || "portrait, official, 2024"}
                   className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
                 />
               </div>
@@ -225,8 +234,12 @@ export default function EditPortraitPage() {
                   />
                 </button>
                 <div>
-                  <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Public Listing</p>
-                  <p className="text-xs text-gray-400">Allow others to find this portrait</p>
+                  <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                    {t.portraits?.detail?.publicListing || t.upload?.publicListing || "Public Listing"}
+                  </p>
+                  <p className="text-xs text-gray-400">
+                    {t.portraits?.detail?.publicListingDesc || t.upload?.publicListingDesc || "Allow others to find this portrait"}
+                  </p>
                 </div>
               </div>
             </div>
@@ -239,7 +252,7 @@ export default function EditPortraitPage() {
               disabled={saving}
               className="px-6 py-2.5 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors"
             >
-              {saving ? "Saving..." : "Save Changes"}
+              {saving ? (t.portraits?.detail?.saving || t.upload?.saving || "Saving...") : (t.portraits?.detail?.saveChanges || t.upload?.saveChanges || "Save Changes")}
             </button>
 
             {saveMsg && (
@@ -250,7 +263,7 @@ export default function EditPortraitPage() {
               href={`/portraits/${id}`}
               className="px-4 py-2 text-sm text-gray-500 hover:text-gray-700 transition-colors"
             >
-              Cancel
+              {t.portraits?.detail?.cancel || t.upload?.cancel || "Cancel"}
             </Link>
           </div>
         </form>
