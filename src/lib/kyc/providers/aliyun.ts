@@ -24,10 +24,14 @@ import type {
 // STUBS: dev/demo mode - set to false to enable real Aliyun API
 // Must be false in production (with real KYC_ALIYUN_ACCESS_KEY_ID/SECRET)
 // Set KYC_ALIYUN_STUB=true in development
+// NOTE: isStubEnabled() is called at runtime (not module load) to ensure env var changes take effect
 const STUBS = {
-  enabled: false,
   autoApprove: true,
 };
+
+function isStubEnabled(): boolean {
+  return process.env.KYC_ALIYUN_STUB === "true";
+}
 
 /**
  * Aliyun face verification client
@@ -61,7 +65,7 @@ export class AliyunKYCProvider implements KYCProviderClient {
     redirectUrl: string;
     externalRef: string;
   }> {
-    if (STUBS.enabled || !this.accessKeyId || !this.accessKeySecret) {
+    if (isStubEnabled() || !this.accessKeyId || !this.accessKeySecret) {
       const ref = `aliyun_${userId}_${Date.now()}`;
       return {
         sessionToken: ref,
@@ -98,8 +102,8 @@ export class AliyunKYCProvider implements KYCProviderClient {
     idCardFrontUrl: string,
     idCardBackUrl: string
   ): Promise<IDCardOCRResult> {
-    console.log("[KYC STUB] submitOCR called, STUBS.enabled =", STUBS.enabled, "idCardFrontUrl:", idCardFrontUrl);
-    if (STUBS.enabled || !this.accessKeyId || !this.accessKeySecret) {
+    if (isStubEnabled() || !this.accessKeyId || !this.accessKeySecret) {
+      console.log("[KYC STUB] submitOCR called, stub enabled, idCardFrontUrl:", idCardFrontUrl);
       return this.stubOCR();
     }
 
@@ -126,8 +130,8 @@ export class AliyunKYCProvider implements KYCProviderClient {
     portraitUrl: string,
     idCardUrl: string
   ): Promise<FaceVerifyResult> {
-    if (STUBS.enabled || !this.accessKeyId || !this.accessKeySecret) {
-      console.log("[Aliyun] submitFaceVerify: using STUB (enabled=", STUBS.enabled, ")");
+    if (isStubEnabled() || !this.accessKeyId || !this.accessKeySecret) {
+      console.log("[Aliyun] submitFaceVerify: using STUB (enabled=", isStubEnabled(), ")");
       return this.stubFaceVerify();
     }
 
@@ -239,7 +243,7 @@ export class AliyunKYCProvider implements KYCProviderClient {
     status: "PENDING" | "APPROVED" | "REJECTED";
     result?: IDCardOCRResult & FaceVerifyResult;
   }> {
-    if (STUBS.enabled || !this.accessKeyId || !this.accessKeySecret) {
+    if (isStubEnabled() || !this.accessKeyId || !this.accessKeySecret) {
       return STUBS.autoApprove
         ? { status: "APPROVED", result: { ...this.stubOCR(), ...this.stubFaceVerify() } }
         : { status: "PENDING" };
@@ -282,7 +286,7 @@ export class AliyunKYCProvider implements KYCProviderClient {
   // ─── Stub methods ───────────────────────────────────────────
 
   private stubOCR(): IDCardOCRResult {
-    console.log("[KYC STUB] stubOCR called, STUBS.enabled =", STUBS.enabled);
+    console.log("[KYC STUB] stubOCR called, stub enabled:", isStubEnabled());
     return {
       name: "John Doe",
       gender: "male",
