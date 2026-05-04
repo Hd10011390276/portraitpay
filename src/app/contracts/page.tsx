@@ -13,54 +13,39 @@ import { LanguageToggle } from "@/components/layout/LanguageToggle";
 const CONTRACT_FILES = [
   {
     name: "00-Overview-and-Signing-Guide",
-    label: "Overview & Signing Guide",
-    labelZh: "概览与签署指南",
+    labelKey: "fileOverview",
     icon: "📋",
-    description: "Introduction to contract system and step-by-step signing instructions.",
-    descriptionZh: "合同系统介绍及分步签署说明。",
   },
   {
     name: "01-Standard-License-Agreement",
-    label: "Standard License Agreement",
-    labelZh: "标准授权协议",
+    labelKey: "fileStandard",
     icon: "📄",
-    description: "General use for social media, advertisements, and products.",
-    descriptionZh: "适用于社交媒体、广告和产品的通用授权。",
   },
   {
     name: "02-Exclusive-License-Agreement",
-    label: "Exclusive License Agreement",
-    labelZh: "独家授权协议",
+    labelKey: "fileExclusive",
     icon: "🏆",
-    description: "Full exclusivity including film, gaming, and broadcast rights.",
-    descriptionZh: "包含电影、游戏和广播权的完全独家授权。",
   },
   {
     name: "03-Endorsement-License-Agreement",
-    label: "Endorsement License Agreement",
-    labelZh: "代言授权协议",
+    labelKey: "fileEndorsement",
     icon: "⭐",
-    description: "Brand endorsement, advertisement filming, and promotional activities.",
-    descriptionZh: "品牌代言、广告拍摄和推广活动。",
   },
   {
     name: "04-Film-Adaptation-License-Agreement",
-    label: "Film Adaptation License Agreement",
-    labelZh: "影视改编授权协议",
+    labelKey: "fileFilm",
     icon: "🎬",
-    description: "Film, TV, and web series exclusive licensing with maximum protection.",
-    descriptionZh: "电影、电视和网络剧的独家授权，最大程度保护。",
   },
 ];
 
 export default function ContractsPage() {
   const { t, locale } = useLanguage();
   const isZh = locale === "zh-CN" || locale === "zh-Hant";
+
   const [downloadingPdf, setDownloadingPdf] = useState<string | null>(null);
   const [downloadingWord, setDownloadingWord] = useState<string | null>(null);
   const [unlockedContracts, setUnlockedContracts] = useState<Record<string, boolean>>({});
 
-  // Check unlock status on mount and whenever localStorage changes
   React.useEffect(() => {
     const checkUnlock = () => {
       const unlocked: Record<string, boolean> = {};
@@ -70,7 +55,6 @@ export default function ContractsPage() {
       setUnlockedContracts(unlocked);
     };
     checkUnlock();
-    // Poll for localStorage changes (listen to storage event from same tab via custom event)
     const handler = () => checkUnlock();
     window.addEventListener("contracts:unlock", handler);
     return () => window.removeEventListener("contracts:unlock", handler);
@@ -92,7 +76,7 @@ export default function ContractsPage() {
       document.body.removeChild(a);
       window.URL.revokeObjectURL(url);
     } catch {
-      alert(isZh ? "PDF 下载失败，请稍后重试" : "PDF download failed, please try again later");
+      alert(t.contracts.pdfDownloadFailed);
     } finally {
       setDownloadingPdf(null);
     }
@@ -114,7 +98,7 @@ export default function ContractsPage() {
       document.body.removeChild(a);
       window.URL.revokeObjectURL(url);
     } catch {
-      alert(isZh ? "Word 下载失败，请稍后重试" : "Word download failed, please try again later");
+      alert(t.contracts.wordDownloadFailed);
     } finally {
       setDownloadingWord(null);
     }
@@ -129,7 +113,7 @@ export default function ContractsPage() {
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
             </svg>
-            {isZh ? "返回控制台" : "Back to Dashboard"}
+            {t.contracts.backToDashboard}
           </Link>
           <div className="flex items-center gap-2">
             <ThemeToggle />
@@ -138,7 +122,7 @@ export default function ContractsPage() {
         </div>
       </header>
 
-      {/* Page Header — gradient hero card matching lawyer-registration style */}
+      {/* Page Header */}
       <section style={{
         background: "linear-gradient(135deg, #1e3a5f 0%, #2d5a87 50%, #1a3a5c 100%)",
         padding: "48px 32px",
@@ -149,14 +133,11 @@ export default function ContractsPage() {
       }}>
         <div style={{ fontSize: "48px", marginBottom: "16px" }}>📋</div>
         <h1 style={{ fontSize: "var(--text-h2)", fontWeight: 700, color: "white", letterSpacing: "-0.02em", marginBottom: "12px" }}>
-          {isZh ? "合同模板下载中心" : "Contract Templates Download Center"}
+          {t.contracts.title}
         </h1>
         <p style={{ fontSize: "var(--text-body)", color: "rgba(255,255,255,0.75)", maxWidth: "480px", margin: "0 auto", lineHeight: 1.65 }}>
-          {isZh
-            ? "免费下载 PDF 合同模板，或支付 $1 解锁 Word 可编辑版本。所有模板均经执业律师审核。"
-            : "Free PDF download, or pay $1 to unlock editable Word versions. All templates reviewed by licensed lawyers."}
+          {t.contracts.subtitle}
         </p>
-        {/* Lawyer review attribution badge */}
         <div style={{ marginTop: "16px", display: "flex", justifyContent: "center" }}>
           <span style={{
             display: "inline-flex",
@@ -170,7 +151,7 @@ export default function ContractsPage() {
             fontWeight: 600,
             color: "rgba(255,255,255,0.9)",
           }}>
-            ⚖️ {isZh ? "经执业律师审核" : "Reviewed by Licensed Lawyers"} | © 2024 PortraitPay AI
+            ⚖️ {t.contracts.lawyerBadge}
           </span>
         </div>
       </section>
@@ -189,25 +170,21 @@ export default function ContractsPage() {
                 className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden"
               >
                 <div className="p-6 flex items-start gap-5">
-                  {/* Icon */}
                   <div className="w-14 h-14 rounded-xl bg-[#244169]/10 flex items-center justify-center text-3xl flex-shrink-0">
                     {contract.icon}
                   </div>
-
-                  {/* Info */}
                   <div className="flex-1 min-w-0">
                     <h3 className="text-lg font-bold text-gray-900 dark:text-white">
-                      {isZh ? contract.labelZh : contract.label}
+                      {t.contracts[contract.labelKey]}
                     </h3>
                     <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                      {isZh ? contract.descriptionZh : contract.description}
+                      {t.contracts[contract.labelKey + "Desc"]}
                     </p>
                   </div>
                 </div>
 
                 {/* Download Buttons */}
                 <div className="px-6 pb-6 flex flex-wrap items-center gap-3">
-                  {/* Free PDF */}
                   <button
                     onClick={() => downloadPdf(contract.name)}
                     disabled={isPdfLoading}
@@ -223,12 +200,9 @@ export default function ContractsPage() {
                         <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                       </svg>
                     )}
-                    {isPdfLoading
-                      ? (isZh ? "下载中..." : "Downloading...")
-                      : (isZh ? "免费下载 PDF" : "Free Download PDF")}
+                    {isPdfLoading ? t.contracts.downloading : t.contracts.freeDownloadPdf}
                   </button>
 
-                  {/* Word — unlocked: direct download, otherwise go to payment */}
                   {isUnlocked ? (
                     <button
                       onClick={() => downloadWord(contract.name)}
@@ -245,9 +219,7 @@ export default function ContractsPage() {
                           <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                         </svg>
                       )}
-                      {isWordLoading
-                        ? (isZh ? "下载中..." : "Downloading...")
-                        : (isZh ? "下载 Word" : "Download Word")}
+                      {isWordLoading ? t.contracts.downloading : t.contracts.downloadWord}
                     </button>
                   ) : (
                     <Link
@@ -257,7 +229,7 @@ export default function ContractsPage() {
                       <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                       </svg>
-                      {isZh ? "解锁 Word $1" : "Unlock Word $1"}
+                      {t.contracts.unlockWord}
                     </Link>
                   )}
                 </div>
@@ -269,16 +241,13 @@ export default function ContractsPage() {
 
       {/* Footer */}
       <footer className="border-t border-gray-200 dark:border-gray-700 py-8 px-6 mt-8">
-        {/* Lawyer review attribution */}
         <div className="max-w-5xl mx-auto mb-6">
           <div className="flex items-center justify-center gap-2 px-4 py-3 bg-gray-50 dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700">
             <svg className="w-4 h-4 text-[#244169] flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
             </svg>
             <span className="text-sm text-gray-600 dark:text-gray-400">
-              {isZh
-                ? "所有模板均经合作律所执业律师审核，仅供参考，不构成法律意见"
-                : "All templates reviewed by licensed lawyers — for reference only, not legal advice"}
+              {t.contracts.footerDisclaimer}
             </span>
           </div>
         </div>
@@ -289,10 +258,10 @@ export default function ContractsPage() {
             <span className="text-gray-500 dark:text-gray-400 text-sm">PortraitPay AI</span>
           </div>
           <div className="flex gap-6 text-sm text-gray-500 dark:text-gray-400">
-            <Link href="/privacy" className="hover:text-gray-900 dark:hover:text-white">{isZh ? "隐私政策" : "Privacy Policy"}</Link>
-            <Link href="/terms" className="hover:text-gray-900 dark:hover:text-white">{isZh ? "服务条款" : "Terms of Service"}</Link>
+            <Link href="/privacy" className="hover:text-gray-900 dark:hover:text-white">{t.contracts.privacyLink}</Link>
+            <Link href="/terms" className="hover:text-gray-900 dark:hover:text-white">{t.contracts.termsLink}</Link>
           </div>
-          <p className="text-gray-400 dark:text-gray-500 text-sm">© 2026 PortraitPay AI</p>
+          <p className="text-gray-400 dark:text-gray-500 text-sm">{t.contracts.copyright}</p>
         </div>
       </footer>
     </div>
