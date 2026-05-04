@@ -54,8 +54,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <LanguageProvider>
-      <html lang="zh-CN" suppressHydrationWarning>
+    <html lang="zh-CN" suppressHydrationWarning>
       <head>
         {/* Inline theme script to prevent flash */}
         <script
