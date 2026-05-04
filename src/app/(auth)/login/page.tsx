@@ -31,7 +31,7 @@ export default function LoginPage() {
   const [otpSentTo, setOtpSentTo] = useState("");
   const [otpCode, setOtpCode] = useState("");
 
-  const isZh = locale === "zh-CN";
+  const isZh = locale === "zh-CN" || locale === "zh-Hant";
 
   const validateEmailForm = () => {
     const errs: Record<string, string> = {};

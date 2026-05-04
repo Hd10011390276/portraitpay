@@ -24,7 +24,7 @@ function ResetPasswordContent() {
   const [passwordError, setPasswordError] = useState("");
   const [confirmError, setConfirmError] = useState("");
 
-  const isZh = locale === "zh-CN";
+  const isZh = locale === "zh-CN" || locale === "zh-Hant";
 
   function validateForm() {
     let valid = true;

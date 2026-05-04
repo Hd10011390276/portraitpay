@@ -37,7 +37,7 @@ const COUNTRIES = [
 
 export default function LawyerRegistrationPage() {
   const { t, locale } = useLanguage();
-  const isZh = locale === "zh-CN";
+  const isZh = locale === "zh-CN" || locale === "zh-Hant";
 
   const [theme, setTheme] = useState<"light" | "dark">("light");
   const [form, setForm] = useState({

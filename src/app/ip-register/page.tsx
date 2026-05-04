@@ -555,13 +555,13 @@ export default function IPRegisterPage() {
                 <div className="flex flex-col items-end gap-1">
                   <div className="flex items-center gap-1.5 px-2.5 py-1.5 bg-amber-50 border border-amber-200 rounded-lg text-xs text-amber-700">
                     <span>⚠️</span>
-                    <span>{ipRegT.demoWarning || "区块链存证为演示功能"}</span>
+                    <span>{ipRegT.demoWarning}</span>
                   </div>
                 </div>
               </div>
             </div>
             <Link href="/portraits" className="text-sm text-gray-500 hover:text-gray-700 flex items-center gap-1">
-              ← {ipRegT.backToPortraits || "肖像管理"}
+              ← {ipRegT.backToPortraits}
             </Link>
             <ThemeToggle />
             <LanguageToggle />
@@ -673,12 +673,12 @@ export default function IPRegisterPage() {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">{ipRegT.tags || "标签"} <span className="text-xs text-gray-400">(逗号分隔)</span></label>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">{ipRegT.tags} <span className="text-xs text-gray-400">({ipRegT.tagsHint})</span></label>
                       <input
                         type="text"
                         value={form.tags}
                         onChange={(e) => setForm((f) => ({ ...f, tags: e.target.value }))}
-                        placeholder="赛博朋克, 少女, 霓虹, 未来感"
+                        placeholder={ipRegT.tagsPlaceholder}
                         className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-200 focus:border-purple-300"
                       />
                     </div>
@@ -721,7 +721,7 @@ export default function IPRegisterPage() {
                         type="text"
                         value={form.modelVersion}
                         onChange={(e) => setForm((f) => ({ ...f, modelVersion: e.target.value }))}
-                        placeholder="例如: SDXL 1.0, v6 Midjourney"
+                        placeholder={ipRegT.modelVersionPlaceholder}
                         className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-200"
                       />
                     </div>
@@ -756,7 +756,7 @@ export default function IPRegisterPage() {
                         max="30"
                         value={form.cfgScale}
                         onChange={(e) => setForm((f) => ({ ...f, cfgScale: e.target.value }))}
-                        placeholder="例如: 7.0"
+                        placeholder={ipRegT.cfgScalePlaceholder}
                         className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-200"
                       />
                     </div>
@@ -767,7 +767,7 @@ export default function IPRegisterPage() {
                         type="text"
                         value={form.seed}
                         onChange={(e) => setForm((f) => ({ ...f, seed: e.target.value }))}
-                        placeholder="随机种子值（如有）"
+                        placeholder={ipRegT.seedPlaceholder}
                         className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-200"
                       />
                     </div>
@@ -778,7 +778,7 @@ export default function IPRegisterPage() {
                         type="text"
                         value={form.sampler}
                         onChange={(e) => setForm((f) => ({ ...f, sampler: e.target.value }))}
-                        placeholder="例如: DPM++ 2M Karras"
+                        placeholder={ipRegT.samplerPlaceholder}
                         className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-200"
                       />
                     </div>
@@ -796,18 +796,18 @@ export default function IPRegisterPage() {
                   </h3>
                   <div className="space-y-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">{ipRegT.copyrightNotice || "版权声明"}</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">{ipRegT.copyrightNotice}</label>
                       <textarea
                         value={form.copyrightNotice}
                         onChange={(e) => setForm((f) => ({ ...f, copyrightNotice: e.target.value }))}
-                        placeholder="例如: © 2024 [Name]. All rights reserved. Generated with Midjourney."
+                        placeholder={ipRegT.copyrightNoticePlaceholder}
                         rows={2}
                         className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-200 resize-none"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">{ipRegT.licenseScope || "许可使用范围"}</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">{ipRegT.licenseScopeLabel ?? ipRegT.licenseScope}</label>
                       <div className="flex flex-wrap gap-2">
                         {LICENSE_SCOPES.map((scope) => (
                           <button
@@ -835,8 +835,8 @@ export default function IPRegisterPage() {
                           className="w-4 h-4 text-purple-600 rounded"
                         />
                         <div>
-                          <span className="text-sm font-medium text-gray-700">{ipRegT.publicDomain || "公有领域声明"}</span>
-                          <p className="text-xs text-gray-400">{ipRegT.publicDomainDesc || "放弃版权，进入公有领域"}</p>
+                          <span className="text-sm font-medium text-gray-700">{ipRegT.publicDomainDeclare ?? ipRegT.publicDomain}</span>
+                          <p className="text-xs text-gray-400">{ipRegT.publicDomainDeclareDesc ?? ipRegT.publicDomainDesc}</p>
                         </div>
                       </label>
 
@@ -848,8 +848,8 @@ export default function IPRegisterPage() {
                           className="w-4 h-4 text-purple-600 rounded"
                         />
                         <div>
-                          <span className="text-sm font-medium text-gray-700">{ipRegT.thirdPartyRights || "存在第三方权利"}</span>
-                          <p className="text-xs text-gray-400">{ipRegT.thirdPartyRightsDesc || "该作品可能包含第三方知识产权（如品牌、人物等）"}</p>
+                          <span className="text-sm font-medium text-gray-700">{ipRegT.thirdPartyRightsDeclare ?? ipRegT.thirdPartyRights}</span>
+                          <p className="text-xs text-gray-400">{ipRegT.thirdPartyRightsDeclareDesc ?? ipRegT.thirdPartyRightsDesc}</p>
                         </div>
                       </label>
                     </div>
@@ -1020,14 +1020,14 @@ export default function IPRegisterPage() {
                                 disabled={isCertifying}
                                 className="flex-1 px-3 py-1.5 text-xs font-medium bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50 transition-colors"
                               >
-                                {isCertifying ? "🔗 " + (ipRegT.certifying || "认证中...") : "🔗 DEMO " + ipRegT.certifyOnChain}
+                                {isCertifying ? "🔗 " + (ipRegT.certifyingOnChain ?? ipRegT.certifying) : "🔗 DEMO " + ipRegT.certifyOnChain}
                               </button>
                             )}
 
                             <button
                               onClick={() => navigator.clipboard.writeText(content.id)}
                               className="px-3 py-1.5 text-xs font-medium text-gray-500 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
-                              title={ipRegT.copyId || "复制 ID"}
+                              title={ipRegT.copyIdLabel ?? ipRegT.copyId}
                             >
                               📋
                             </button>

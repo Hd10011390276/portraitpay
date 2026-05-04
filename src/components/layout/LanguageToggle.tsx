@@ -6,18 +6,21 @@ import { useLanguage } from "@/context/LanguageContext";
 const LANGUAGES = [
   { code: "en-US", label: "English", flag: "EN" },
   { code: "es-ES", label: "Español", flag: "ES" },
-  { code: "zh-Hant", label: "繁體中文", flag: "繁" },
+  { code: "zh-CN", label: "繁體中文", flag: "繁" },
 ] as const;
 
+// Normalize locale for UI matching: zh-Hant → zh-CN (so it matches LANGUAGES array)
 function normalizeForCompare(loc: string) {
-  return loc; // No normalization needed
+  if (loc === "zh-Hant") return "zh-CN";
+  return loc;
 }
 
 export function LanguageToggle() {
   const { locale, setLocale, t } = useLanguage();
   const [open, setOpen] = useState(false);
 
-  const currentLang = LANGUAGES.find((l) => l.code === normalizeForCompare(locale)) || LANGUAGES[0];
+  const normalizedLocale = normalizeForCompare(locale);
+  const currentLang = LANGUAGES.find((l) => l.code === normalizedLocale) || LANGUAGES[0];
 
   return (
     <div className="relative">
@@ -45,11 +48,11 @@ export function LanguageToggle() {
                   setOpen(false);
                 }}
                 className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors flex items-center justify-between ${
-                  normalizeForCompare(locale) === lang.code ? "text-blue-600 dark:text-blue-400 font-medium" : "text-gray-700 dark:text-gray-300"
+                  normalizedLocale === lang.code ? "text-blue-600 dark:text-blue-400 font-medium" : "text-gray-700 dark:text-gray-300"
                 }`}
               >
                 <span>{lang.label}</span>
-                {normalizeForCompare(locale) === lang.code && (
+                {normalizedLocale === lang.code && (
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                   </svg>

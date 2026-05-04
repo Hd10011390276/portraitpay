@@ -55,7 +55,7 @@ function StatusBadge({ status }: { status: string }) {
 
 export default function LawyerDashboard() {
   const { t, locale } = useLanguage();
-  const isZh = locale === "zh-CN";
+  const isZh = locale === "zh-CN" || locale === "zh-Hant";
   const [cases, setCases] = useState<LawyerCase[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");

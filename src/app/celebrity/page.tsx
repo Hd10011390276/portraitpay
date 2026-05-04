@@ -39,7 +39,7 @@ const CATEGORY_OPTIONS: { value: string; icon: string }[] = [
 
 export default function CelebrityPage() {
   const { t, locale } = useLanguage();
-  const isZh = locale === "zh-CN";
+  const isZh = locale === "zh-CN" || locale === "zh-Hant";
   const [form, setForm] = useState<FormData>({
     name: "",
     email: "",

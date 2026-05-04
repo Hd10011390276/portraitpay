@@ -23,7 +23,7 @@ interface FieldError {
 
 export default function EnterprisePage() {
   const { t, locale } = useLanguage();
-  const isZh = locale === "zh-CN";
+  const isZh = locale === "zh-CN" || locale === "zh-Hant";
 
   const [form, setForm] = useState<FormData>({
     name: "",

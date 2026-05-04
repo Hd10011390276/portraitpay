@@ -16,8 +16,9 @@ const LanguageContext = createContext<LanguageContextValue>({
   t: translations[defaultLocale],
 });
 
-// No normalization - use locales as-is
+// Normalize zh-CN → zh-Hant so the correct translations block is found
 function normalizeLocale(loc: Locale): Locale {
+  if (loc === "zh-CN") return "zh-Hant";
   return loc;
 }
 
@@ -57,7 +58,7 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
       .find((row) => row.startsWith("pp_locale="));
     if (cookie) {
       const val = cookie.split("=")[1] as Locale;
-      if (val === "en-US" || val === "es-ES" || val === "zh-Hant") {
+      if (val === "en-US" || val === "es-ES" || val === "zh-Hant" || val === "zh-CN") {
         setLocaleState(val);
       }
     }
@@ -67,15 +68,15 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const expires = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toUTCString();
     document.cookie = `pp_locale=${locale}; path=/; expires=${expires}; SameSite=Lax`;
-    document.documentElement.lang = locale;
+    document.documentElement.lang = normalizeLocale(locale);
   }, [locale]);
 
   const setLocale = (newLocale: Locale) => {
     setLocaleState(newLocale);
   };
 
-  // Build merged translation with en-US fallback
-  const t = deepFallback(translations[locale] || {}, translations["en-US"]);
+  // Build merged translation with en-US fallback (zh-CN normalizes to zh-Hant for translations lookup)
+  const t = deepFallback(translations[normalizeLocale(locale)] || {}, translations["en-US"]);
 
   return (
     <LanguageContext.Provider value={{ locale, setLocale, t }}>

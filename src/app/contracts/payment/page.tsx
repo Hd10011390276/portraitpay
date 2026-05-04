@@ -42,7 +42,7 @@ function PaymentPageLoading({ isZh }: { isZh: boolean }) {
 
 function PaymentPageInner() {
   const { t, locale } = useLanguage();
-  const isZh = locale === "zh-CN";
+  const isZh = locale === "zh-CN" || locale === "zh-Hant";
   const searchParams = useSearchParams();
   const contractName = searchParams.get("name") || "";
   const contract = CONTRACT_LABELS[contractName];

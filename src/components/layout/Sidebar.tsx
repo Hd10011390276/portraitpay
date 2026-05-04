@@ -21,7 +21,7 @@ interface SidebarProps {
 export function Sidebar({ onClose }: SidebarProps) {
   const pathname = usePathname();
   const { t, locale } = useLanguage();
-  const isZh = locale === "zh-CN";
+  const isZh = locale === "zh-CN" || locale === "zh-Hant";
 
   const isActive = (href: string) =>
     pathname === href || pathname.startsWith(href + "/");
@@ -85,7 +85,7 @@ export function Sidebar({ onClose }: SidebarProps) {
       ),
     },
     {
-      label: isZh ? "数字人合同" : "Contracts",
+      label: t.sidebar.contracts,
       href: "/contracts",
       icon: (
         <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -94,7 +94,7 @@ export function Sidebar({ onClose }: SidebarProps) {
       ),
     },
     {
-      label: t.sidebar.faq || (isZh ? "常见问题" : "FAQ"),
+      label: t.sidebar.faq,
       href: "/faq",
       icon: (
         <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -106,7 +106,7 @@ export function Sidebar({ onClose }: SidebarProps) {
 
   const lawyerItems: NavItem[] = [
     {
-      label: isZh ? "律师工作台" : "Lawyer Dashboard",
+      label: t.sidebar.lawyerDashboard,
       href: "/lawyer/dashboard",
       icon: (
         <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -167,7 +167,7 @@ export function Sidebar({ onClose }: SidebarProps) {
             <div className="pt-4 pb-2">
               <div className="border-t border-gray-100 dark:border-gray-800 mb-2" />
               <p className="px-3 mb-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                {isZh ? "律师工具" : "Lawyer Tools"}
+                {t.sidebar.lawyerTools ?? (isZh ? "律师工具" : "Lawyer Tools")}
               </p>
             </div>
             {lawyerItems.map((item) => (
