@@ -752,6 +752,11 @@ export const translations = {
         submittingApplication: "提交申请中...",
         submitApplication: "提交授权申请",
       },
+      enterpriseAuthApply: {
+        enterpriseIdPlaceholder: "输入目标企业的 Enterprise ID",
+        useCasePlaceholder: "批量授权的用途说明",
+        noImages: "无图",
+      },
     },
     // Settings
     settings: {
@@ -2371,6 +2376,11 @@ export const translations = {
         submittingApplication: "Submitting...",
         submitApplication: "Submit Authorization Application",
       },
+      enterpriseAuthApply: {
+        enterpriseIdPlaceholder: "Enter target enterprise's Enterprise ID",
+        useCasePlaceholder: "Description of bulk licensing use case",
+        noImages: "No images",
+      },
     },
     // Settings
     settings: {
@@ -3674,6 +3684,11 @@ export const translations = {
         feePlatformNote: "La plataforma revisará y fijará el precio basándose en esta tarifa",
         submittingApplication: "Enviando...",
         submitApplication: "Enviar Solicitud de Autorización",
+      },
+      enterpriseAuthApply: {
+        enterpriseIdPlaceholder: "Ingrese el Enterprise ID de la empresa objetivo",
+        useCasePlaceholder: "Descripción del caso de uso de licencia grupal",
+        noImages: "Sin imágenes",
       },
     },
     // Settings

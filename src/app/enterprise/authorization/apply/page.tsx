@@ -119,19 +119,20 @@ export default function EnterpriseAuthorizationPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8 px-4">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8 px-4">
       {/* Header */}
-      <div className="max-w-5xl mx-auto mb-6">
-        <div className="flex items-center justify-between">
-          <Link href="/dashboard" className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-700">
-            ← {tc.backToDashboard || (isZh ? "返回控制台" : "Back to Dashboard")}
+      <header className="nav-glass sticky top-0 z-30">
+        <div className="container" style={{ height: "var(--header-height)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <Link href="/dashboard" className="flex items-center gap-2 no-underline">
+            <img src="/logo.png" alt="Logo" className="logo-light" style={{ width: "32px", height: "32px", objectFit: "contain", borderRadius: "6px" }} />
+            <img src="/logo-dark.png" alt="Logo" className="logo-dark" style={{ width: "32px", height: "32px", objectFit: "contain", borderRadius: "6px" }} />
           </Link>
           <div className="flex items-center gap-2">
             <LanguageToggle />
             <ThemeToggle />
           </div>
         </div>
-      </div>
+      </header>
 
       <div className="max-w-5xl mx-auto">
         <div className="bg-white rounded-2xl shadow-lg p-8">
@@ -187,7 +188,7 @@ export default function EnterpriseAuthorizationPage() {
                   {selectedPortrait.thumbnailUrl ? (
                     <img src={selectedPortrait.thumbnailUrl} alt="" className="w-full h-full object-cover" />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center text-gray-400 text-xs">{tc.noImage || (isZh ? "无图" : "No Image")}</div>
+                    <div className="w-full h-full flex items-center justify-center text-gray-400 text-xs">{tc.noImage || t.enterpriseAuthApply?.noImages || (isZh ? "无图" : "No Image")}</div>
                   )}
                 </div>
                 <div>
