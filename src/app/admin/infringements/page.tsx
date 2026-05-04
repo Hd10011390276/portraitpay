@@ -85,7 +85,7 @@ export default function AdminInfringementsPage() {
         setSelectedId(null);
         fetchReports();
       } else {
-        alert(json.error ?? tc.reviewFailed || (isZh ? "审核失败" : "Review failed"));
+        alert(json.error ?? (tc.reviewFailed || (isZh ? "审核失败" : "Review failed")));
       }
     } finally {
       setSubmitting(false);
@@ -224,13 +224,13 @@ function ReportDetailPanel({
       <dl className="grid grid-cols-2 gap-3 text-sm">
         <div><dt className="text-gray-500">{tc.reporter || (isZh ? "举报人" : "Reporter")}</dt><dd className="font-medium">{report.reporter?.displayName}</dd></div>
         <div><dt className="text-gray-500">{tc.infringementType || (isZh ? "侵权类型" : "Type")}</dt><dd className="font-medium">{TYPE_LABELS[report.type] ?? report.type}</dd></div>
-        <div className="col-span-2"><dt className="text-gray-500">{tc.detectedUrl || (isZh ? "发现链接" : "Detected URL")}
+        <div className="col-span-2"><dt className="text-gray-500">{tc.detectedUrl || (isZh ? "发现链接" : "Detected URL")}</dt>
           <dd>{report.detectedUrl
             ? <a href={report.detectedUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline text-xs">{report.detectedUrl}</a>
             : "—"}</dd>
         </div>
         {report.similarityScore && (
-          <div className="col-span-2"><dt className="text-gray-500">{tc.similarityScore || (isZh ? "系统相似度" : "Similarity Score")}
+          <div className="col-span-2"><dt className="text-gray-500">{tc.similarityScore || (isZh ? "系统相似度" : "Similarity Score")}</dt>
             <dd className="font-medium text-red-600">{(report.similarityScore * 100).toFixed(1)}%</dd>
           </div>
         )}

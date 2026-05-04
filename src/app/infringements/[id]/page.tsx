@@ -148,7 +148,7 @@ export default function InfringementDetailPage() {
               <dl className="grid grid-cols-2 gap-4 text-sm">
                 <div><dt className="text-gray-500">{tc.portraitInvolved || (isZh ? "涉及肖像" : "Portrait Involved")}</dt><dd className="font-medium">{report.portrait?.title}</dd></div>
                 <div><dt className="text-gray-500">{tc.infringementType || (isZh ? "侵权类型" : "Infringement Type")}</dt><dd className="font-medium">{TYPE_CONFIG[report.type] ?? report.type}</dd></div>
-                <div><dt className="text-gray-500">{tc.detectedUrl || (isZh ? "发现侵权链接" : "Detected URL")}
+                <div><dt className="text-gray-500">{tc.detectedUrl || (isZh ? "发现侵权链接" : "Detected URL")}</dt>
                   <dd className="font-medium">
                     {report.detectedUrl
                       ? <a href={report.detectedUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">{report.detectedUrl}</a>
