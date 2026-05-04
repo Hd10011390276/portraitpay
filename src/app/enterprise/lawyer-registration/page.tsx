@@ -69,16 +69,17 @@ export default function LawyerRegistrationPage() {
 
   function validate() {
     const errs: Record<string, string> = {};
-    if (!form.companyName.trim()) errs.companyName = isZh ? "请填写" + (form.lawyerType === "personal" ? "个人姓名" : "律所/公司名称") : (form.lawyerType === "personal" ? "Please enter your name" : "Please enter company name");
-    if (!form.country) errs.country = isZh ? "请选择国家/地区" : "Please select a country/region";
+    const lr = t.lawyerRegistration || {};
+    if (!form.companyName.trim()) errs.companyName = isZh ? "请填写" + (form.lawyerType === "personal" ? "个人姓名" : "律所/公司名称") : (form.lawyerType === "personal" ? (lr.companyNamePersonalRequired || "Please enter your name") : (lr.companyNameRequired || "Please enter company name"));
+    if (!form.country) errs.country = isZh ? "请选择国家/地区" : (lr.countryRequired || "Please select a country/region");
     const selected = COUNTRIES.find(c => c.code === form.country);
     if (selected && !selected.available) {
-      errs.country = isZh ? "该地区尚未开放，请选择其他地区" : "This region is not yet available. Please select another.";
+      errs.country = isZh ? "该地区尚未开放，请选择其他地区" : (lr.countryNotAvailable || "This region is not yet available. Please select another.");
     }
-    if (!form.contactName.trim()) errs.contactName = isZh ? "请填写联系人姓名" : "Please enter contact name";
-    if (!form.contactEmail.trim()) errs.contactEmail = isZh ? "请填写邮箱" : "Please enter email";
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.contactEmail)) errs.contactEmail = isZh ? "邮箱格式不正确" : "Invalid email format";
-    if (!form.contactPhone.trim()) errs.contactPhone = isZh ? "请填写联系电话" : "Please enter phone number";
+    if (!form.contactName.trim()) errs.contactName = isZh ? "请填写联系人姓名" : (lr.contactNameRequired || "Please enter contact name");
+    if (!form.contactEmail.trim()) errs.contactEmail = isZh ? "请填写邮箱" : (lr.emailRequired || "Please enter email");
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.contactEmail)) errs.contactEmail = isZh ? "邮箱格式不正确" : (lr.emailInvalid || "Invalid email format");
+    if (!form.contactPhone.trim()) errs.contactPhone = isZh ? "请填写联系电话" : (lr.phoneRequired || "Please enter phone number");
     setErrors(errs);
     return Object.keys(errs).length === 0;
   }

@@ -81,12 +81,20 @@ export default function AuthorizationListPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <div className="bg-white border-b border-gray-200 sticky top-0 z-20">
-        <div className="max-w-5xl mx-auto px-4 h-14 flex items-center justify-between">
-          <Link href="/dashboard" className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-900">
-            ‹ {tc.backToDashboard || (isZh ? "返回控制台" : "Back to Dashboard")}
-          </Link>
-          <div className="flex items-center gap-2">
+      <div className="nav-glass sticky top-0 z-30">
+        <div className="container" style={{ height: "var(--header-height)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+            <Link href="/" style={{ display: "flex", alignItems: "center", gap: "8px", textDecoration: "none" }}>
+              <img src="/logo.png" alt="Logo" className="logo-light" style={{ width: "32px", height: "32px", objectFit: "contain", borderRadius: "6px" }} />
+              <img src="/logo-dark.png" alt="Logo" className="logo-dark" style={{ width: "32px", height: "32px", objectFit: "contain", borderRadius: "6px" }} />
+              <span style={{ fontSize: "17px", fontWeight: 700, color: "var(--text-primary)", letterSpacing: "-0.02em" }}>PortraitPay AI</span>
+            </Link>
+            <span style={{ color: "var(--border-default)", fontSize: "20px", fontWeight: 300 }}>|</span>
+            <Link href="/dashboard" className="text-sm text-gray-500 hover:text-gray-900" style={{ textDecoration: "none" }}>
+              ‹ {tc.backToDashboard || (isZh ? "返回控制台" : "Back to Dashboard")}
+            </Link>
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
             <LanguageToggle />
             <ThemeToggle />
           </div>

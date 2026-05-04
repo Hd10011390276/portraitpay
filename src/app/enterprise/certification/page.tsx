@@ -224,7 +224,24 @@ export default function EnterpriseCertificationPage() {
 
   // Default: form step
   return (
-    <div className="min-h-screen bg-gray-50 py-8 px-4">
+    <div className="min-h-screen bg-gray-50">
+      {/* Header */}
+      <header className="nav-glass sticky top-0 z-30">
+        <div className="container" style={{ height: "var(--header-height)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+            <Link href="/" style={{ display: "flex", alignItems: "center", gap: "8px", textDecoration: "none" }}>
+              <img src="/logo.png" alt="Logo" className="logo-light" style={{ width: "32px", height: "32px", objectFit: "contain", borderRadius: "6px" }} />
+              <img src="/logo-dark.png" alt="Logo" className="logo-dark" style={{ width: "32px", height: "32px", objectFit: "contain", borderRadius: "6px" }} />
+              <span style={{ fontSize: "17px", fontWeight: 700, color: "var(--text-primary)", letterSpacing: "-0.02em" }}>PortraitPay AI</span>
+            </Link>
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <LanguageToggle />
+            <ThemeToggle />
+          </div>
+        </div>
+      </header>
+
       <div className="max-w-3xl mx-auto">
         <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
           <div className="bg-purple-600 px-8 py-6">
@@ -266,7 +283,7 @@ export default function EnterpriseCertificationPage() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">{tc.unifiedCreditCode || tc.unifiedCreditCodeEn} *</label>
-                  <input {...register("unifiedCreditCode")} className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500" placeholder="18" maxLength={18} />
+                  <input {...register("unifiedCreditCode")} className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500" placeholder={tc.unifiedCreditCodePlaceholder || tc.unifiedCreditCodePlaceholderEn || "18位统一社会信用代码"} maxLength={18} />
                   {errors.unifiedCreditCode && <p className="text-red-500 text-xs mt-1">{errors.unifiedCreditCode.message}</p>}
                 </div>
                 <div>
@@ -276,7 +293,7 @@ export default function EnterpriseCertificationPage() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">{tc.idCardNumber || tc.idCardNumberEn} *</label>
-                  <input {...register("legalPersonIdCard")} className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500" placeholder="18" maxLength={18} />
+                  <input {...register("legalPersonIdCard")} className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500" placeholder={tc.idCardNumberPlaceholder || tc.idCardNumberPlaceholderEn || "请输入18位身份证号"} maxLength={18} />
                   {errors.legalPersonIdCard && <p className="text-red-500 text-xs mt-1">{errors.legalPersonIdCard.message}</p>}
                 </div>
                 <div>
@@ -307,18 +324,18 @@ export default function EnterpriseCertificationPage() {
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">{tc.businessLicense || tc.businessLicenseEn} *</label>
-                  <input {...register("licenseImageUrl")} className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500" placeholder="URL" />
+                  <input {...register("licenseImageUrl")} className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500" placeholder={tc.businessLicenseUrlPlaceholder || "https://"} />
                   <p className="text-xs text-gray-500 mt-1">{tc.businessLicenseHint || tc.businessLicenseHintEn}</p>
                   {errors.licenseImageUrl && <p className="text-red-500 text-xs mt-1">{errors.licenseImageUrl.message}</p>}
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">{tc.idCardFront || tc.idCardFrontEn}</label>
-                    <input {...register("legalPersonIdCardFrontUrl")} className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500" placeholder="URL" />
+                    <input {...register("legalPersonIdCardFrontUrl")} className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500" placeholder={tc.idCardFrontUrlPlaceholder || "https://"} />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">{tc.idCardBack || tc.idCardBackEn}</label>
-                    <input {...register("legalPersonIdCardBackUrl")} className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500" placeholder="URL" />
+                    <input {...register("legalPersonIdCardBackUrl")} className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500" placeholder={tc.idCardBackUrlPlaceholder || "https://"} />
                   </div>
                 </div>
               </div>
@@ -338,7 +355,7 @@ export default function EnterpriseCertificationPage() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">{tc.phone || tc.phoneEn} *</label>
-                  <input {...register("contactPhone")} className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500" placeholder="11" maxLength={11} />
+                  <input {...register("contactPhone")} className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500" placeholder={tc.phonePlaceholder || "请输入手机号"} maxLength={11} />
                   {errors.contactPhone && <p className="text-red-500 text-xs mt-1">{errors.contactPhone.message}</p>}
                 </div>
                 <div className="md:col-span-2">
@@ -361,7 +378,7 @@ export default function EnterpriseCertificationPage() {
               {isAgency && (
                 <div className="mt-3">
                   <label className="block text-sm font-medium text-gray-700 mb-1">{tc.agencyLicenseUrl || tc.agencyLicenseUrlEn}</label>
-                  <input {...register("agencyLicenseUrl")} className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500" placeholder="URL" />
+                  <input {...register("agencyLicenseUrl")} className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500" placeholder={tc.agencyLicenseUrlPlaceholder || "https://"} />
                 </div>
               )}
             </section>

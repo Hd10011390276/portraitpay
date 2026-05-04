@@ -538,37 +538,38 @@ export default function IPRegisterPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center gap-3">
-              <div>
-                <h1 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-                  🎨 {ipRegT.title}
-                  <span className="px-2.5 py-1 text-xs font-bold rounded-full bg-amber-100 text-amber-700 border border-amber-200 tracking-wide">
-                    DEMO
-                  </span>
-                </h1>
-                <p className="text-xs text-gray-500">{ipRegT.subtitle}</p>
-              </div>
-              <div className="ml-auto shrink-0">
-                <div className="flex flex-col items-end gap-1">
-                  <div className="flex items-center gap-1.5 px-2.5 py-1.5 bg-amber-50 border border-amber-200 rounded-lg text-xs text-amber-700">
-                    <span>⚠️</span>
-                    <span>{ipRegT.demoWarning}</span>
-                  </div>
-                </div>
-              </div>
+      <header className="nav-glass sticky top-0 z-30">
+        <div className="container" style={{ height: "var(--header-height)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+            <Link href="/" style={{ display: "flex", alignItems: "center", gap: "8px", textDecoration: "none" }}>
+              <img src="/logo.png" alt="Logo" className="logo-light" style={{ width: "32px", height: "32px", objectFit: "contain", borderRadius: "6px" }} />
+              <img src="/logo-dark.png" alt="Logo" className="logo-dark" style={{ width: "32px", height: "32px", objectFit: "contain", borderRadius: "6px" }} />
+            </Link>
+            <span style={{ color: "var(--border-default)", fontSize: "20px", fontWeight: 300 }}>|</span>
+            <div>
+              <h1 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+                🎨 {ipRegT.title}
+                <span className="px-2.5 py-1 text-xs font-bold rounded-full bg-amber-100 text-amber-700 border border-amber-200 tracking-wide">
+                  DEMO
+                </span>
+              </h1>
+              <p className="text-xs text-gray-500">{ipRegT.subtitle}</p>
             </div>
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
             <Link href="/portraits" className="text-sm text-gray-500 hover:text-gray-700 flex items-center gap-1">
               ← {ipRegT.backToPortraits}
             </Link>
             <ThemeToggle />
             <LanguageToggle />
           </div>
+        </div>
+      </header>
 
-          {/* Tabs */}
-          <div className="flex items-center gap-1 mt-1 -mb-px">
+      {/* Tabs */}
+      <div style={{ background: "var(--bg-secondary)", borderBottom: "1px solid var(--border-color)" }}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center gap-1 mt-1 -mb-px" style={{ paddingTop: "4px" }}>
             {[
               { key: "register", label: ipRegT.newRegistration, icon: "✍️" },
               { key: "list", label: ipRegT.myRegistrations, icon: "📋" },
@@ -587,7 +588,7 @@ export default function IPRegisterPage() {
             ))}
           </div>
         </div>
-      </header>
+      </div>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
