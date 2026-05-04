@@ -8,6 +8,8 @@ import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useLanguage } from "@/context/LanguageContext";
+import { LanguageToggle } from "@/components/layout/LanguageToggle";
+import ThemeToggle from "@/components/ThemeToggle";
 
 // ── Types ──────────────────────────────────────────────────────────
 
@@ -561,6 +563,8 @@ export default function IPRegisterPage() {
             <Link href="/portraits" className="text-sm text-gray-500 hover:text-gray-700 flex items-center gap-1">
               ← {ipRegT.backToPortraits || "肖像管理"}
             </Link>
+            <ThemeToggle />
+            <LanguageToggle />
           </div>
 
           {/* Tabs */}

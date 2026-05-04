@@ -6,6 +6,8 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useLanguage } from "@/context/LanguageContext";
+import { LanguageToggle } from "@/components/layout/LanguageToggle";
+import ThemeToggle from "@/components/ThemeToggle";
 
 interface FormData {
   name: string;
@@ -141,7 +143,7 @@ export default function CelebrityPage() {
             <img src="/logo.png" alt="PortraitPay AI" className="h-8 w-8 rounded-lg" />
             <span className="text-xl font-bold" style={{ color: "var(--text-primary)" }}>PortraitPay AI</span>
           </Link>
-          <div className="flex gap-4">
+          <div className="flex gap-4 items-center">
             <Link href="/enterprise/contact" className="text-sm text-gray-500 hover:text-gray-700 transition">
               {t.celebrity.enterpriseSettlement}
             </Link>
@@ -151,6 +153,8 @@ export default function CelebrityPage() {
             <Link href="/" className="text-sm text-gray-500 hover:text-gray-700 transition">
               {t.celebrity.backHome}
             </Link>
+            <ThemeToggle />
+            <LanguageToggle />
           </div>
         </div>
       </header>
