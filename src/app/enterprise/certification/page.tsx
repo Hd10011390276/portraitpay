@@ -5,10 +5,13 @@
  * 营业执照 + 联系人信息提交 + 支付认证费用
  */
 import { useState } from "react";
+import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useLanguage } from "@/context/LanguageContext";
+import ThemeToggle from "@/components/ThemeToggle";
+import { LanguageToggle } from "@/components/layout/LanguageToggle";
 
 function createSchema(t: any) {
   return z.object({
