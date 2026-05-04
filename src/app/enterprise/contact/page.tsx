@@ -175,10 +175,10 @@ export default function EnterpriseContactPage() {
             <IconBuilding className="w-8 h-8" />
           </div>
           <div className="flex-1 min-w-60">
-            <h1 className="text-2xl font-bold mb-2 tracking-tight">
+            <h1 className="text-2xl font-bold mb-2 tracking-tight text-white">
               {t.enterpriseContact.title}
             </h1>
-            <p className="text-sm opacity-85 leading-relaxed max-w-xl">
+            <p className="text-sm opacity-85 leading-relaxed max-w-xl text-white/90">
               {t.enterpriseContact.subtitle}
             </p>
           </div>
