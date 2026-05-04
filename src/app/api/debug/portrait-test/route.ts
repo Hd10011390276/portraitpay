@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSessionFromRequest } from "@/lib/auth/session";
 import { prisma } from "@/lib/prisma";
+import { kycService } from "@/lib/kyc/service";
 
 export const dynamic = "force-dynamic";
 
@@ -16,6 +17,10 @@ export async function GET(request: NextRequest) {
       env: {
         hasDatabaseUrl: !!process.env.DATABASE_URL,
         hasJwtSecret: !!process.env.JWT_SECRET,
+        kycAliyunStub: process.env.KYC_ALIYUN_STUB,
+        kycAliyunAccessKeyId: !!process.env.KYC_ALIYUN_ACCESS_KEY_ID,
+        kycAliyunAccessKeySecret: !!process.env.KYC_ALIYUN_ACCESS_KEY_SECRET,
+        kycProvider: process.env.KYC_PROVIDER,
         nodeEnv: process.env.NODE_ENV,
       }
     }, { status: 401 });
@@ -23,11 +28,22 @@ export async function GET(request: NextRequest) {
 
   if (!userId && session?.userId) userId = session.userId;
 
+  // Test face verification with stub URLs
+  let faceVerifyResult = null;
+  let faceVerifyError = null;
   try {
-    // Try to count portraits - this tests DB connection and permissions
+    const result = await kycService.verifyFaceAtUpload(
+      "https://portraitpayai.com/test-portrait.jpg",
+      "https://portraitpayai.com/test-idcard.jpg"
+    );
+    faceVerifyResult = result;
+  } catch (err: any) {
+    faceVerifyError = { message: err.message, code: err.code };
+  }
+
+  try {
     const count = await prisma.portrait.count({ where: { ownerId: userId } });
     
-    // Try to create a test portrait with a unique title
     const testTitle = `DEBUG-${Date.now()}`;
     const testPortrait = await prisma.portrait.create({
       data: {
@@ -39,7 +55,6 @@ export async function GET(request: NextRequest) {
       },
     });
     
-    // Clean up
     await prisma.portrait.delete({ where: { id: testPortrait.id } });
 
     return NextResponse.json({
@@ -49,9 +64,16 @@ export async function GET(request: NextRequest) {
       dbConnection: "OK",
       portraitCount: count,
       testCreate: "OK",
+      faceVerify: faceVerifyResult ? "OK" : "FAILED",
+      faceVerifyResult,
+      faceVerifyError,
       env: {
         hasDatabaseUrl: !!process.env.DATABASE_URL,
         hasJwtSecret: !!process.env.JWT_SECRET,
+        kycAliyunStub: process.env.KYC_ALIYUN_STUB,
+        kycAliyunAccessKeyId: !!process.env.KYC_ALIYUN_ACCESS_KEY_ID,
+        kycAliyunAccessKeySecret: !!process.env.KYC_ALIYUN_ACCESS_KEY_SECRET,
+        kycProvider: process.env.KYC_PROVIDER,
       }
     });
   } catch (err: any) {
@@ -59,9 +81,15 @@ export async function GET(request: NextRequest) {
       success: false,
       error: err.message,
       code: err.code,
+      faceVerify: faceVerifyResult ? "OK" : "FAILED",
+      faceVerifyError,
       env: {
         hasDatabaseUrl: !!process.env.DATABASE_URL,
         hasJwtSecret: !!process.env.JWT_SECRET,
+        kycAliyunStub: process.env.KYC_ALIYUN_STUB,
+        kycAliyunAccessKeyId: !!process.env.KYC_ALIYUN_ACCESS_KEY_ID,
+        kycAliyunAccessKeySecret: !!process.env.KYC_ALIYUN_ACCESS_KEY_SECRET,
+        kycProvider: process.env.KYC_PROVIDER,
       }
     }, { status: 500 });
   }
