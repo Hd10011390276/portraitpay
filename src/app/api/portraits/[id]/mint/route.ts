@@ -46,7 +46,20 @@ export async function POST(request: NextRequest, context: RouteContext) {
     // ── Fetch portrait ─────────────────────────────────────────────────────
     const portrait = await prisma.portrait.findUnique({
       where: { id, deletedAt: null },
-      include: {
+      select: {
+        id: true,
+        ownerId: true,
+        title: true,
+        description: true,
+        originalImageUrl: true,
+        thumbnailUrl: true,
+        imageHash: true,
+        blockchainTxHash: true,
+        ipfsCid: true,
+        status: true,
+        faceEmbedding: true,
+        idCardFrontUrl: true,
+        faceVerifiedAt: true,
         owner: { select: { walletAddress: true, email: true, name: true } },
       },
     });
@@ -90,64 +103,70 @@ export async function POST(request: NextRequest, context: RouteContext) {
       );
     }
 
-    // ── Face Verification: verify portrait matches user's ID card ──────────────────
-    console.log("[Mint] Starting face verification before minting...");
-    try {
-      const verifyResult = await kycService.verifyFaceForMint(
-        session.userId,
-        portrait.originalImageUrl ?? "",
-        portrait.idCardFrontUrl ?? undefined
-      );
-      console.log("[Mint] Face verification passed!", verifyResult.faceResult);
-    } catch (err) {
-      const errMsg = err instanceof Error ? err.message : String(err);
-      const code = err instanceof Error ? (err as any).code : undefined;
-
-      console.error("[Mint] Face verification failed:", errMsg, "code:", code);
-
-      if (code === "PORTRAIT_IMAGE_MISSING") {
-        return NextResponse.json(
-          { success: false, error: "请先上传肖像照片后再上链。", code: "PP-FACE-003" },
-          { status: 400 }
+    // ── Face Verification ────────────────────────────────────────────────────
+    // If portrait was already verified at upload time (faceVerifiedAt is set), skip re-verification
+    // Otherwise do full KYC-based face verification
+    if (!portrait.faceVerifiedAt) {
+      console.log("[Mint] Portrait not verified at upload time, running KYC face verification...");
+      try {
+        const verifyResult = await kycService.verifyFaceForMint(
+          session.userId,
+          portrait.originalImageUrl ?? "",
+          portrait.idCardFrontUrl ?? undefined
         );
-      }
+        console.log("[Mint] Face verification passed!", verifyResult.faceResult);
+      } catch (err) {
+        const errMsg = err instanceof Error ? err.message : String(err);
+        const code = err instanceof Error ? (err as any).code : undefined;
 
-      if (code === "ID_CARD_MISSING") {
-        return NextResponse.json(
-          { success: false, error: "请先上传身份证照片后再上链。", code: "PP-FACE-004" },
-          { status: 400 }
-        );
-      }
+        console.error("[Mint] Face verification failed:", errMsg, "code:", code);
 
-      if (code === "FACE_MISMATCH" || errMsg.includes("人脸核身")) {
-        console.log("[Mint] Sending KYC failure email...");
-        const { sendPortraitMintFailedEmail } = await import("@/lib/email");
-        if (portrait.owner?.email) {
-          sendPortraitMintFailedEmail({
-            name: portrait.owner.name ?? portrait.owner.email.split("@")[0],
-            email: portrait.owner.email,
-            portraitTitle: portrait.title ?? "肖像",
-            reason: "人脸与身份证信息不匹配，区块链上链被拒绝。请重新上传清晰的人脸照片和身份证信息。",
-          }).catch((e: unknown) => console.error("[Mint] Failed to send failure email:", e));
+        if (code === "PORTRAIT_IMAGE_MISSING") {
+          return NextResponse.json(
+            { success: false, error: "请先上传肖像照片后再上链。", code: "PP-FACE-003" },
+            { status: 400 }
+          );
         }
+
+        if (code === "ID_CARD_MISSING") {
+          return NextResponse.json(
+            { success: false, error: "请先上传身份证照片后再上链。", code: "PP-FACE-004" },
+            { status: 400 }
+          );
+        }
+
+        if (code === "FACE_MISMATCH" || errMsg.includes("人脸核身")) {
+          console.log("[Mint] Sending face mismatch failure email...");
+          const { sendPortraitMintFailedEmail } = await import("@/lib/email");
+          if (portrait.owner?.email) {
+            sendPortraitMintFailedEmail({
+              name: portrait.owner.name ?? portrait.owner.email.split("@")[0],
+              email: portrait.owner.email,
+              portraitTitle: portrait.title ?? "肖像",
+              reason: "人脸与身份证信息不匹配，区块链上链被拒绝。请重新上传清晰的人脸照片和身份证信息。",
+            }).catch((e: unknown) => console.error("[Mint] Failed to send failure email:", e));
+          }
+          return NextResponse.json(
+            { success: false, error: "人脸与身份证信息不匹配，区块链上链被拒绝。请重新上传清晰的人脸照片。", code: "PP-FACE-001" },
+            { status: 403 }
+          );
+        }
+
+        if (code === "OCR_NOT_FOUND" || code === "KYC_NOT_APPROVED" || errMsg.includes("KYC")) {
+          return NextResponse.json(
+            { success: false, error: "请先完成身份认证后再上链。", code: "PP-KYC-001" },
+            { status: 403 }
+          );
+        }
+
+        // Other errors
         return NextResponse.json(
-          { success: false, error: "人脸与身份证信息不匹配，区块链上链被拒绝。请重新上传清晰的人脸照片。", code: "PP-FACE-001" },
-          { status: 403 }
+          { success: false, error: "身份核验失败：" + errMsg, code: "PP-FACE-002" },
+          { status: 500 }
         );
       }
-
-      if (code === "OCR_NOT_FOUND" || code === "KYC_NOT_APPROVED" || errMsg.includes("KYC")) {
-        return NextResponse.json(
-          { success: false, error: "请先完成身份认证后再上链。", code: "PP-KYC-001" },
-          { status: 403 }
-        );
-      }
-
-      // Other errors
-      return NextResponse.json(
-        { success: false, error: "身份核验失败：" + errMsg, code: "PP-FACE-002" },
-        { status: 500 }
-      );
+    } else {
+      console.log("[Mint] Portrait already verified at upload time, skipping KYC check. faceVerifiedAt:", portrait.faceVerifiedAt);
     }
 
     const network = "sepolia" as const;

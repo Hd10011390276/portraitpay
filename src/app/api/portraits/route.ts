@@ -1,16 +1,10 @@
-
-/**
- * GET /api/portraits          — List portraits (filter by owner, status, category)
- * POST /api/portraits         — Create a new portrait draft
- */
-
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
-import { getSession, getSessionFromRequest } from "@/lib/auth/session";
+import { getSessionFromRequest } from "@/lib/auth/session";
 export const dynamic = "force-dynamic";
 
-
+// POST /api/portraits — Create a new portrait draft
 const CreatePortraitSchema = z.object({
   title: z.string().min(1).max(200),
   description: z.string().max(2000).optional(),
@@ -30,17 +24,10 @@ export async function GET(request: NextRequest) {
     const page = parseInt(searchParams.get("page") ?? "1", 10);
     const limit = Math.min(parseInt(searchParams.get("limit") ?? "20", 10), 100);
 
-    const where: Record<string, unknown> = {
-      deletedAt: null,
-    };
-
+    const where: Record<string, unknown> = { deletedAt: null };
     if (ownerId) where.ownerId = ownerId;
     else if (session?.userId) where.ownerId = session.userId;
-
-    // If no ownerId specified and not logged in, return empty
-    if (!ownerId && !session?.userId) {
-      return NextResponse.json({ success: true, data: [], meta: { page, limit, total: 0, totalPages: 0 } });
-    }
+    else return NextResponse.json({ success: true, data: [], meta: { page, limit, total: 0, totalPages: 0 } });
     if (status) where.status = status;
     if (category) where.category = category;
 
@@ -48,28 +35,12 @@ export async function GET(request: NextRequest) {
       prisma.portrait.findMany({
         where,
         select: {
-          id: true,
-          ownerId: true,
-          title: true,
-          description: true,
-          category: true,
-          tags: true,
-          originalImageUrl: true,
-          thumbnailUrl: true,
-          imageHash: true,
-          blockchainTxHash: true,
-          blockchainNetwork: true,
-          ipfsCid: true,
-          certifiedAt: true,
-          status: true,
-          faceEmbedding: true,
-          isPublic: true,
-          createdAt: true,
-          updatedAt: true,
-          deletedAt: true,
-          owner: {
-            select: { id: true, displayName: true, walletAddress: true },
-          },
+          id: true, ownerId: true, title: true, description: true, category: true,
+          tags: true, originalImageUrl: true, thumbnailUrl: true, imageHash: true,
+          blockchainTxHash: true, blockchainNetwork: true, ipfsCid: true, certifiedAt: true,
+          status: true, faceEmbedding: true, isPublic: true, createdAt: true,
+          updatedAt: true, deletedAt: true, faceVerifiedAt: true,
+          owner: { select: { id: true, displayName: true, walletAddress: true } },
         },
         orderBy: { createdAt: "desc" },
         skip: (page - 1) * limit,
@@ -78,43 +49,23 @@ export async function GET(request: NextRequest) {
       prisma.portrait.count({ where }),
     ]);
 
-    return NextResponse.json({
-      success: true,
-      data: portraits,
-      meta: {
-        page,
-        limit,
-        total,
-        totalPages: Math.ceil(total / limit),
-      },
-    });
+    return NextResponse.json({ success: true, data: portraits, meta: { page, limit, total, totalPages: Math.ceil(total / limit) } });
   } catch (error) {
     console.error("[GET /api/portraits]", error);
-    return NextResponse.json(
-      { success: false, error: "Internal server error" },
-      { status: 500 }
-    );
+    return NextResponse.json({ success: false, error: "Internal server error" }, { status: 500 });
   }
 }
 
 export async function POST(request: NextRequest) {
   const session = await getSessionFromRequest(request);
-
   if (!session?.userId) {
-    return NextResponse.json(
-      { success: false, error: "Unauthorized" },
-      { status: 401 }
-    );
+    return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
   }
 
   const body = await request.json();
   const parsed = CreatePortraitSchema.safeParse(body);
-
   if (!parsed.success) {
-    return NextResponse.json(
-      { success: false, error: "Validation failed", details: parsed.error.flatten() },
-      { status: 400 }
-    );
+    return NextResponse.json({ success: false, error: "Validation failed", details: parsed.error.flatten() }, { status: 400 });
   }
 
   const { title, description, category, tags, isPublic, imageHash } = parsed.data;
@@ -134,15 +85,9 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    return NextResponse.json(
-      { success: true, data: portrait },
-      { status: 201 }
-    );
+    return NextResponse.json({ success: true, data: portrait }, { status: 201 });
   } catch (error) {
     console.error("[POST /api/portraits]", error);
-    return NextResponse.json(
-      { success: false, error: "创建肖像记录失败，请重试。" },
-      { status: 500 }
-    );
+    return NextResponse.json({ success: false, error: "创建肖像记录失败，请重试。" }, { status: 500 });
   }
 }

@@ -58,6 +58,13 @@ export async function POST(request: NextRequest, context: RouteContext) {
 
     const result = await kycService.verifyFaceAtUpload(portraitImageUrl, idCardFrontUrl);
 
+    // Store face verification timestamp on the portrait record
+    // This is used at mint time to skip redundant KYC approval check
+    await prisma.portrait.update({
+      where: { id },
+      data: { faceVerifiedAt: new Date() },
+    });
+
     return NextResponse.json({
       success: true,
       data: {

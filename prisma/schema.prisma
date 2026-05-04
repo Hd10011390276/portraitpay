@@ -148,6 +148,10 @@ model Portrait {
   // ID card front photo URL (used for face verification at mint time)
   idCardFrontUrl String?
 
+  // Face verification timestamp — set after portrait passes face比对 at upload time
+  // Used at mint time to skip redundant KYC check (portrait already verified)
+  faceVerifiedAt DateTime?
+
   isPublic Boolean @default(false)
 
   // AI Licensing settings (per-portrait override)

@@ -35,7 +35,20 @@ export async function POST(request: NextRequest, context: RouteContext) {
     // ── Step 1: Fetch portrait ──────────────────────────────────
     const portrait = await prisma.portrait.findUnique({
       where: { id, deletedAt: null },
-      include: { owner: { select: { walletAddress: true, email: true, name: true } } },
+      select: {
+        id: true,
+        ownerId: true,
+        title: true,
+        description: true,
+        originalImageUrl: true,
+        imageHash: true,
+        blockchainTxHash: true,
+        status: true,
+        faceEmbedding: true,
+        idCardFrontUrl: true,
+        faceVerifiedAt: true,
+        owner: { select: { walletAddress: true, email: true, name: true } },
+      },
     });
 
     if (!portrait) {
@@ -78,56 +91,59 @@ export async function POST(request: NextRequest, context: RouteContext) {
       }
     }
 
-    // ── Face Verification: verify portrait matches user's ID card ──────────────────
-    console.log("[Certify] Starting face verification before minting...");
-    try {
-      const verifyResult = await kycService.verifyFaceForMint(
-        session.userId,
-        portrait.originalImageUrl ?? ""
-      );
-      console.log("[Certify] Face verification passed!", verifyResult.faceResult);
-    } catch (err) {
-      const errMsg = err instanceof Error ? err.message : String(err);
-      const code = err instanceof Error ? (err as any).code : undefined;
-
-      console.error("[Certify] Face verification failed:", errMsg, "code:", code);
-
-      if (code === "PORTRAIT_IMAGE_MISSING") {
-        return NextResponse.json(
-          { success: false, error: "请先上传肖像照片后再上链。", code: "PP-FACE-003" },
-          { status: 400 }
+    // ── Face Verification: skip if portrait was already verified at upload time ───
+    if (!portrait.faceVerifiedAt) {
+      console.log("[Certify] Portrait not verified at upload time, running KYC verification...");
+      try {
+        const verifyResult = await kycService.verifyFaceForMint(
+          session.userId,
+          portrait.originalImageUrl ?? ""
         );
-      }
+        console.log("[Certify] Face verification passed!", verifyResult.faceResult);
+      } catch (err) {
+        const errMsg = err instanceof Error ? err.message : String(err);
+        const code = err instanceof Error ? (err as any).code : undefined;
 
-      if (code === "FACE_MISMATCH" || errMsg.includes("人脸核身")) {
-        console.log("[Certify] Sending KYC failure email...");
-        const { sendPortraitMintFailedEmail } = await import("@/lib/email");
-        if (portrait.owner?.email) {
-          sendPortraitMintFailedEmail({
-            name: portrait.owner.name ?? portrait.owner.email.split("@")[0],
-            email: portrait.owner.email,
-            portraitTitle: portrait.title ?? "肖像",
-            reason: "人脸与身份证信息不匹配，区块链上链被拒绝。请重新上传清晰的人脸照片和身份证信息。",
-          }).catch((e: unknown) => console.error("[Certify] Failed to send failure email:", e));
+        console.error("[Certify] Face verification failed:", errMsg, "code:", code);
+
+        if (code === "PORTRAIT_IMAGE_MISSING") {
+          return NextResponse.json(
+            { success: false, error: "请先上传肖像照片后再上链。", code: "PP-FACE-003" },
+            { status: 400 }
+          );
         }
+
+        if (code === "FACE_MISMATCH" || errMsg.includes("人脸核身")) {
+          console.log("[Certify] Sending face mismatch failure email...");
+          const { sendPortraitMintFailedEmail } = await import("@/lib/email");
+          if (portrait.owner?.email) {
+            sendPortraitMintFailedEmail({
+              name: portrait.owner.name ?? portrait.owner.email.split("@")[0],
+              email: portrait.owner.email,
+              portraitTitle: portrait.title ?? "肖像",
+              reason: "人脸与身份证信息不匹配，区块链上链被拒绝。请重新上传清晰的人脸照片和身份证信息。",
+            }).catch((e: unknown) => console.error("[Certify] Failed to send failure email:", e));
+          }
+          return NextResponse.json(
+            { success: false, error: "人脸与身份证信息不匹配，区块链上链被拒绝。请重新上传清晰的人脸照片。", code: "PP-FACE-001" },
+            { status: 403 }
+          );
+        }
+
+        if (code === "OCR_NOT_FOUND" || code === "KYC_NOT_APPROVED" || errMsg.includes("KYC")) {
+          return NextResponse.json(
+            { success: false, error: "请先完成身份认证后再上链。", code: "PP-KYC-001" },
+            { status: 403 }
+          );
+        }
+
         return NextResponse.json(
-          { success: false, error: "人脸与身份证信息不匹配，区块链上链被拒绝。请重新上传清晰的人脸照片。", code: "PP-FACE-001" },
-          { status: 403 }
+          { success: false, error: "身份核验失败：" + errMsg, code: "PP-FACE-002" },
+          { status: 500 }
         );
       }
-
-      if (code === "OCR_NOT_FOUND" || code === "KYC_NOT_APPROVED" || errMsg.includes("KYC")) {
-        return NextResponse.json(
-          { success: false, error: "请先完成身份认证后再上链。", code: "PP-KYC-001" },
-          { status: 403 }
-        );
-      }
-
-      // Other errors
-      return NextResponse.json(
-        { success: false, error: "身份核验失败：" + errMsg, code: "PP-FACE-002" },
-        { status: 500 }
-      );
+    } else {
+      console.log("[Certify] Portrait already verified at upload time, skipping KYC check. faceVerifiedAt:", portrait.faceVerifiedAt);
     }
 
     // ── Step 3: Verify imageHash exists ────────────────────────────
