@@ -49,10 +49,10 @@ export async function POST(request: NextRequest, context: RouteContext) {
     console.log(`[verify-face] Request body keys: ${Object.keys(body).join(', ')}`);
     console.log(`[verify-face] portrait.originalImageUrl from DB: ${portrait.originalImageUrl}`);
 
-    // Prefer IPFS URLs (publicly accessible) over R2 URLs (not accessible from Aliyun).
-    // IPFS gateway URLs are publicly accessible; R2 URLs return 400 from external networks.
-    const portraitImageUrl = body.portraitImageIpfsUrl ?? portrait.portraitImageIpfsUrl ?? portrait.originalImageUrl;
-    const idCardFrontUrl = body.idCardFrontIpfsUrl ?? portrait.idCardFrontIpfsUrl ?? portrait.idCardFrontUrl;
+    // Prefer OSS signed URLs (most reliable for Aliyun) > IPFS URLs > R2 URLs.
+    // Aliyun CompareFace API only accepts Shanghai OSS URLs.
+    const portraitImageUrl = body.portraitImageOssUrl ?? portrait.portraitImageOssUrl ?? body.portraitImageIpfsUrl ?? portrait.portraitImageIpfsUrl ?? portrait.originalImageUrl;
+    const idCardFrontUrl = body.idCardFrontOssUrl ?? portrait.idCardFrontOssUrl ?? body.idCardFrontIpfsUrl ?? portrait.idCardFrontIpfsUrl ?? portrait.idCardFrontUrl;
     console.log(`[verify-face] Final portraitImageUrl: ${portraitImageUrl}, idCardFrontUrl: ${idCardFrontUrl}`);
 
     if (!portraitImageUrl) {

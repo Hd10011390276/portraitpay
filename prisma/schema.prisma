@@ -153,6 +153,11 @@ model Portrait {
   portraitImageIpfsUrl String?
   idCardFrontIpfsUrl   String?
 
+  // Aliyun OSS URLs (signed, 1-hour expiry) for KYC CompareFace API access
+  // Aliyun CompareFace only accepts Shanghai OSS URLs
+  portraitImageOssUrl String?
+  idCardFrontOssUrl   String?
+
   // Face verification timestamp — set after portrait passes face比对 at upload time
   // Used at mint time to skip redundant KYC check (portrait already verified)
   faceVerifiedAt DateTime?
