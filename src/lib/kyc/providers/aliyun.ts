@@ -134,9 +134,14 @@ export class AliyunKYCProvider implements KYCProviderClient {
     const timestamp = new Date().toISOString().replace(/\.\d+Z$/, "Z");
     const nonce = crypto.randomUUID();
 
-    // ── POP HMAC-SHA1 signature (RPC style) ──────────────────
-    // CompareFace params: ImageURLA=portrait, ImageURLB=idCard
-    // See: https://help.aliyun.com/zh/viapi/developer-reference/api-fomc02
+    // ── POP HMAC-SHA1 signature (RPC style, RFC 3986) ────────
+    // See: https://help.aliyun.com/document_detail/299225.html
+    //
+    // Algorithm:
+    // 1. Build CanonicalizedQueryString: sorted key=value pairs (both key AND value percent-encoded)
+    // 2. StringToSign = HTTPMethod + "&" + percentEncode("/") + "&" + percentEncode(CanonicalizedQueryString)
+    // 3. HMAC-SHA1(key=AccessKeySecret+"&", data=StringToSign) → base64
+    // 4. Append raw query string + Signature to URL
     const sortedParams = new URLSearchParams({
       SignatureMethod: "HMAC-SHA1",
       SignatureNonce: nonce,
@@ -151,15 +156,24 @@ export class AliyunKYCProvider implements KYCProviderClient {
       ImageURLB: idCardUrl,     // ID card photo = B
     });
 
-    // Canonicalize query string (sorted, no encoding of special chars yet)
     const sortedKeys = Array.from(sortedParams.keys()).sort();
-    const queryString = sortedKeys.map(k => `${k}=${sortedParams.get(k)}`).join("&");
 
-    // StringToSign = HTTP_METHOD + "\n" + CanonicalizedResource + "\n" + CanonicalizedQueryString
+    // Build canonical query string: percentEncode(key)=percentEncode(value), joined by &
+    const rfcEncode = (v: string) =>
+      encodeURIComponent(v)
+        .replace(/\+/g, "%20")
+        .replace(/\*/g, "%2A")
+        .replace(/%7E/g, "~");
+
+    const canonicalQS = sortedKeys
+      .map(k => `${rfcEncode(k)}=${rfcEncode(sortedParams.get(k) ?? "")}`)
+      .join("&");
+
+    // StringToSign = POST + "&" + percentEncode("/") + "&" + percentEncode(canonicalQS)
     const stringToSign = [
       "POST",
-      await this._encode("/"),
-      await this._encode(queryString),
+      rfcEncode("/"),
+      rfcEncode(canonicalQS),
     ].join("&");
 
     const key = this.accessKeySecret + "&";
@@ -170,9 +184,13 @@ export class AliyunKYCProvider implements KYCProviderClient {
     );
     const sig = await crypto.subtle.sign("HMAC", cryptoKey, dataBuf);
     const signature = Buffer.from(sig).toString("base64");
-    const encodedSig = await this._encode(signature);
+    const encodedSig = rfcEncode(signature);
 
-    const url = `https://${host}/?Signature=${encodedSig}&${queryString}`;
+    // Build URL: raw query string + Signature (NOT double-encoded)
+    const urlParams = new URLSearchParams();
+    sortedKeys.forEach(k => urlParams.append(k, sortedParams.get(k) ?? ""));
+    urlParams.append("Signature", signature);
+    const url = `https://${host}/?${urlParams.toString()}`;
 
     // ── Make request ─────────────────────────────────────────
     let resp: Record<string, unknown>;
