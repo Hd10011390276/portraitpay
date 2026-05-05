@@ -128,7 +128,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
     }
 
     return NextResponse.json(
-      { success: false, error: "人脸核验服务暂时不可用，请稍后重试。", code: code ?? "PP-FACE-002" },
+      { success: false, error: "人脸核验服务暂时不可用，请稍后重试。", code: code ?? "PP-FACE-002", detail: errMsg },
       { status: 500 }
     );
   }

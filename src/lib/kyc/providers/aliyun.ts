@@ -292,8 +292,11 @@ export class AliyunKYCProvider implements KYCProviderClient {
       resp = await res.json() as Record<string, unknown>;
       console.log("[Aliyun VIAPI] CompareFace raw response:", JSON.stringify(resp));
     } catch (err) {
-      console.error("[Aliyun VIAPI] CompareFace request failed:", err);
-      throw new Error("Face verification request failed, please try again later");
+      const msg = err instanceof Error ? err.message : String(err);
+      console.error("[Aliyun VIAPI] CompareFace request failed:", msg);
+      const e = new Error(msg);
+      (e as any).code = "COMPARE_ERROR";
+      throw e;
     }
 
     // ── Parse result ────────────────────────────────────────
