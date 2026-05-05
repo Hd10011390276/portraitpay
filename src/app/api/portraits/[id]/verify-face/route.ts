@@ -2,11 +2,13 @@
  * POST /api/portraits/[id]/verify-face
  * 上传肖像后立即做人脸比对（不依赖 KYC approval）
  * 直接调用阿里云 CompareFace API 比对肖像照和身份证照片
+ * 核验通过/失败时发送邮件通知
  */
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getSessionFromRequest } from "@/lib/auth/session";
 import { kycService } from "@/lib/kyc/service";
+import { sendKYCFacePassedEmail, sendKYCFaceFailedEmail } from "@/lib/email";
 
 type RouteContext = { params: Promise<{ id: string }> };
 
@@ -21,7 +23,13 @@ export async function POST(request: NextRequest, context: RouteContext) {
 
     const portrait = await prisma.portrait.findUnique({
       where: { id, deletedAt: null },
-      select: { ownerId: true, originalImageUrl: true, idCardFrontUrl: true },
+      select: {
+        ownerId: true,
+        title: true,
+        originalImageUrl: true,
+        idCardFrontUrl: true,
+        owner: { select: { email: true, name: true } },
+      },
     });
 
     console.log(`[verify-face] Looking up portrait id=${id}`);
@@ -65,6 +73,20 @@ export async function POST(request: NextRequest, context: RouteContext) {
       data: { faceVerifiedAt: new Date() },
     });
 
+    // Send KYC passed email (non-blocking)
+    const ownerEmail = portrait.owner?.email;
+    const ownerName = portrait.owner?.name ?? ownerEmail?.split("@")[0] ?? "用户";
+    const portraitTitle = portrait.title ?? "肖像";
+
+    if (ownerEmail) {
+      sendKYCFacePassedEmail({
+        name: ownerName,
+        email: ownerEmail,
+        portraitTitle,
+        verifyScore: result.faceResult.verifyScore,
+      }).catch((e: unknown) => console.error("[verify-face] Failed to send KYC passed email:", e));
+    }
+
     return NextResponse.json({
       success: true,
       data: {
@@ -81,6 +103,24 @@ export async function POST(request: NextRequest, context: RouteContext) {
     console.error("[verify-face] Face verification error:", errMsg, "code:", code);
 
     if (code === "FACE_MISMATCH") {
+      // Send KYC failed email (non-blocking)
+      const portrait = await prisma.portrait.findUnique({
+        where: { id: (await context.params).id },
+        select: {
+          owner: { select: { email: true, name: true } },
+          title: true,
+        },
+      }).catch(() => null);
+
+      if (portrait?.owner?.email) {
+        sendKYCFaceFailedEmail({
+          name: portrait.owner.name ?? portrait.owner.email.split("@")[0],
+          email: portrait.owner.email,
+          portraitTitle: portrait.title ?? "肖像",
+          reason: "人脸与身份证照片不匹配，请确认上传的是同一人清晰的照片。",
+        }).catch((e: unknown) => console.error("[verify-face] Failed to send KYC failed email:", e));
+      }
+
       return NextResponse.json(
         { success: false, error: "人脸与身份证照片不匹配，请确认上传的是同一人清晰的照片。", code: "PP-FACE-001" },
         { status: 403 }
