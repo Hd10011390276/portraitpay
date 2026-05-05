@@ -51,7 +51,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
     try {
       const formData = await request.formData();
       const file = formData.get("image") as File | null;
-      uploadType = (formData.get("type") as string) || "portrait";
+      uploadType = (formData.get("type") as string || formData.get("uploadType") as string || "portrait").toLowerCase();
       if (!file) {
         console.log(`[upload/direct] No file provided`);
         return NextResponse.json({ success: false, error: "No image provided" }, { status: 400 });
@@ -71,7 +71,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
     }
 
     // Generate storage key based on upload type
-    const isIdCard = uploadType === "idCardFront";
+    const isIdCard = uploadType === "idcardfront";
     const key = isIdCard
       ? `portraits/${id}/idcard-front-${Date.now()}.jpg`
       : generateImageKey(id, "original");
