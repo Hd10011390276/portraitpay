@@ -81,14 +81,14 @@ async function imageUrlToBase64(url: string): Promise<string> {
 
     // Resize if too large (max 5MB per Aliyun limit, target 800×800 for face)
     const MAX_SIZE = 4 * 1024 * 1024; // 4MB to leave room
-    let buffer = imageBuffer;
+    let buffer: Buffer = imageBuffer;
     if (buffer.length > MAX_SIZE) {
       try {
         const sharp = (await import("sharp")).default;
         buffer = await sharp(buffer)
           .resize(800, 800, { fit: "inside", withoutEnlargement: true })
           .jpeg({ quality: 85 })
-          .toBuffer();
+          .toBuffer() as unknown as Buffer;
       } catch {
         // If sharp fails, still try with original (may exceed 5MB limit though)
         console.warn("[R2→Base64] sharp resize failed, using original buffer");
@@ -240,13 +240,16 @@ export class AliyunKYCProvider implements KYCProviderClient {
     //
     // Algorithm:
     // 1. Build CanonicalizedQueryString: sorted key=value pairs (both key AND value percent-encoded)
+    //    (For body-based params like ImageDataA/B, these go in the JSON body instead)
     // 2. StringToSign = HTTPMethod + "&" + percentEncode("/") + "&" + percentEncode(CanonicalizedQueryString)
     // 3. HMAC-SHA1(key=AccessKeySecret+"&", data=StringToSign) → base64
     // 4. Append raw query string + Signature to URL
     //
-    // Note: When ImageDataA is set (no ImageURLA), Base64 is used.
-    // "ImageURLA与ImageDataA二选一，当URL方式与Base64编码方式共存时，URL方式优先。"
-    const sortedParams = new URLSearchParams({
+    // For ImageDataA/ImageDataB: these go in the JSON request body (not query string)
+    // because base64 strings are too large for URL query parameters.
+
+    // Signature params (go in URL query string)
+    const sigParams = {
       SignatureMethod: "HMAC-SHA1",
       SignatureNonce: nonce,
       AccessKeyId: this.accessKeyId,
@@ -256,25 +259,20 @@ export class AliyunKYCProvider implements KYCProviderClient {
       RegionId: this.region,
       Version: version,
       Action: action,
-      // Only include URL params when NOT using Base64 for that image
       ...(imageDataA ? {} : { ImageURLA: portraitUrl }),
       ...(imageDataB ? {} : { ImageURLB: idCardUrl }),
-      // Include Base64 data when available (takes effect because no URL param for same slot)
-      ...(imageDataA ? { ImageDataA: imageDataA } : {}),
-      ...(imageDataB ? { ImageDataB: imageDataB } : {}),
-    });
+    };
 
-    const sortedKeys = Array.from(sortedParams.keys()).sort();
-
-    // Build canonical query string: percentEncode(key)=percentEncode(value), joined by &
     const rfcEncode = (v: string) =>
       encodeURIComponent(v)
         .replace(/\+/g, "%20")
         .replace(/\*/g, "%2A")
         .replace(/%7E/g, "~");
 
+    // Build canonical query string (signature covers only URL params, not body)
+    const sortedKeys = Object.keys(sigParams).sort();
     const canonicalQS = sortedKeys
-      .map(k => `${rfcEncode(k)}=${rfcEncode(sortedParams.get(k) ?? "")}`)
+      .map(k => `${rfcEncode(k)}=${rfcEncode(String(sigParams[k as keyof typeof sigParams]))}`)
       .join("&");
 
     // StringToSign = POST + "&" + percentEncode("/") + "&" + percentEncode(canonicalQS)
@@ -293,19 +291,25 @@ export class AliyunKYCProvider implements KYCProviderClient {
     const sig = await crypto.subtle.sign("HMAC", cryptoKey, dataBuf);
     const signature = Buffer.from(sig).toString("base64");
 
-    // Build URL: raw query string + Signature
+    // Build URL with signature params only (no ImageDataA/B)
     const urlParams = new URLSearchParams();
-    sortedKeys.forEach(k => urlParams.append(k, sortedParams.get(k) ?? ""));
+    sortedKeys.forEach(k => urlParams.append(k, String(sigParams[k as keyof typeof sigParams])));
     urlParams.append("Signature", signature);
     const url = `https://${host}/?${urlParams.toString()}`;
 
+    // Build request body: JSON with ImageDataA/ImageDataB (or empty object for URL mode)
+    const requestBody: Record<string, string> = {};
+    if (imageDataA) requestBody["ImageDataA"] = imageDataA;
+    if (imageDataB) requestBody["ImageDataB"] = imageDataB;
+
     // ── Make request ─────────────────────────────────────────
+    console.log("[Aliyun VIAPI] URL length:", url.length, "| Body size:", JSON.stringify(requestBody).length, "| imageDataA:", imageDataA ? imageDataA.length + " chars" : "none");
     let resp: Record<string, unknown>;
     try {
       const res = await fetch(url, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: "{}",
+        body: JSON.stringify(requestBody),
       });
 
       if (!res.ok) {
