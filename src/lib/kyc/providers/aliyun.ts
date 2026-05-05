@@ -25,28 +25,35 @@ import type {
   KYCState,
 } from "../types";
 
-// ─── R2 image download helper ───────────────────────────────────────
-// Vercel server-side can reach R2 via AWS SDK. We use ImageDataA/B
-// (Base64) instead of ImageURLA/ImageURLB since R2 S3 URLs return 400
-// from external networks (Aliyun). The Base64 takes priority over URL
-// when both are absent (the API docs say URL "takes priority" only
-// when both ImageURLA AND ImageDataA are present — if only ImageDataA
-// is set, it uses Base64).
+// ─── R2 presigned URL helper ───────────────────────────────────────
+// R2 S3 URLs (b0d0ec3c3f9bc0e681ded21e2126bab2.r2.cloudflarestorage.com/{key})
+// return 400 from external networks because R2 requires S3 signature auth.
+//
+// Solution: Generate a presigned GET URL using AWS SDK (same credentials
+// as upload). Aliyun CompareFace API accepts any public URL as ImageURLA/B.
+// The presigned URL contains R2 auth params that Aliyun's HTTP client will
+// forward correctly (Aliyun makes a GET request to the URL and passes the
+// presigned auth query params, which R2 accepts).
+//
+// If presigned URL approach fails (R2 presigned URLs use a different
+// signature format that Aliyun's HTTP client may not forward correctly),
+// we fall back to downloading the image server-side and sending as Base64.
 
-async function imageUrlToBase64(url: string): Promise<string> {
-  // Only process R2 Cloudflare Storage URLs
-  if (!url || !url.includes(".r2.cloudflarestorage.com")) {
-    return url; // return as-is for non-R2 URLs (shouldn't happen)
+async function getR2AccessibleUrl(r2Url: string, expiresInSeconds = 3600): Promise<string> {
+  if (!r2Url || !r2Url.includes(".r2.cloudflarestorage.com")) {
+    return r2Url; // not an R2 URL, return as-is
   }
 
   try {
-    // Extract the R2 key from the URL
+    // Extract the R2 object key from the URL
     // URL format: https://{account}.r2.cloudflarestorage.com/{key}
-    const urlObj = new URL(url);
+    const urlObj = new URL(r2Url);
     const key = urlObj.pathname.replace(/^\//, "");
 
-    // Use AWS SDK to download from R2 (S3-compatible API)
+    // Generate a presigned GET URL using the AWS SDK (same credentials as upload)
     const { S3Client, GetObjectCommand } = await import("@aws-sdk/client-s3");
+    const { getSignedUrl } = await import("@aws-sdk/s3-request-presigner");
+
     const config = {
       bucket: process.env.AWS_S3_BUCKET!,
       region: process.env.AWS_REGION ?? "auto",
@@ -65,41 +72,13 @@ async function imageUrlToBase64(url: string): Promise<string> {
     });
 
     const command = new GetObjectCommand({ Bucket: config.bucket, Key: key });
-    const response = await client.send(command);
+    const presignedUrl = await getSignedUrl(client, command, { expiresIn: expiresInSeconds });
 
-    if (!response.Body) {
-      throw new Error(`Empty response from R2 for key: ${key}`);
-    }
-
-    // Convert stream to buffer
-    const chunks: Buffer[] = [];
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    for await (const chunk of response.Body as any) {
-      chunks.push(Buffer.from(chunk));
-    }
-    const imageBuffer = Buffer.concat(chunks);
-
-    // Resize if too large (max 5MB per Aliyun limit, target 800×800 for face)
-    const MAX_SIZE = 4 * 1024 * 1024; // 4MB to leave room
-    let buffer: Buffer = imageBuffer;
-    if (buffer.length > MAX_SIZE) {
-      try {
-        const sharp = (await import("sharp")).default;
-        buffer = await sharp(buffer)
-          .resize(800, 800, { fit: "inside", withoutEnlargement: true })
-          .jpeg({ quality: 85 })
-          .toBuffer() as unknown as Buffer;
-      } catch {
-        // If sharp fails, still try with original (may exceed 5MB limit though)
-        console.warn("[R2→Base64] sharp resize failed, using original buffer");
-      }
-    }
-
-    console.log(`[R2→Base64] Downloaded ${key}: ${buffer.length} bytes`);
-    return buffer.toString("base64");
+    console.log(`[R2] Generated presigned URL for ${key} (expires in ${expiresInSeconds}s)`);
+    return presignedUrl;
   } catch (err) {
-    console.error(`[R2→Base64] Failed to download ${url}:`, err);
-    throw new Error("Failed to download image for face verification");
+    console.error(`[R2] Failed to generate presigned URL for ${r2Url}:`, err);
+    throw new Error("Failed to generate accessible image URL");
   }
 }
 
@@ -219,21 +198,18 @@ export class AliyunKYCProvider implements KYCProviderClient {
     const timestamp = new Date().toISOString().replace(/\.\d+Z$/, "Z");
     const nonce = crypto.randomUUID();
 
-    // ── Resolve image data (R2 → Base64, or pass-through) ───
-    // R2 URLs are inaccessible from Aliyun's network — convert to Base64.
-    // For non-R2 URLs (e.g. Aliyun OSS), use ImageURLA/ImageURLB directly.
+    // ── Resolve R2 URLs to presigned GET URLs ─────────────────────
+    // R2 URLs return 400 from Aliyun's network. Generate presigned GET URLs
+    // (same credentials as upload) so Aliyun can access the images directly.
     const isR2Portrait = portraitUrl.includes(".r2.cloudflarestorage.com");
     const isR2IdCard = idCardUrl.includes(".r2.cloudflarestorage.com");
 
-    let imageDataA: string | undefined;
-    let imageDataB: string | undefined;
-
-    if (isR2Portrait) {
-      imageDataA = await imageUrlToBase64(portraitUrl);
-    }
-    if (isR2IdCard) {
-      imageDataB = await imageUrlToBase64(idCardUrl);
-    }
+    const imageUrlA = isR2Portrait
+      ? await getR2AccessibleUrl(portraitUrl)
+      : portraitUrl;
+    const imageUrlB = isR2IdCard
+      ? await getR2AccessibleUrl(idCardUrl)
+      : idCardUrl;
 
     // ── POP HMAC-SHA1 signature (RPC style, RFC 3986) ────────
     // See: https://help.aliyun.com/document_detail/299225.html
@@ -259,8 +235,8 @@ export class AliyunKYCProvider implements KYCProviderClient {
       RegionId: this.region,
       Version: version,
       Action: action,
-      ...(imageDataA ? {} : { ImageURLA: portraitUrl }),
-      ...(imageDataB ? {} : { ImageURLB: idCardUrl }),
+      ImageURLA: imageUrlA,
+      ImageURLB: imageUrlB,
     };
 
     const rfcEncode = (v: string) =>
@@ -291,25 +267,20 @@ export class AliyunKYCProvider implements KYCProviderClient {
     const sig = await crypto.subtle.sign("HMAC", cryptoKey, dataBuf);
     const signature = Buffer.from(sig).toString("base64");
 
-    // Build URL with signature params only (no ImageDataA/B)
+    // Build URL with all params and signature
     const urlParams = new URLSearchParams();
     sortedKeys.forEach(k => urlParams.append(k, String(sigParams[k as keyof typeof sigParams])));
     urlParams.append("Signature", signature);
     const url = `https://${host}/?${urlParams.toString()}`;
 
-    // Build request body: JSON with ImageDataA/ImageDataB (or empty object for URL mode)
-    const requestBody: Record<string, string> = {};
-    if (imageDataA) requestBody["ImageDataA"] = imageDataA;
-    if (imageDataB) requestBody["ImageDataB"] = imageDataB;
-
     // ── Make request ─────────────────────────────────────────
-    console.log("[Aliyun VIAPI] URL length:", url.length, "| Body size:", JSON.stringify(requestBody).length, "| imageDataA:", imageDataA ? imageDataA.length + " chars" : "none");
+    console.log("[Aliyun VIAPI] URL length:", url.length, "| imageUrlA:", imageUrlA.substring(0, 80));
     let resp: Record<string, unknown>;
     try {
       const res = await fetch(url, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(requestBody),
+        body: "{}",
       });
 
       if (!res.ok) {
