@@ -31,7 +31,7 @@ const nextConfig = {
   },
 
   // Keep native/optional deps out of the browser bundle
-  serverExternalPackages: ['@vladmandic/face-api', 'canvas'],
+  serverExternalPackages: ['@vladmandic/face-api', 'canvas', 'ali-oss', 'sharp'],
 
   // Stub canvas for server-side builds so webpack doesn't fail resolution
   webpack: (config, { isServer }) => {
