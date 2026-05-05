@@ -44,7 +44,6 @@ function createKYCProvider(): KYCProviderClient {
       return new AliyunKYCProvider({
         accessKeyId: process.env.KYC_ALIYUN_ACCESS_KEY_ID ?? "",
         accessKeySecret: process.env.KYC_ALIYUN_ACCESS_KEY_SECRET ?? "",
-        appId: process.env.KYC_ALIYUN_APP_ID ?? "",
         region: process.env.KYC_ALIYUN_REGION,
       });
     case "tencent":

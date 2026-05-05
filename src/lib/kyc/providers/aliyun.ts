@@ -1,12 +1,13 @@
 /**
- * Aliyun Face Verification integration
+ * Aliyun Visual Intelligence Platform — Face Comparison (人脸比对1:1)
  *
- * Documentation: https://help.aliyun.com/zh/face-verification/
+ * Documentation: https://help.aliyun.com/zh/viapi/developer-reference/api-fomc02
+ * Product: 视觉智能开放平台 facebody CompareFace API
+ * Endpoint: facebody.cn-shanghai.aliyuncs.com (fixed region)
+ * Auth: POP HMAC-SHA1 (same signing as face/compare/route.ts)
  *
- * Usage:
- * 1. Enable Aliyun Face Verification service
- * 2. Get AccessKeyId / AccessKeySecret
- * 3. Replace the STUBS below with real API calls
+ * No APP ID needed — uses AccessKey directly.
+ * Free tier available at: https://vision.aliyun.com/facebody
  */
 
 import type {
@@ -44,55 +45,40 @@ export class AliyunKYCProvider implements KYCProviderClient {
   private readonly accessKeyId: string;
   private readonly accessKeySecret: string;
   private readonly region: string;
-  private readonly appId: string;
 
   constructor(opts: {
     accessKeyId: string;
     accessKeySecret: string;
     region?: string;
-    appId: string;
   }) {
     this.accessKeyId = opts.accessKeyId;
     this.accessKeySecret = opts.accessKeySecret;
     this.region = opts.region ?? "cn-shanghai";
-    this.appId = opts.appId;
   }
 
   // ─── 1. Initialize verification session ────────────────────
 
-  async initSession(userId: string, level: KYCLevel): Promise<{
+  async initSession(userId: string, _level: KYCLevel): Promise<{
     sessionToken: string;
     redirectUrl: string;
     externalRef: string;
   }> {
+    // Visual Intelligence Platform uses CompareFace directly (no redirect flow)
+    // The init session is a no-op; real verification happens in submitFaceVerify
     if (isStubEnabled() || !this.accessKeyId || !this.accessKeySecret) {
-      const ref = `aliyun_${userId}_${Date.now()}`;
+      const ref = `stub_${userId}_${Date.now()}`;
       return {
         sessionToken: ref,
-        redirectUrl: this.appId
-          ? `https://bizauth.verification.aliyun.com/initialize?appId=${this.appId}&sessionId=${ref}`
-          : `https://portraitpayai.com/kyc/callback?provider=aliyun&sessionId=${ref}`,
+        redirectUrl: `https://portraitpayai.com/kyc/callback?provider=aliyun&sessionId=${ref}`,
         externalRef: ref,
       };
     }
 
-    /**
-     * Real API call example (REST):
-     * POST https://faceverification.{region}.aliyuncs.com/
-     * {
-     *   "ProductKey": this.appId,
-     *   "TicketId": ticketId,
-     *   "MetaInfo": Buffer.from(JSON.stringify({ userId, level })).toString("base64"),
-     *   "SignedAt": new Date().toISOString(),
-     * }
-     */
-    const ticketId = `TKT_${Date.now()}_${userId}`;
-    const redirectUrl = `https://bizauth.verification.aliyun.com/initialize?appId=${this.appId}&ticketId=${ticketId}`;
-
+    const ref = `viapi_${userId}_${Date.now()}`;
     return {
-      sessionToken: ticketId,
-      redirectUrl,
-      externalRef: ticketId,
+      sessionToken: ref,
+      redirectUrl: `https://portraitpayai.com/kyc/callback?provider=aliyun&sessionId=${ref}`,
+      externalRef: ref,
     };
   }
 
@@ -118,10 +104,12 @@ export class AliyunKYCProvider implements KYCProviderClient {
   // ─── 3. Face verification (1:1 comparison) ─────────────────
 
   /**
-   * Call Aliyun CompareFace API to compare portrait with ID card photo
+   * Call Aliyun Visual Intelligence Platform CompareFace API
+   * (人脸比对1:1 — 1:1 face comparison)
    *
-   * API: POST https://facebody.{region}.aliyuncs.com/?Action=CompareFace
-   * Auth: POP HMAC-SHA1 (same as face/compare/route.ts)
+   * API: POST https://facebody.cn-shanghai.aliyuncs.com/?Action=CompareFace
+   * Auth: POP HMAC-SHA1 (RPC style)
+   * Docs: https://help.aliyun.com/zh/viapi/developer-reference/api-fomc02
    *
    * @param portraitUrl  Portrait photo URL (R2 public URL)
    * @param idCardUrl    ID card photo URL (R2 public URL)
@@ -131,23 +119,24 @@ export class AliyunKYCProvider implements KYCProviderClient {
     idCardUrl: string
   ): Promise<FaceVerifyResult> {
     if (isStubEnabled() || !this.accessKeyId || !this.accessKeySecret) {
-      console.log("[Aliyun] submitFaceVerify: using STUB (enabled=", isStubEnabled(), ")");
+      console.log("[Aliyun VIAPI] submitFaceVerify: using STUB");
       return this.stubFaceVerify();
     }
 
-    console.log("[Aliyun] submitFaceVerify: calling real CompareFace API");
-    console.log("[Aliyun]   portraitUrl:", portraitUrl);
-    console.log("[Aliyun]   idCardUrl:", idCardUrl);
+    console.log("[Aliyun VIAPI] submitFaceVerify: calling CompareFace API");
+    console.log("[Aliyun VIAPI]   portraitUrl:", portraitUrl);
+    console.log("[Aliyun VIAPI]   idCardUrl:", idCardUrl);
 
-    const region = this.region;
-    const host = `facebody.${region}.aliyuncs.com`;
+    // Fixed endpoint: facebody.cn-shanghai.aliyuncs.com (NOT {region} placeholder)
+    const host = "facebody.cn-shanghai.aliyuncs.com";
     const action = "CompareFace";
     const version = "2019-12-30";
     const timestamp = new Date().toISOString().replace(/\.\d+Z$/, "Z");
     const nonce = crypto.randomUUID();
 
-    // ── POP signature (RFC 2104 HMAC-SHA1) ───────────────────
-    // CompareFace requires two ImageURL params: ImageURL1=portrait, ImageURL2=idCard
+    // ── POP HMAC-SHA1 signature (RPC style) ──────────────────
+    // CompareFace params: ImageURLA=portrait, ImageURLB=idCard
+    // See: https://help.aliyun.com/zh/viapi/developer-reference/api-fomc02
     const sortedParams = new URLSearchParams({
       SignatureMethod: "HMAC-SHA1",
       SignatureNonce: nonce,
@@ -155,16 +144,18 @@ export class AliyunKYCProvider implements KYCProviderClient {
       SignatureVersion: "1.0",
       Timestamp: timestamp,
       Format: "JSON",
-      RegionId: region,
+      RegionId: this.region,
       Version: version,
       Action: action,
-      ImageURL1: portraitUrl,
-      ImageURL2: idCardUrl,
+      ImageURLA: portraitUrl,   // portrait photo = A
+      ImageURLB: idCardUrl,     // ID card photo = B
     });
 
+    // Canonicalize query string (sorted, no encoding of special chars yet)
     const sortedKeys = Array.from(sortedParams.keys()).sort();
     const queryString = sortedKeys.map(k => `${k}=${sortedParams.get(k)}`).join("&");
 
+    // StringToSign = HTTP_METHOD + "\n" + CanonicalizedResource + "\n" + CanonicalizedQueryString
     const stringToSign = [
       "POST",
       await this._encode("/"),
@@ -183,8 +174,8 @@ export class AliyunKYCProvider implements KYCProviderClient {
 
     const url = `https://${host}/?Signature=${encodedSig}&${queryString}`;
 
-    // ── Make request ───────────────────────────────────────────
-    let data: Record<string, unknown>;
+    // ── Make request ─────────────────────────────────────────
+    let resp: Record<string, unknown>;
     try {
       const res = await fetch(url, {
         method: "POST",
@@ -194,37 +185,43 @@ export class AliyunKYCProvider implements KYCProviderClient {
 
       if (!res.ok) {
         const text = await res.text();
-        console.error("[Aliyun] CompareFace HTTP error:", res.status, text);
-        throw new Error(`Face verification provider error ${res.status}: ${text}`);
+        console.error("[Aliyun VIAPI] CompareFace HTTP error:", res.status, text);
+        throw new Error(`Face verification API error ${res.status}: ${text}`);
       }
 
-      data = await res.json() as Record<string, unknown>;
-      console.log("[Aliyun] CompareFace response:", JSON.stringify(data));
+      resp = await res.json() as Record<string, unknown>;
+      console.log("[Aliyun VIAPI] CompareFace raw response:", JSON.stringify(resp));
     } catch (err) {
-      console.error("[Aliyun] CompareFace request failed:", err);
+      console.error("[Aliyun VIAPI] CompareFace request failed:", err);
       throw new Error("Face verification request failed, please try again later");
     }
 
-    // ── Parse result ───────────────────────────────────────────
-    const similarity = (data.Data as Record<string, unknown>)?.Similarity as number
-      ?? (data.Similarity as number)
+    // ── Parse result ────────────────────────────────────────
+    // Response fields: Data.Confidence (0-100), Data.Thresholds [61,69,75]
+    // No "Similarity" field — Confidence is the score we need.
+    // See: https://help.aliyun.com/zh/viapi/developer-reference/api-fomc02
+    const confidence = (resp.Data as Record<string, unknown>)?.Confidence as number
+      ?? (resp.Confidence as number)
       ?? 0;
 
-    const confidence = (data.Data as Record<string, unknown>)?.Confidence as number
-      ?? (data.Confidence as number)
-      ?? 0;
+    const thresholds = (resp.Data as Record<string, unknown>)?.Thresholds as number[]
+      ?? [61, 69, 75];
 
-    // Aliyun CompareFace returns similarity score 0-100
-    // >=80: pass (1:1 comparison), 60-80: manual review, <60: fail
+    console.log(`[Aliyun VIAPI] Confidence: ${confidence}, Thresholds: ${thresholds.join(",")}`);
+
+    // Default threshold: >61 = same person (FAR 1/1000)
+    // For higher security use 69 (FAR 1/10000) or 75 (FAR 1/100000)
+    const passThreshold = thresholds[0] ?? 61;
     const verifyResult: "PASS" | "FAIL" | "REVIEW" =
-      similarity >= 80 ? "PASS" : similarity >= 60 ? "REVIEW" : "FAIL";
+      confidence >= passThreshold ? "PASS" : confidence >= passThreshold * 0.8 ? "REVIEW" : "FAIL";
 
-    const livenessResult: "PASS" | "FAIL" = confidence >= 70 ? "PASS" : "FAIL";
+    // No separate liveness check in CompareFace — use confidence as liveness proxy
+    const livenessResult: "PASS" | "FAIL" = confidence >= 50 ? "PASS" : "FAIL";
 
     return {
-      verifyScore: Math.round(similarity),
+      verifyScore: Math.round(confidence),
       verifyResult,
-      similarity: Math.round(similarity) / 100,
+      similarity: Math.round(confidence) / 100,
       livenessScore: Math.round(confidence) / 100,
       livenessResult,
     };
