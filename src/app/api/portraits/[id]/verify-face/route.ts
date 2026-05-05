@@ -28,6 +28,8 @@ export async function POST(request: NextRequest, context: RouteContext) {
         title: true,
         originalImageUrl: true,
         idCardFrontUrl: true,
+        portraitImageIpfsUrl: true,
+        idCardFrontIpfsUrl: true,
         owner: { select: { email: true, name: true } },
       },
     });
@@ -37,7 +39,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
       console.log(`[verify-face] Portrait ${id} not found in database`);
       return NextResponse.json({ success: false, error: "Portrait not found" }, { status: 404 });
     }
-    console.log(`[verify-face] Portrait found: ownerId=${portrait.ownerId}, hasOriginalImage=${!!portrait.originalImageUrl}, hasIdCard=${!!portrait.idCardFrontUrl}`);
+    console.log(`[verify-face] Portrait found: ownerId=${portrait.ownerId}, hasOriginalImage=${!!portrait.originalImageUrl}, hasIdCard=${!!portrait.idCardFrontUrl}, hasIpfsPortrait=${!!portrait.portraitImageIpfsUrl}, hasIpfsIdCard=${!!portrait.idCardFrontIpfsUrl}`);
 
     if (portrait.ownerId !== session.userId) {
       return NextResponse.json({ success: false, error: "Forbidden" }, { status: 403 });
@@ -46,8 +48,11 @@ export async function POST(request: NextRequest, context: RouteContext) {
     const body = await request.json().catch(() => ({}));
     console.log(`[verify-face] Request body keys: ${Object.keys(body).join(', ')}`);
     console.log(`[verify-face] portrait.originalImageUrl from DB: ${portrait.originalImageUrl}`);
-    const portraitImageUrl = body.originalImageUrl ?? portrait.originalImageUrl;
-    const idCardFrontUrl = body.idCardFrontUrl ?? portrait.idCardFrontUrl;
+
+    // Prefer IPFS URLs (publicly accessible) over R2 URLs (not accessible from Aliyun).
+    // IPFS gateway URLs are publicly accessible; R2 URLs return 400 from external networks.
+    const portraitImageUrl = body.portraitImageIpfsUrl ?? portrait.portraitImageIpfsUrl ?? portrait.originalImageUrl;
+    const idCardFrontUrl = body.idCardFrontIpfsUrl ?? portrait.idCardFrontIpfsUrl ?? portrait.idCardFrontUrl;
     console.log(`[verify-face] Final portraitImageUrl: ${portraitImageUrl}, idCardFrontUrl: ${idCardFrontUrl}`);
 
     if (!portraitImageUrl) {

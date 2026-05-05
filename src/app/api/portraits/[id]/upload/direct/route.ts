@@ -7,6 +7,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getSessionFromRequest } from "@/lib/auth/session";
 import { generateImageKey, uploadFile } from "@/lib/storage";
+import { uploadToIpfs } from "@/lib/ipfs";
 
 type RouteContext = { params: Promise<{ id: string }> };
 
@@ -93,13 +94,29 @@ export async function POST(request: NextRequest, context: RouteContext) {
       return NextResponse.json({ success: false, error: userMsg }, { status: 500 });
     }
 
+    // Also upload to IPFS via Pinata for public accessibility.
+    // Aliyun CompareFace API requires publicly accessible image URLs;
+    // R2 URLs return 400 from external networks.
+    let ipfsGatewayUrl: string | undefined;
+    try {
+      console.log(`[upload/direct] Uploading to Pinata IPFS for public accessibility...`);
+      const ipfsResult = await uploadToIpfs(imageBuffer, filename);
+      ipfsGatewayUrl = `https://cloudflare-ipfs.com/ipfs/${ipfsResult.cid}`;
+      console.log(`[upload/direct] IPFS upload success: ${ipfsGatewayUrl}`);
+    } catch (ipfsErr) {
+      // Non-fatal: log and continue. R2 URL is still saved.
+      console.warn(`[upload/direct] IPFS upload failed (non-fatal): ${ipfsErr instanceof Error ? ipfsErr.message : String(ipfsErr)}`);
+    }
+
     // Update portrait record based on upload type
     const updateData: Record<string, string> = {};
     if (isIdCard) {
       updateData.idCardFrontUrl = objectUrl;
+      if (ipfsGatewayUrl) updateData.idCardFrontIpfsUrl = ipfsGatewayUrl;
     } else {
       updateData.originalImageUrl = objectUrl;
       updateData.thumbnailUrl = objectUrl;
+      if (ipfsGatewayUrl) updateData.originalImageIpfsUrl = ipfsGatewayUrl;
     }
     console.log(`[upload/direct] Updating portrait with:`, updateData);
 

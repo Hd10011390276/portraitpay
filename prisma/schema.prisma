@@ -148,6 +148,11 @@ model Portrait {
   // ID card front photo URL (used for face verification at mint time)
   idCardFrontUrl String?
 
+  // IPFS URLs for publicly accessible image copies (Aliyun CompareFace needs public URLs)
+  // R2 URLs return 400 from external networks, so we mirror images to IPFS via Pinata
+  portraitImageIpfsUrl String?
+  idCardFrontIpfsUrl   String?
+
   // Face verification timestamp — set after portrait passes face比对 at upload time
   // Used at mint time to skip redundant KYC check (portrait already verified)
   faceVerifiedAt DateTime?
