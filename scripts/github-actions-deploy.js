@@ -52,14 +52,13 @@ const req = https.request(options, (res) => {
     console.log('Deploy status:', res.statusCode);
     const parsed = JSON.parse(data);
     if (parsed.id) {
-      console.log('✅ Deployment created:', parsed.id);
-      console.log('URL: https://' + parsed.url);
+      console.log('Deployment created:', parsed.id);
       checkDeployment(parsed.id);
     } else if (parsed.error) {
-      console.error('❌ Failed:', parsed.error.code, parsed.error.message);
+      console.error('Failed:', parsed.error.code, parsed.error.message);
       process.exit(1);
     } else {
-      console.error('❌ Failed:', JSON.stringify(parsed));
+      console.error('Failed:', JSON.stringify(parsed));
       process.exit(1);
     }
   });
@@ -77,64 +76,7 @@ function checkDeployment(id) {
     res.on('end', () => {
       const d = JSON.parse(data);
       if (d.readyState === 'READY' || d.readyState === 'ERROR') {
-        console.log('Deployment state:', d.readyState, d.url || d.errorMessage);
-        if (d.readyState === 'ERROR') process.exit(1);
-      } else {
-        setTimeout(() => checkDeployment(id), 8000);
-      }
-    });
-  });
-  check.end();
-}
-
-req.on('error', (e) => { console.error('Request error:', e.message); process.exit(1); });
-req.write(payload);
-req.end();
-
-const options = {
-  hostname: 'api.vercel.com',
-  path: '/v13/deployments',
-  method: 'POST',
-  headers: {
-    'Authorization': 'Bearer ' + VER_TOKEN,
-    'Content-Type': 'application/json',
-    'Content-Length': Buffer.byteLength(payload)
-  }
-};
-
-const req = https.request(options, (res) => {
-  let data = '';
-  res.on('data', (chunk) => data += chunk);
-  res.on('end', () => {
-    console.log('Deploy status:', res.statusCode);
-    const parsed = JSON.parse(data);
-    if (parsed.id) {
-      console.log('✅ Deployment created:', parsed.id);
-      console.log('URL: https://' + parsed.url);
-      checkDeployment(parsed.id);
-    } else if (parsed.error) {
-      console.error('❌ Failed:', parsed.error.code, parsed.error.message);
-      process.exit(1);
-    } else {
-      console.log('❌ Failed:', JSON.stringify(parsed));
-      process.exit(1);
-    }
-  });
-});
-
-function checkDeployment(id) {
-  const check = https.request({
-    hostname: 'api.vercel.com',
-    path: '/v13/deployments/' + id,
-    method: 'GET',
-    headers: { 'Authorization': 'Bearer ' + VER_TOKEN }
-  }, (res) => {
-    let data = '';
-    res.on('data', c => data += c);
-    res.on('end', () => {
-      const d = JSON.parse(data);
-      if (d.readyState === 'READY' || d.readyState === 'ERROR') {
-        console.log('Deployment state:', d.readyState, d.url || d.errorMessage);
+        console.log('Final state:', d.readyState, d.url || d.errorMessage);
         if (d.readyState === 'ERROR') process.exit(1);
       } else {
         setTimeout(() => checkDeployment(id), 8000);
