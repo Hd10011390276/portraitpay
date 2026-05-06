@@ -26,7 +26,10 @@ jobs:
           git config --global user.email "hangdivision@gmail.com"
           git config --global user.name "Hang"
 
-      - name: Deploy via Vercel REST API
+      - name: Install Vercel CLI
+        run: npm install -g vercel
+
+      - name: Deploy to Vercel (API with CLI fallback)
         run: node scripts/github-actions-deploy.js
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN_2 }}
