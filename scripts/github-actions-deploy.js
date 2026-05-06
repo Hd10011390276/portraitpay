@@ -1,37 +1,28 @@
 const https = require('https');
 
 const VER_TOKEN = (process.env.VERCEL_TOKEN || '').replace(/[\n\r]/g, '');
-const DB_URL = (process.env.DATABASE_URL || '').replace(/[\n\r\t\x00]/g, '').trim();
-const DIRECT_URL = (process.env.DIRECT_URL || '').replace(/[\n\r\t\x00]/g, '').trim();
-
-if (!DB_URL) {
-  console.error('DATABASE_URL is empty — check GitHub Actions secrets');
-  process.exit(1);
-}
-if (!DIRECT_URL) {
-  console.error('DIRECT_URL is empty — check GitHub Actions secrets');
-  process.exit(1);
-}
+const DB_URL = (process.env.DATABASE_URL || '').replace(/[\n\r]/g, '');
+const DIRECT_URL = (process.env.DIRECT_URL || '').replace(/[\n\r]/g, '');
 
 const SHA = require('child_process').execSync('git rev-parse HEAD').toString().trim();
 
+// Build env object
+const env = {};
+if (DB_URL) env.DATABASE_URL = DB_URL;
+if (DIRECT_URL) env.DIRECT_URL = DIRECT_URL;
+
 const payload = JSON.stringify({
   name: 'portraitpay',
-  projectId: 'prj_6FYHbjqW3UebcAxGAwuIk0wXcVpr',
-  target: 'production',
   gitSource: {
     type: 'github',
-    repoId: 1196064714,
+    repo: 'Hd10011390276/portraitpay',
     ref: 'main',
     sha: SHA
   },
   buildCommand: 'npm run build',
   outputDirectory: '.next',
   runtime: 'nodejs20',
-  env: {
-    DATABASE_URL: DB_URL,
-    DIRECT_URL: DIRECT_URL
-  }
+  env
 });
 
 const options = {
@@ -45,6 +36,7 @@ const options = {
   }
 };
 
+console.log('Creating deployment...');
 const req = https.request(options, (res) => {
   let data = '';
   res.on('data', (chunk) => data += chunk);
@@ -52,19 +44,20 @@ const req = https.request(options, (res) => {
     console.log('Deploy status:', res.statusCode);
     const parsed = JSON.parse(data);
     if (parsed.id) {
-      console.log('Deployment created:', parsed.id);
-      checkDeployment(parsed.id);
+      console.log('✅ Deployment created:', parsed.id);
+      console.log('URL: https://' + parsed.url);
+      pollDeployment(parsed.id);
     } else if (parsed.error) {
-      console.error('Failed:', parsed.error.code, parsed.error.message);
+      console.error('❌ Failed:', parsed.error.code, parsed.error.message);
       process.exit(1);
     } else {
-      console.error('Failed:', JSON.stringify(parsed));
+      console.log('❌ Failed:', JSON.stringify(parsed));
       process.exit(1);
     }
   });
 });
 
-function checkDeployment(id) {
+function pollDeployment(id) {
   const check = https.request({
     hostname: 'api.vercel.com',
     path: '/v13/deployments/' + id,
@@ -75,11 +68,14 @@ function checkDeployment(id) {
     res.on('data', c => data += c);
     res.on('end', () => {
       const d = JSON.parse(data);
-      if (d.readyState === 'READY' || d.readyState === 'ERROR') {
-        console.log('Final state:', d.readyState, d.url || d.errorMessage);
-        if (d.readyState === 'ERROR') process.exit(1);
+      if (d.readyState === 'READY') {
+        console.log('✅ Deployment READY: https://' + d.url);
+      } else if (d.readyState === 'ERROR' || d.readyState === 'CANCELED') {
+        console.error('❌ Deployment state:', d.readyState, d.errorMessage);
+        process.exit(1);
       } else {
-        setTimeout(() => checkDeployment(id), 8000);
+        console.log('Status:', d.readyState, '...waiting');
+        setTimeout(() => pollDeployment(id), 8000);
       }
     });
   });
