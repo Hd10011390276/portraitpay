@@ -182,9 +182,12 @@ interface PortraitCertifiedEmailParams {
   name: string;
   email: string;
   portraitTitle: string;
-  imageHash: string;
+  portraitImageHash: string;
+  idCardFrontHash: string;
+  idCardName: string;
+  idCardType: string;
+  idCardNumberMasked: string;
   blockchainTxHash: string;
-  ipfsCid: string;
   network: string;
   certifiedAt: string;
   certificateBuffer?: Buffer;
@@ -192,11 +195,12 @@ interface PortraitCertifiedEmailParams {
 }
 
 export async function sendPortraitCertifiedEmail(params: PortraitCertifiedEmailParams): Promise<void> {
-  const { name, email, portraitTitle, imageHash, blockchainTxHash, ipfsCid, network, certifiedAt, certificateBuffer, certificateNo } = params;
+  const { name, email, portraitTitle, portraitImageHash, idCardFrontHash, idCardName, idCardType, idCardNumberMasked, blockchainTxHash, network, certifiedAt, certificateBuffer, certificateNo } = params;
   const explorerUrl = network === "base" ? "https://basescan.org/tx/" : "https://etherscan.io/tx/";
   const txUrl = `${explorerUrl}${blockchainTxHash}`;
-  const ipfsUrl = `https://ipfs.io/ipfs/${ipfsCid}`;
   const certifiedAtStr = new Date(certifiedAt).toLocaleString("zh-CN", { timeZone: "Asia/Shanghai" });
+
+  const idTypeLabel = idCardType === "driver_license" ? "驾驶证" : idCardType === "us_id" ? "美国身份证" : idCardType === "passport" ? "护照" : "其他";
 
   const html = `<!DOCTYPE html>
 <html>
@@ -212,17 +216,18 @@ export async function sendPortraitCertifiedEmail(params: PortraitCertifiedEmailP
     <p style="font-size:15px;color:#333">您的肖像 <strong>"${portraitTitle}"</strong> 已成功注册到区块链，永久存证不可篡改。</p>
     <div style="margin:20px 0;padding:16px;background:#f9f9f9;border-radius:8px">
       <table style="width:100%;border-collapse:collapse">
-        <tr><td style="padding:6px 0;color:#666;font-size:13px">肖像标题</td><td style="padding:6px 0;font-size:13px;font-weight:bold;color:#333">${portraitTitle}</td></tr>
-        <tr><td style="padding:6px 0;color:#666;font-size:13px">图像哈希</td><td style="padding:6px 0;font-size:12px;font-family:monospace;color:#7c3aed">${imageHash.slice(0, 24)}...</td></tr>
-        <tr><td style="padding:6px 0;color:#666;font-size:13px">IPFS CID</td><td style="padding:6px 0;font-size:12px;font-family:monospace;color:#7c3aed">${ipfsCid}</td></tr>
+        <tr><td style="padding:6px 0;color:#666;font-size:13px">真实姓名</td><td style="padding:6px 0;font-size:13px;font-weight:bold;color:#333">${idCardName}</td></tr>
+        <tr><td style="padding:6px 0;color:#666;font-size:13px">证件类型</td><td style="padding:6px 0;font-size:13px">${idTypeLabel}</td></tr>
+        <tr><td style="padding:6px 0;color:#666;font-size:13px">证件号码</td><td style="padding:6px 0;font-size:13px;font-family:monospace;color:#7c3aed">${idCardNumberMasked}</td></tr>
+        <tr><td style="padding:6px 0;color:#666;font-size:13px">肖像照片哈希</td><td style="padding:6px 0;font-size:11px;font-family:monospace;color:#7c3aed;word-break:break-all">${portraitImageHash.slice(0, 20)}...</td></tr>
+        <tr><td style="padding:6px 0;color:#666;font-size:13px">证件照片哈希</td><td style="padding:6px 0;font-size:11px;font-family:monospace;color:#7c3aed;word-break:break-all">${idCardFrontHash.slice(0, 20)}...</td></tr>
         <tr><td style="padding:6px 0;color:#666;font-size:13px">区块链网络</td><td style="padding:6px 0;font-size:13px">${network === "base" ? "Base Mainnet" : network}</td></tr>
         <tr><td style="padding:6px 0;color:#666;font-size:13px">认证时间</td><td style="padding:6px 0;font-size:13px">${certifiedAtStr}</td></tr>
         <tr><td style="padding:6px 0;color:#666;font-size:13px">交易哈希</td><td style="padding:6px 0;font-size:12px;font-family:monospace;color:#7c3aed">${blockchainTxHash.slice(0, 16)}...</td></tr>
       </table>
     </div>
     <div style="text-align:center;margin:20px 0">
-      <a href="${txUrl}" style="display:inline-block;padding:12px 24px;background:#7c3aed;color:#fff;text-decoration:none;border-radius:8px;font-size:14px;margin-right:8px">查看区块链交易 →</a>
-      <a href="${ipfsUrl}" style="display:inline-block;padding:12px 24px;background:#fff;color:#7c3aed;border:2px solid #7c3aed;text-decoration:none;border-radius:8px;font-size:14px">查看 IPFS 存证 →</a>
+      <a href="${txUrl}" style="display:inline-block;padding:12px 24px;background:#7c3aed;color:#fff;text-decoration:none;border-radius:8px;font-size:14px">查看区块链交易 →</a>
     </div>
     <p style="font-size:12px;color:#999">此通知由系统自动发送，请勿回复。如有疑问请联系 support@portraitpayai.com</p>
   </div>
@@ -230,7 +235,7 @@ export async function sendPortraitCertifiedEmail(params: PortraitCertifiedEmailP
 </body>
 </html>`;
 
-  const text = `PortraitPay AI — 肖像区块链认证完成\n\n${name}，您好！\n您的肖像 "${portraitTitle}" 已成功注册到区块链，永久存证不可篡改。\n\n肖像标题: ${portraitTitle}\n图像哈希: ${imageHash}\nIPFS CID: ${ipfsCid}\n区块链网络: ${network === "base" ? "Base Mainnet" : network}\n认证时间: ${certifiedAtStr}\n交易哈希: ${blockchainTxHash}\n\n查看区块链交易: ${txUrl}\n查看 IPFS 存证: ${ipfsUrl}\n\n此通知由系统自动发送，请勿回复。`;
+  const text = `PortraitPay AI — 肖像区块链认证完成\n\n${name}，您好！\n您的肖像 "${portraitTitle}" 已成功注册到区块链，永久存证不可篡改。\n\n真实姓名: ${idCardName}\n证件类型: ${idTypeLabel}\n证件号码: ${idCardNumberMasked}\n肖像照片哈希: ${portraitImageHash}\n证件照片哈希: ${idCardFrontHash}\n区块链网络: ${network === "base" ? "Base Mainnet" : network}\n认证时间: ${certifiedAtStr}\n交易哈希: ${blockchainTxHash}\n\n查看区块链交易: ${txUrl}\n\n此通知由系统自动发送，请勿回复。`;
 
   try {
     await sendEmail({
@@ -366,125 +371,5 @@ export async function sendWelcomeEmail({ name, email, role: _role }: WelcomeEmai
   } catch (err) {
     // Non-blocking — log but do not throw
     console.error("[sendWelcomeEmail] failed:", err);
-  }
-}
-
-// ============================================================
-// KYC face verification failed email (at portrait upload time)
-// ============================================================
-interface KYCFaceFailedEmailParams {
-  name: string;
-  email: string;
-  portraitTitle: string;
-  reason: string;
-  verifyScore?: number;
-}
-
-export async function sendKYCFaceFailedEmail(params: KYCFaceFailedEmailParams): Promise<void> {
-  const { name, email, portraitTitle, reason, verifyScore } = params;
-  const timestamp = new Date().toLocaleString("zh-CN", { timeZone: "Asia/Shanghai" });
-  const scoreNote = verifyScore !== undefined ? `（人脸比对分数：${verifyScore}）` : "";
-
-  const html = `<!DOCTYPE html>
-<html>
-<head><meta charset="utf-8"></head>
-<body style="font-family:Arial,sans-serif;background:#f4f4f4;margin:0;padding:20px">
-<div style="max-width:600px;margin:0 auto;background:#fff;border-radius:8px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.08)">
-  <div style="background:#dc2626;padding:20px 24px">
-    <h2 style="margin:0;color:#fff;font-size:18px">❌ 身份核验未通过</h2>
-    <p style="margin:4px 0 0;color:#fecaca;font-size:13px">PortraitPay AI · 肖像认证通知</p>
-  </div>
-  <div style="padding:24px">
-    <p style="font-size:15px;color:#333">${name}，您好！</p>
-    <p style="font-size:15px;color:#333">您的肖像 <strong>"${portraitTitle}"</strong> 在身份核验环节未能通过，人脸与身份证信息不匹配。</p>
-    <div style="margin:20px 0;padding:16px;background:#fef2f2;border-radius:8px;border-left:4px solid #dc2626">
-      <p style="margin:0 0 8px;font-size:13px;font-weight:bold;color:#991b1b">❌ 核验未通过原因：</p>
-      <p style="margin:0;font-size:14px;color:#991b1b">${reason} ${scoreNote}</p>
-    </div>
-    <div style="margin:20px 0;padding:16px;background:#f9f9f9;border-radius:8px">
-      <p style="margin:0 0 8px;font-size:13px;font-weight:bold;color:#333">📋 如何解决：</p>
-      <ol style="margin:0;padding-left:20px;color:#666;font-size:13px;line-height:1.8">
-        <li>重新上传一张<span style="color:#7c3aed;font-weight:bold">清晰、正对摄像头</span>的人脸照片（纯色背景最佳）</li>
-        <li>确保证件照片和本次人脸为<strong>同一人</strong></li>
-        <li>在光线充足的环境下重新操作</li>
-        <li>如果证件信息有变更，请先更新身份证信息</li>
-      </ol>
-    </div>
-    <div style="text-align:center;margin:20px 0">
-      <a href="${process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"}" style="display:inline-block;padding:12px 24px;background:#dc2626;color:#fff;text-decoration:none;border-radius:8px;font-size:14px">重新上传肖像 →</a>
-    </div>
-    <p style="font-size:12px;color:#999">请求时间：${timestamp}</p>
-    <p style="font-size:12px;color:#999">此通知由系统自动发送，请勿回复。如有疑问请联系 support@portraitpayai.com</p>
-  </div>
-</div>
-</body>
-</html>`;
-
-  const text = `PortraitPay AI — 身份核验未通过通知\n\n${name}，您好！\n您的肖像 "${portraitTitle}" 在身份核验环节未能通过，人脸与身份证信息不匹配。\n\n核验未通过原因：\n${reason} ${scoreNote}\n\n如何解决：\n1. 重新上传一张清晰、正对摄像头的人脸照片（纯色背景最佳）\n2. 确保证件照片和本次人脸为同一人\n3. 在光线充足的环境下重新操作\n4. 如果证件信息有变更，请先更新身份证信息\n\n请求时间：${timestamp}\n\n此通知由系统自动发送，请勿回复。`;
-
-  try {
-    await sendEmail({
-      to: email,
-      subject: `❌ 身份核验未通过 - ${portraitTitle}`,
-      html,
-      text,
-    });
-    console.log("[sendKYCFaceFailedEmail] Sent to:", email);
-  } catch (err) {
-    console.error("[sendKYCFaceFailedEmail] SMTP send failed (non-blocking):", err instanceof Error ? err.message : String(err));
-  }
-}
-
-// ============================================================
-// KYC face verification passed email (at portrait upload time)
-// ============================================================
-interface KYCFacePassedEmailParams {
-  name: string;
-  email: string;
-  portraitTitle: string;
-  verifyScore: number;
-}
-
-export async function sendKYCFacePassedEmail(params: KYCFacePassedEmailParams): Promise<void> {
-  const { name, email, portraitTitle, verifyScore } = params;
-
-  const html = `<!DOCTYPE html>
-<html>
-<head><meta charset="utf-8"></head>
-<body style="font-family:Arial,sans-serif;background:#f4f4f4;margin:0;padding:20px">
-<div style="max-width:600px;margin:0 auto;background:#fff;border-radius:8px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.08)">
-  <div style="background:#16a34a;padding:20px 24px">
-    <h2 style="margin:0;color:#fff;font-size:18px">✅ 身份核验已通过</h2>
-    <p style="margin:4px 0 0;color:#dcfce7;font-size:13px">PortraitPay AI · 肖像认证通知</p>
-  </div>
-  <div style="padding:24px">
-    <p style="font-size:15px;color:#333">${name}，您好！</p>
-    <p style="font-size:15px;color:#333">您的肖像 <strong>"${portraitTitle}"</strong> 已通过身份核验，人脸与身份证信息匹配成功！</p>
-    <div style="margin:20px 0;padding:16px;background:#f0fdf4;border-radius:8px;border-left:4px solid #16a34a">
-      <p style="margin:0 0 8px;font-size:13px;font-weight:bold;color:#166534">✅ 核验结果：</p>
-      <p style="margin:0;font-size:14px;color:#166534">人脸比对分数：${verifyScore}（高于阈值，核验通过）</p>
-    </div>
-    <p style="font-size:15px;color:#333">您现在可以进行<strong>区块链上链</strong>，将您的肖像永久存证于区块链上。</p>
-    <div style="text-align:center;margin:20px 0">
-      <a href="${process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"}" style="display:inline-block;padding:12px 24px;background:#16a34a;color:#fff;text-decoration:none;border-radius:8px;font-size:14px">前往上链 →</a>
-    </div>
-    <p style="font-size:12px;color:#999">此通知由系统自动发送，请勿回复。如有疑问请联系 support@portraitpayai.com</p>
-  </div>
-</div>
-</body>
-</html>`;
-
-  const text = `PortraitPay AI — 身份核验已通过\n\n${name}，您好！\n您的肖像 "${portraitTitle}" 已通过身份核验，人脸与身份证信息匹配成功！\n\n人脸比对分数：${verifyScore}（高于阈值，核验通过）\n\n您现在可以进行区块链上链，将您的肖像永久存证于区块链上。\n\n此通知由系统自动发送，请勿回复。`;
-
-  try {
-    await sendEmail({
-      to: email,
-      subject: `✅ 身份核验已通过 - ${portraitTitle}`,
-      html,
-      text,
-    });
-    console.log("[sendKYCFacePassedEmail] Sent to:", email);
-  } catch (err) {
-    console.error("[sendKYCFacePassedEmail] SMTP send failed (non-blocking):", err instanceof Error ? err.message : String(err));
   }
 }

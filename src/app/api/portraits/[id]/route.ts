@@ -18,7 +18,7 @@ const UpdatePortraitSchema = z.object({
   category: z.string().min(1).max(50).optional(),
   tags: z.array(z.string()).optional(),
   isPublic: z.boolean().optional(),
-  status: z.enum(["DRAFT", "UNDER_REVIEW", "ACTIVE", "SUSPENDED", "ARCHIVED"]).optional(),
+  status: z.enum(["DRAFT", "ACTIVE", "SUSPENDED", "ARCHIVED"]).optional(),
 });
 
 type RouteContext = { params: Promise<{ id: string }> };
@@ -41,15 +41,17 @@ export async function GET(request: NextRequest, context: RouteContext) {
         imageHash: true,
         blockchainTxHash: true,
         blockchainNetwork: true,
-        ipfsCid: true,
+        portraitImageHash: true,
+        idCardFrontHash: true,
+        idCardType: true,
+        idCardName: true,
         certifiedAt: true,
         status: true,
-        faceEmbedding: true,
         isPublic: true,
         createdAt: true,
         updatedAt: true,
         owner: {
-          select: { id: true, displayName: true, email: true, walletAddress: true, kycStatus: true },
+          select: { id: true, displayName: true, email: true, walletAddress: true },
         },
       },
     });

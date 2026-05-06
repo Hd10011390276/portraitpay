@@ -138,29 +138,19 @@ model Portrait {
 
   blockchainTxHash  String?   @unique
   blockchainNetwork String?   @default("sepolia")
-  ipfsCid           String?
   certifiedAt       DateTime?
 
-  // Status: DRAFT, UNDER_REVIEW, ACTIVE, SUSPENDED, ARCHIVED
+  // Status: DRAFT, ACTIVE, SUSPENDED, ARCHIVED
   status        String @default("DRAFT")
-  faceEmbedding Float[]
 
-  // ID card front photo URL (used for face verification at mint time)
-  idCardFrontUrl String?
+  // SHA-256 hashes of uploaded photos (computed server-side at upload time)
+  portraitImageHash String?
+  idCardFrontHash   String?
 
-  // IPFS URLs for publicly accessible image copies (Aliyun CompareFace needs public URLs)
-  // R2 URLs return 400 from external networks, so we mirror images to IPFS via Pinata
-  portraitImageIpfsUrl String?
-  idCardFrontIpfsUrl   String?
-
-  // Aliyun OSS URLs (signed, 1-hour expiry) for KYC CompareFace API access
-  // Aliyun CompareFace only accepts Shanghai OSS URLs
-  portraitImageOssUrl String?
-  idCardFrontOssUrl   String?
-
-  // Face verification timestamp — set after portrait passes face比对 at upload time
-  // Used at mint time to skip redundant KYC check (portrait already verified)
-  faceVerifiedAt DateTime?
+  // ID card info — captured at mint time
+  idCardType   String?  // driver_license | us_id | passport | other
+  idCardName   String?  // real name as shown on ID card
+  idCardNumber String?  // ID card number (stored encrypted/masked in responses)
 
   isPublic Boolean @default(false)
 

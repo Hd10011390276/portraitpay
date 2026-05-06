@@ -12,6 +12,11 @@ const CreatePortraitSchema = z.object({
   tags: z.array(z.string()).default([]),
   isPublic: z.boolean().default(false),
   imageHash: z.string().regex(/^[a-f0-9]{64}$/, "Must be a valid SHA-256 hex string").optional(),
+  portraitImageHash: z.string().regex(/^[a-f0-9]{64}$/, "Must be a valid SHA-256 hex string").optional(),
+  idCardFrontHash: z.string().regex(/^[a-f0-9]{64}$/, "Must be a valid SHA-256 hex string").optional(),
+  idCardType: z.enum(["driver_license", "us_id", "passport", "other"]).optional(),
+  idCardName: z.string().max(100).optional(),
+  idCardNumber: z.string().max(50).optional(),
 });
 
 export async function GET(request: NextRequest) {
@@ -37,9 +42,11 @@ export async function GET(request: NextRequest) {
         select: {
           id: true, ownerId: true, title: true, description: true, category: true,
           tags: true, originalImageUrl: true, thumbnailUrl: true, imageHash: true,
-          blockchainTxHash: true, blockchainNetwork: true, ipfsCid: true, certifiedAt: true,
-          status: true, faceEmbedding: true, isPublic: true, createdAt: true,
-          updatedAt: true, deletedAt: true, faceVerifiedAt: true,
+          portraitImageHash: true, idCardFrontHash: true,
+          idCardType: true, idCardName: true,
+          blockchainTxHash: true, blockchainNetwork: true, certifiedAt: true,
+          status: true, isPublic: true, createdAt: true,
+          updatedAt: true, deletedAt: true,
           owner: { select: { id: true, displayName: true, walletAddress: true } },
         },
         orderBy: { createdAt: "desc" },
@@ -68,7 +75,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ success: false, error: "Validation failed", details: parsed.error.flatten() }, { status: 400 });
   }
 
-  const { title, description, category, tags, isPublic, imageHash } = parsed.data;
+  const { title, description, category, tags, isPublic, imageHash, portraitImageHash, idCardFrontHash, idCardType, idCardName, idCardNumber } = parsed.data;
 
   try {
     const portrait = await prisma.portrait.create({
@@ -79,9 +86,13 @@ export async function POST(request: NextRequest) {
         tags,
         isPublic,
         imageHash: imageHash ?? null,
+        portraitImageHash: portraitImageHash ?? null,
+        idCardFrontHash: idCardFrontHash ?? null,
+        idCardType: idCardType ?? null,
+        idCardName: idCardName ?? null,
+        idCardNumber: idCardNumber ?? null,
         ownerId: session.userId,
         status: "DRAFT",
-        faceEmbedding: [],
       },
     });
 

@@ -1,6 +1,6 @@
 /**
  * Portrait Blockchain Certificate Generator
- * Uses PDFKit to overlay text onto the certificate template image.
+ * Zero-cost version: SHA-256 hashes + blockchain timestamp (no IPFS, no KYC).
  */
 
 import PDFDocument from "pdfkit";
@@ -9,11 +9,12 @@ import { zhCN } from "date-fns/locale";
 
 export interface PortraitCertificateData {
   portraitTitle: string;
-  ownerName: string;
-  ownerEmail: string;
-  imageHash: string;
+  idCardName: string;
+  idCardType: string;
+  idCardNumberMasked: string;
+  portraitImageHash: string;
+  idCardFrontHash: string;
   blockchainTxHash: string;
-  ipfsCid: string;
   network: string;
   certifiedAt: Date;
   certificateNo: string;
@@ -25,11 +26,6 @@ function generateCertificateNo(): string {
   return `PPC-${date}-${random}`;
 }
 
-/**
- * Build a portrait blockchain certificate PDF.
- * Uses the certificate template image from public/images/blockchain-certificate-template.png
- * and overlays certificate details on top.
- */
 export async function buildPortraitCertificate(
   data: PortraitCertificateData,
   templatePath: string
@@ -39,161 +35,200 @@ export async function buildPortraitCertificate(
       const doc = new PDFDocument({
         size: "A4",
         layout: "landscape",
-        margins: { top: 0, bottom: 0, left: 0, right: 0 },
+        margin: 0,
       });
 
       const chunks: Buffer[] = [];
-      doc.on("data", (chunk) => chunks.push(chunk));
+      doc.on("data", (chunk: Buffer) => chunks.push(chunk));
       doc.on("end", () => resolve(Buffer.concat(chunks)));
-      doc.on("error", reject);
 
-      // Embed the certificate template background image
-      doc.image(templatePath, 0, 0, {
-        fit: [842, 595], // A4 landscape dimensions in points
-        align: "center",
-        valign: "center",
-      });
+      const certNo = data.certificateNo ?? generateCertificateNo();
+      const certDate = format(data.certifiedAt, "yyyy年MM月dd日 HH:mm:ss", { locale: zhCN });
+      const networkLabel = data.network === "base" ? "Base Mainnet" : data.network === "sepolia" ? "Ethereum Sepolia" : data.network;
+      const idTypeLabel =
+        data.idCardType === "driver_license" ? "驾驶证" :
+        data.idCardType === "us_id" ? "美国身份证" :
+        data.idCardType === "passport" ? "护照" : "其他证件";
 
-      // ── Certificate Title ────────────────────────────────────────────────
-      doc.registerFont("SimHei", "C:/Windows/Fonts/simhei.ttf").catch(() => {
-        // Fallback: skip custom font if not available
-      });
+      // Try to load background template; skip background if not found
+      let templateLoaded = false;
+      try {
+        doc.image(templatePath, 0, 0, { fit: doc.page.dimensions as [number, number] });
+        templateLoaded = true;
+      } catch {
+        // No template — draw plain background
+        doc.rect(0, 0, doc.page.width, doc.page.height).fill("#f9f9f9");
+      }
 
-      const FONT_NORMAL = "Helvetica";
-      const FONT_BOLD = "Helvetica-Bold";
-      const COLOR_DARK = "#1a1a2e";
-      const COLOR_PURPLE = "#7c3aed";
-      const COLOR_GRAY = "#4a4a6a";
+      const pageW = doc.page.width;
+      const pageH = doc.page.height;
+      const cx = pageW / 2;
 
-      // Since PDFKit image is blocking, let's do text overlay at fixed positions.
-      // Certificate template layout (landscape A4 842x595):
-      // We'll position text elements based on assumed template design.
-      // Template is 842x595 points. Text should appear in the middle "content" area.
-
-      const centerX = 842 / 2; // 421
-      const contentY = 280;    // approximate vertical center for text
-
-      // ── Portrait Title ───────────────────────────────────────────────────
+      // ── Header ──────────────────────────────────────────────────────
       doc
-        .font(FONT_BOLD)
-        .fontSize(22)
-        .fillColor(COLOR_PURPLE)
-        .text(
-          data.portraitTitle,
-          0,          // x
-          contentY - 40, // y
-          { align: "center", width: 842 }
-        );
+        .font("Helvetica-Bold")
+        .fontSize(28)
+        .fillColor("#7c3aed")
+        .text("区块链肖像认证证书", 0, templateLoaded ? 40 : 30, { align: "center" });
 
-      // ── Certificate Label ─────────────────────────────────────────────────
       doc
-        .font(FONT_NORMAL)
+        .font("Helvetica")
         .fontSize(11)
-        .fillColor(COLOR_GRAY)
-        .text(
-          "BLOCKCHAIN CERTIFICATE OF PORTRAIT RIGHTS",
-          0,
-          contentY - 12,
-          { align: "center", width: 842 }
-        );
+        .fillColor("#9ca3af")
+        .text("PortraitPay AI · Blockchain Portrait Certificate", 0, templateLoaded ? 75 : 65, { align: "center" });
 
-      // ── Decorative line ───────────────────────────────────────────────────
+      // ── Certificate number ───────────────────────────────────────────
       doc
-        .moveTo(300, contentY + 2)
-        .lineTo(542, contentY + 2)
-        .lineWidth(0.5)
-        .stroke(COLOR_PURPLE);
+        .font("Helvetica")
+        .fontSize(9)
+        .fillColor("#d1d5db")
+        .text(`证书编号: ${certNo}`, 0, templateLoaded ? 108 : 90, { align: "center" });
 
-      // ── Owner Name ────────────────────────────────────────────────────────
+      if (templateLoaded) {
+        // Draw a subtle divider line under header
+        doc
+          .moveTo(60, 118)
+          .lineTo(pageW - 60, 118)
+          .strokeColor("#e5e7eb")
+          .lineWidth(1)
+          .stroke();
+      }
+
+      // ── Certificate holder info ──────────────────────────────────────
+      const sectionY = templateLoaded ? 135 : 115;
+
       doc
-        .font(FONT_BOLD)
+        .font("Helvetica-Bold")
         .fontSize(13)
-        .fillColor(COLOR_DARK)
+        .fillColor("#374151")
+        .text("认证信息", 70, sectionY);
+
+      // Info box
+      const boxY = sectionY + 18;
+      const boxH = 130;
+      doc
+        .rect(60, boxY, pageW - 120, boxH)
+        .fillAndStroke("#ffffff", "#e5e7eb");
+
+      const col1X = 80;
+      const col2X = pageW / 2 + 20;
+      const rowH = 26;
+      let row = 0;
+
+      const addRow = (label: string, value: string, x: number) => {
+        const ry = boxY + 12 + row * rowH;
+        doc.font("Helvetica").fontSize(10).fillColor("#6b7280").text(label, x, ry);
+        doc.font("Helvetica-Bold").fontSize(11).fillColor("#111827").text(value, x, ry + 13);
+        row++;
+      };
+
+      row = 0;
+      addRow("真实姓名", data.idCardName, col1X);
+      addRow("证件类型", idTypeLabel, col2X);
+      row = 0;
+      addRow("证件号码", data.idCardNumberMasked, col1X);
+      addRow("肖像标题", data.portraitTitle, col2X);
+
+      // ── Hash section ─────────────────────────────────────────────────
+      const hashY = boxY + boxH + 20;
+
+      doc
+        .font("Helvetica-Bold")
+        .fontSize(13)
+        .fillColor("#374151")
+        .text("哈希存证", 70, hashY);
+
+      const hashBoxY = hashY + 18;
+      const hashBoxH = 90;
+      doc
+        .rect(60, hashBoxY, pageW - 120, hashBoxH)
+        .fillAndStroke("#ffffff", "#e5e7eb");
+
+      const hashRowH = 30;
+      const hashCol1X = 80;
+      const hashCol2X = pageW / 2 + 20;
+
+      // Portrait hash
+      doc.font("Helvetica").fontSize(9).fillColor("#6b7280").text("肖像照片 SHA-256", hashCol1X, hashBoxY + 10);
+      doc
+        .font("Helvetica")
+        .fontSize(9)
+        .fillColor("#7c3aed")
+        .text(data.portraitImageHash, hashCol1X, hashBoxY + 24, { width: pageW / 2 - 100 });
+
+      // ID card hash
+      doc.font("Helvetica").fontSize(9).fillColor("#6b7280").text("证件照片 SHA-256", hashCol2X, hashBoxY + 10);
+      doc
+        .font("Helvetica")
+        .fontSize(9)
+        .fillColor("#7c3aed")
+        .text(data.idCardFrontHash, hashCol2X, hashBoxY + 24, { width: pageW / 2 - 100 });
+
+      // Blockchain info
+      doc
+        .moveTo(60, hashBoxY + 60)
+        .lineTo(pageW - 60, hashBoxY + 60)
+        .strokeColor("#f3f4f6")
+        .lineWidth(1)
+        .stroke();
+
+      doc.font("Helvetica").fontSize(9).fillColor("#6b7280").text("区块链网络", hashCol1X, hashBoxY + 67);
+      doc.font("Helvetica-Bold").fontSize(10).fillColor("#111827").text(networkLabel, hashCol1X, hashBoxY + 78);
+
+      doc.font("Helvetica").fontSize(9).fillColor("#6b7280").text("认证时间", hashCol2X, hashBoxY + 67);
+      doc.font("Helvetica-Bold").fontSize(10).fillColor("#111827").text(certDate, hashCol2X, hashBoxY + 78);
+
+      // ── Transaction hash ─────────────────────────────────────────────
+      const txY = hashBoxY + hashBoxH + 20;
+
+      doc
+        .font("Helvetica-Bold")
+        .fontSize(13)
+        .fillColor("#374151")
+        .text("区块链交易", 70, txY);
+
+      const txBoxY = txY + 18;
+      const txBoxH = 56;
+      doc
+        .rect(60, txBoxY, pageW - 120, txBoxH)
+        .fillAndStroke("#f5f3ff", "#ddd6fe");
+
+      doc.font("Helvetica").fontSize(9).fillColor("#6b7280").text("交易哈希 Transaction Hash", 80, txBoxY + 10);
+      doc
+        .font("Helvetica")
+        .fontSize(9)
+        .fillColor("#7c3aed")
+        .text(data.blockchainTxHash, 80, txBoxY + 24, { width: pageW - 160 });
+
+      // ── Footer ──────────────────────────────────────────────────────
+      const footerY = pageH - 50;
+      doc
+        .moveTo(60, footerY - 10)
+        .lineTo(pageW - 60, footerY - 10)
+        .strokeColor("#e5e7eb")
+        .lineWidth(1)
+        .stroke();
+
+      doc
+        .font("Helvetica")
+        .fontSize(8)
+        .fillColor("#9ca3af")
         .text(
-          `Certificate Holder: ${data.ownerName}`,
-          0,
-          contentY + 14,
-          { align: "center", width: 842 }
+          "本证书基于区块链技术生成，肖像照片与证件照片的 SHA-256 哈希值已被永久记录在链上，任何一方无法篡改。",
+          60,
+          footerY,
+          { width: pageW - 120, align: "center" }
         );
 
-      // ── Email ────────────────────────────────────────────────────────────
       doc
-        .font(FONT_NORMAL)
-        .fontSize(10)
-        .fillColor(COLOR_GRAY)
+        .font("Helvetica")
+        .fontSize(8)
+        .fillColor("#d1d5db")
         .text(
-          `Email: ${data.ownerEmail}`,
+          `PortraitPay AI · ${networkLabel} · Generated at ${certDate}`,
           0,
-          contentY + 32,
-          { align: "center", width: 842 }
-        );
-
-      // ── Certificate Number ───────────────────────────────────────────────
-      doc
-        .font(FONT_BOLD)
-        .fontSize(10)
-        .fillColor(COLOR_PURPLE)
-        .text(
-          `Certificate No.: ${data.certificateNo}`,
-          0,
-          contentY + 50,
-          { align: "center", width: 842 }
-        );
-
-      // ── Blockchain Info Block ────────────────────────────────────────────
-      const infoY = contentY + 72;
-
-      // Two-column layout for blockchain info
-      const col1X = 180;
-      const col2X = 500;
-      const labelW = 80;
-      const valueW = 280;
-      const rowH = 16;
-
-      doc.font(FONT_BOLD).fontSize(8.5).fillColor(COLOR_GRAY);
-
-      // Row: Blockchain Network
-      doc.text("Network:", col1X, infoY, { width: labelW });
-      doc.font(FONT_NORMAL).fillColor(COLOR_DARK).text(data.network === "sepolia" ? "Ethereum Sepolia Testnet" : data.network, col1X + labelW, infoY, { width: valueW });
-      doc.font(FONT_BOLD).fillColor(COLOR_GRAY).text("Certified At:", col2X, infoY, { width: labelW });
-      doc.font(FONT_NORMAL).fillColor(COLOR_DARK).text(
-        format(data.certifiedAt, "yyyy-MM-dd HH:mm:ss", { locale: zhCN }),
-        col2X + labelW, infoY, { width: valueW }
-      );
-
-      // Row: Image Hash
-      doc.font(FONT_BOLD).fillColor(COLOR_GRAY);
-      doc.text("Image Hash:", col1X, infoY + rowH, { width: labelW });
-      doc.font(FONT_NORMAL).fillColor(COLOR_DARK).text(
-        data.imageHash.substring(0, 32) + "...",
-        col1X + labelW, infoY + rowH, { width: valueW }
-      );
-      doc.font(FONT_BOLD).fillColor(COLOR_GRAY).text("IPFS CID:", col2X, infoY + rowH, { width: labelW });
-      doc.font(FONT_NORMAL).fillColor(COLOR_DARK).text(
-        data.ipfsCid.substring(0, 32) + "...",
-        col2X + labelW, infoY + rowH, { width: valueW }
-      );
-
-      // Row: Transaction Hash (full, small font)
-      doc.font(FONT_BOLD).fillColor(COLOR_GRAY);
-      doc.text("Tx Hash:", col1X, infoY + rowH * 2, { width: labelW });
-      doc.font(FONT_NORMAL).fillColor(COLOR_DARK).fontSize(7.5).text(
-        data.blockchainTxHash,
-        col1X + labelW, infoY + rowH * 2, { width: 560 }
-      );
-
-      // ── Footer ────────────────────────────────────────────────────────────
-      doc
-        .font(FONT_NORMAL)
-        .fontSize(7.5)
-        .fillColor("#999")
-        .text(
-          "This certificate confirms that the above portrait has been cryptographically registered on the blockchain. " +
-          "The portrait rights information is stored permanently on IPFS and linked via the blockchain transaction. " +
-          "This document is auto-generated by PortraitPay AI and does not require a signature.",
-          60,  // x
-          520, // y
-          { align: "center", width: 720, lineGap: 2 }
+          footerY + 14,
+          { align: "center" }
         );
 
       doc.end();
