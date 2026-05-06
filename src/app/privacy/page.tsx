@@ -218,11 +218,6 @@ export default function PrivacyPage() {
                   {l.sections.contactEmail}
                 </a>
               </li>
-              <li>
-                <a href={`mailto:${l.sections.contactEuRep}`} className="underline" style={{ color: "var(--accent-primary)" }}>
-                  {l.sections.contactEuRep}
-                </a>
-              </li>
             </ul>
           </section>
         </div>
