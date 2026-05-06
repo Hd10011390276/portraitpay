@@ -21,6 +21,9 @@ jobs:
       - name: Generate Prisma Client
         run: npx prisma generate
 
+      - name: Run Database Migration
+        run: npx prisma migrate deploy
+
       - name: Configure git
         run: |
           git config --global user.email "128709612+Hd10011390276@users.noreply.github.com"
