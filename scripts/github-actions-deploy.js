@@ -1,20 +1,15 @@
 const https = require('https');
 
 const VER_TOKEN = (process.env.VERCEL_TOKEN || '').replace(/[\n\r]/g, '');
-const DB_URL = (process.env.DATABASE_URL || '').replace(/[\n\r\t]/g, '').trim();
-const DIRECT_URL = (process.env.DIRECT_URL || '').replace(/[\n\r\t]/g, '').trim();
-
-// Validate URLs
-if (!DB_URL || /[^\x20-\x7E]/.test(DB_URL)) {
-  console.error('DATABASE_URL contains invalid characters');
-  process.exit(1);
-}
-if (!DIRECT_URL || /[^\x20-\x7E]/.test(DIRECT_URL)) {
-  console.error('DIRECT_URL contains invalid characters');
-  process.exit(1);
-}
+const DB_URL = (process.env.DATABASE_URL || '').replace(/[\n\r]/g, '');
+const DIRECT_URL = (process.env.DIRECT_URL || '').replace(/[\n\r]/g, '');
 
 const SHA = require('child_process').execSync('git rev-parse HEAD').toString().trim();
+
+// Build env object (Vercel API expects Record<string, string>)
+const env = {};
+if (DB_URL) env.DATABASE_URL = DB_URL;
+if (DIRECT_URL) env.DIRECT_URL = DIRECT_URL;
 
 const payload = JSON.stringify({
   name: 'portraitpay',
@@ -29,10 +24,7 @@ const payload = JSON.stringify({
   buildCommand: 'npm run build',
   outputDirectory: '.next',
   runtime: 'nodejs20',
-  env: [
-    { key: 'DATABASE_URL', value: DB_URL, type: 'encrypted' },
-    { key: 'DIRECT_URL', value: DIRECT_URL, type: 'encrypted' }
-  ]
+  env
 });
 
 const options = {
@@ -54,13 +46,13 @@ const req = https.request(options, (res) => {
     const parsed = JSON.parse(data);
     if (parsed.id) {
       console.log('✅ Deployment created:', parsed.id);
-      // Poll for ready state
+      console.log('URL: https://' + parsed.url);
       checkDeployment(parsed.id);
     } else if (parsed.error) {
       console.error('❌ Failed:', parsed.error.code, parsed.error.message);
       process.exit(1);
     } else {
-      console.log('❌ Failed:', JSON.stringify(parsed, null, 2));
+      console.log('❌ Failed:', JSON.stringify(parsed));
       process.exit(1);
     }
   });
@@ -78,10 +70,10 @@ function checkDeployment(id) {
     res.on('end', () => {
       const d = JSON.parse(data);
       if (d.readyState === 'READY' || d.readyState === 'ERROR') {
-        console.log('Final state:', d.readyState, d.url || d.errorMessage);
+        console.log('Deployment state:', d.readyState, d.url || d.errorMessage);
         if (d.readyState === 'ERROR') process.exit(1);
       } else {
-        setTimeout(() => checkDeployment(id), 5000);
+        setTimeout(() => checkDeployment(id), 8000);
       }
     });
   });
