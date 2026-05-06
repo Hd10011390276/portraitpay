@@ -27,35 +27,36 @@ jobs:
           git config --global user.name "Hang"
 
       - name: Deploy via Vercel REST API
-        id: deploy
         run: |
           SHA=$(git rev-parse HEAD)
+          cat << 'JSONEOF' > /tmp/deploy_payload.json
+          {
+            "name": "portraitpay",
+            "gitSource": {
+              "type": "github",
+              "repo": "Hd10011390276/portraitpay",
+              "ref": "main",
+              "sha": "'$SHA'"
+            },
+            "buildCommand": "npm run build",
+            "outputDirectory": ".next",
+            "runtime": "nodejs20",
+            "env": {
+              "DATABASE_URL": "'$DATABASE_URL'",
+              "DIRECT_URL": "'$DIRECT_URL'"
+            }
+          }
+          JSONEOF
           RESPONSE=$(curl -s -X POST "https://api.vercel.com/v13/deployments" \
             -H "Authorization: Bearer $VERCEL_TOKEN" \
             -H "Content-Type: application/json" \
-            -d "{
-              \"name\": \"portraitpay\",
-              \"gitSource\": {
-                \"type\": \"github\",
-                \"repo\": \"Hd10011390276/portraitpay\",
-                \"ref\": \"main\",
-                \"sha\": \"$SHA\"
-              },
-              \"buildCommand\": \"npm run build\",
-              \"outputDirectory\": \".next\",
-              \"runtime\": \"nodejs20\",
-              \"env\": {
-                \"DATABASE_URL\": \"$DATABASE_URL\",
-                \"DIRECT_URL\": \"$DIRECT_URL\"
-              }
-            }")
+            -d @/tmp/deploy_payload.json)
           echo "Deployment response: $RESPONSE"
           DEPLOY_URL=$(echo "$RESPONSE" | grep -o '"url":"[^"]*"' | head -1 | cut -d'"' -f4)
           if [ -n "$DEPLOY_URL" ]; then
             echo "✅ Deployment initiated: https://$DEPLOY_URL"
           else
             echo "❌ Deployment failed"
-            echo "$RESPONSE"
             exit 1
           fi
         env:
