@@ -26,6 +26,9 @@ jobs:
           git config --global user.email "hangdivision@gmail.com"
           git config --global user.name "Hang"
 
+      - name: Install Vercel CLI
+        run: npm install -g vercel
+
       - name: Deploy to Vercel
         run: |
           vercel --prod --yes --token ${{ secrets.VERCEL_TOKEN_2 }}
