@@ -1,6 +1,6 @@
 const https = require('https');
 
-const VER_TOKEN = process.env.VERCEL_TOKEN;
+const VER_TOKEN = (process.env.VERCEL_TOKEN || '').replace(/[\n\r]/g, '');
 const DB_URL = process.env.DATABASE_URL || '';
 const DIRECT_URL = process.env.DIRECT_URL || '';
 
