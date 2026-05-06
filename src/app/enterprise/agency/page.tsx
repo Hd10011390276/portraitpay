@@ -202,7 +202,7 @@ export default function AgencyPage() {
                           <h3 className="font-semibold text-gray-900">{relation.artist?.displayName}</h3>
                           <p className="text-sm text-gray-500">{relation.artist?.email}</p>
                           <p className="text-xs text-gray-400 mt-1">
-                            {ea.kycStatus ?? "KYC状态"}：{relation.artist?.kycStatus} | {ea.proxyStatus ?? "代理状态"}：{relation.proxyStatus}
+                            {ea.proxyStatus ?? "代理状态"}：{relation.proxyStatus}
                           </p>
                         </div>
                         <button

@@ -303,7 +303,6 @@ export default function AdminEarningsPage() {
                       tc.colStatus || (isZh ? "状态" : "Status"),
                       tc.colPortrait || (isZh ? "关联肖像" : "Portrait"),
                       tc.colTime || (isZh ? "时间" : "Time"),
-                      tc.colStripeId || (isZh ? "Stripe ID" : "Stripe ID"),
                     ].map((h) => (
                       <th key={h} className="text-left px-4 py-3 font-medium text-gray-600 whitespace-nowrap">{h}</th>
                     ))}
@@ -311,9 +310,9 @@ export default function AdminEarningsPage() {
                 </thead>
                 <tbody className="divide-y divide-gray-50">
                   {loading ? (
-                    <tr><td colSpan={8} className="text-center py-8 text-gray-400">{tc.loading || (isZh ? "加载中..." : "Loading...")}</td></tr>
+                    <tr><td colSpan={7} className="text-center py-8 text-gray-400">{tc.loading || (isZh ? "加载中..." : "Loading...")}</td></tr>
                   ) : transactions.length === 0 ? (
-                    <tr><td colSpan={8} className="text-center py-8 text-gray-400">{tc.noData || (isZh ? "暂无数据" : "No data")}</td></tr>
+                    <tr><td colSpan={7} className="text-center py-8 text-gray-400">{tc.noData || (isZh ? "暂无数据" : "No data")}</td></tr>
                   ) : (
                     transactions.map((tx) => {
                       const st = TX_STATUS[tx.status] ?? { text: tx.status, color: "text-gray-600 bg-gray-50" };
@@ -333,9 +332,6 @@ export default function AdminEarningsPage() {
                             {tx.authorization?.portrait?.title ?? "—"}
                           </td>
                           <td className="px-4 py-3 text-gray-500 whitespace-nowrap">{formatDate(tx.createdAt)}</td>
-                          <td className="px-4 py-3 font-mono text-xs text-gray-400 max-w-[100px] truncate">
-                            {tx.stripePaymentIntentId ?? "—"}
-                          </td>
                         </tr>
                       );
                     })
@@ -391,7 +387,6 @@ export default function AdminEarningsPage() {
                           <td className="px-4 py-3">
                             <p className="font-medium text-gray-900">{w.user.displayName ?? "—"}</p>
                             <p className="text-xs text-gray-400">{w.user.email}</p>
-                            <span className="text-xs text-gray-400">KYC: {w.user.kycStatus}</span>
                           </td>
                           <td className="px-4 py-3 font-semibold text-gray-900">{formatCurrency(w.amount, w.currency)}</td>
                           <td className="px-4 py-3 text-gray-700">

@@ -39,8 +39,6 @@ type FormData = z.infer<ReturnType<typeof createSchema>>;
 // PayPal.me links — amounts: personal/agency=$199, enterprise=$299
 const PAYPAL_ENTERPRISE = "https://www.paypal.me/PortraitPayAI/299";
 const PAYPAL_PERSONAL = "https://www.paypal.me/PortraitPayAI/199";
-const STRIPE_ENTERPRISE = "https://buy.stripe.com/test";
-const STRIPE_PERSONAL = "https://buy.stripe.com/test";
 
 export default function EnterpriseCertificationPage() {
   const { t, locale } = useLanguage();
@@ -64,7 +62,6 @@ export default function EnterpriseCertificationPage() {
   const isAgency = watch("isAgency");
   const certificationFee = isAgency ? 299 : 199;
   const paypalLink = isAgency ? PAYPAL_ENTERPRISE : PAYPAL_PERSONAL;
-  const stripeLink = isAgency ? STRIPE_ENTERPRISE : STRIPE_PERSONAL;
 
   const onFormSubmit = (data: FormData) => {
     setPendingData(data);
@@ -168,22 +165,6 @@ export default function EnterpriseCertificationPage() {
               <div className="flex-1">
                 <p className="font-semibold text-gray-900">{tc.paypal || tc.paypalEn}</p>
                 <p className="text-xs text-gray-500">{tc.paypalDesc || tc.paypalDescEn}</p>
-              </div>
-              <span className="font-bold text-gray-900">${certificationFee}</span>
-            </a>
-
-            <a
-              href={stripeLink}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-3 p-4 border-2 border-[#635bff] rounded-xl hover:bg-[#635bff]/5 transition-colors"
-            >
-              <div className="w-10 h-10 bg-[#635bff] rounded-lg flex items-center justify-center flex-shrink-0">
-                <span className="text-white font-bold text-xs">stripe</span>
-              </div>
-              <div className="flex-1">
-                <p className="font-semibold text-gray-900">{tc.card || tc.cardEn}</p>
-                <p className="text-xs text-gray-500">{tc.cardDesc || tc.cardDescEn}</p>
               </div>
               <span className="font-bold text-gray-900">${certificationFee}</span>
             </a>

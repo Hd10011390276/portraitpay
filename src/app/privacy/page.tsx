@@ -54,7 +54,6 @@ export default function PrivacyPage() {
             <ul className="list-disc pl-5 text-sm space-y-1" style={{ color: "var(--text-secondary)" }}>
               <li><strong style={{ color: "var(--text-primary)" }}>{l.sections.infoWeCollectList.account}</strong></li>
               <li><strong style={{ color: "var(--text-primary)" }}>{l.sections.infoWeCollectList.portrait}</strong></li>
-              <li><strong style={{ color: "var(--text-primary)" }}>{l.sections.infoWeCollectList.kyc}</strong></li>
               <li><strong style={{ color: "var(--text-primary)" }}>{l.sections.infoWeCollectList.blockchain}</strong></li>
               <li><strong style={{ color: "var(--text-primary)" }}>{l.sections.infoWeCollectList.usage}</strong></li>
             </ul>
@@ -68,10 +67,8 @@ export default function PrivacyPage() {
             </p>
             <ul className="list-disc pl-5 text-sm space-y-1" style={{ color: "var(--text-secondary)" }}>
               <li>{l.sections.howWeUseList.provide}</li>
-              <li>{l.sections.howWeUseList.kycProcess}</li>
               <li>{l.sections.howWeUseList.blockchain}</li>
               <li>{l.sections.howWeUseList.ipfs}</li>
-              <li>{l.sections.howWeUseList.detect}</li>
               <li>{l.sections.howWeUseList.licensing}</li>
               <li>{l.sections.howWeUseList.notifications}</li>
               <li>{l.sections.howWeUseList.support}</li>
@@ -143,15 +140,7 @@ export default function PrivacyPage() {
             </p>
           </section>
 
-          {/* Section 9: International Transfers */}
-          <section>
-            <h2 className="text-xl font-semibold mb-3" style={{ color: "var(--text-primary)" }}>{l.sections.internationalTransfers}</h2>
-            <p className="text-sm leading-relaxed" style={{ color: "var(--text-secondary)" }}>
-              {l.sections.internationalTransfersDesc}
-            </p>
-          </section>
-
-          {/* Section 10: Changes to Policy */}
+          {/* Section 9: Changes to Policy */}
           <section>
             <h2 className="text-xl font-semibold mb-3" style={{ color: "var(--text-primary)" }}>{l.sections.changesToPolicy}</h2>
             <p className="text-sm leading-relaxed" style={{ color: "var(--text-secondary)" }}>
@@ -159,54 +148,7 @@ export default function PrivacyPage() {
             </p>
           </section>
 
-          {/* Section 11: KYC Deletion */}
-          <section>
-            <h2 className="text-xl font-semibold mb-3" style={{ color: "var(--text-primary)" }}>{l.sections.kycDeletion}</h2>
-            <p className="text-sm leading-relaxed mb-3" style={{ color: "var(--text-secondary)" }}>
-              {l.sections.kycDeletionDesc}
-            </p>
-            <ol className="list-decimal pl-5 text-sm space-y-2 mb-3" style={{ color: "var(--text-secondary)" }}>
-              <li>{l.sections.kycDeletionSteps.step1}</li>
-              <li>{l.sections.kycDeletionSteps.step2}</li>
-              <li>{l.sections.kycDeletionSteps.step3}</li>
-              <li>{l.sections.kycDeletionSteps.step4}</li>
-            </ol>
-            <p className="text-sm leading-relaxed" style={{ color: "var(--text-secondary)" }}>
-              {l.sections.kycDeletionContact} <a href={`mailto:${l.sections.contactEmail}`} className="underline" style={{ color: "var(--accent-primary)" }}>{l.sections.contactEmail}</a>
-            </p>
-          </section>
-
-          {/* Section 12: GDPR */}
-          <section>
-            <h2 className="text-xl font-semibold mb-3" style={{ color: "var(--text-primary)" }}>{l.sections.gdpr}</h2>
-            <p className="text-sm leading-relaxed mb-3" style={{ color: "var(--text-secondary)" }}>
-              {l.sections.gdprDesc}
-            </p>
-            <ul className="list-disc pl-5 text-sm space-y-1" style={{ color: "var(--text-secondary)" }}>
-              <li>{l.sections.gdprList.access}</li>
-              <li>{l.sections.gdprList.object}</li>
-              <li>{l.sections.gdprList.portability}</li>
-              <li>{l.sections.gdprList.withdraw}</li>
-              <li>{l.sections.gdprList.complaint}</li>
-            </ul>
-          </section>
-
-          {/* Section 13: PIPL */}
-          <section>
-            <h2 className="text-xl font-semibold mb-3" style={{ color: "var(--text-primary)" }}>{l.sections.pipl}</h2>
-            <p className="text-sm leading-relaxed mb-3" style={{ color: "var(--text-secondary)" }}>
-              {l.sections.piplDesc}
-            </p>
-            <ul className="list-disc pl-5 text-sm space-y-1" style={{ color: "var(--text-secondary)" }}>
-              <li>{l.sections.piplList.consent}</li>
-              <li>{l.sections.piplList.notice}</li>
-              <li>{l.sections.piplList.storage}</li>
-              <li>{l.sections.piplList.crossBorder}</li>
-              <li>{l.sections.piplList.sensitive}</li>
-            </ul>
-          </section>
-
-          {/* Section 14: Contact Us */}
+          {/* Section 10: Contact Us */}
           <section>
             <h2 className="text-xl font-semibold mb-3" style={{ color: "var(--text-primary)" }}>{l.sections.contactUs}</h2>
             <p className="text-sm leading-relaxed mb-3" style={{ color: "var(--text-secondary)" }}>

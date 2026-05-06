@@ -72,7 +72,6 @@ export default function TermsPage() {
               <li>{l.sections.serviceDescList.upload}</li>
               <li>{l.sections.serviceDescList.blockchain}</li>
               <li>{l.sections.serviceDescList.ipfs}</li>
-              <li>{l.sections.serviceDescList.ai}</li>
               <li>{l.sections.serviceDescList.licensing}</li>
             </ul>
           </section>
@@ -104,15 +103,7 @@ export default function TermsPage() {
             </div>
           </section>
 
-          {/* Section 5: KYC */}
-          <section>
-            <h2 className="text-xl font-semibold mb-3" style={{ color: "var(--text-primary)" }}>{l.sections.kyc}</h2>
-            <p className="text-sm leading-relaxed" style={{ color: "var(--text-secondary)" }}>
-              {l.sections.kycDesc}
-            </p>
-          </section>
-
-          {/* Section 6: Blockchain */}
+          {/* Section 6: Payment Terms */}
           <section>
             <h2 className="text-xl font-semibold mb-3" style={{ color: "var(--text-primary)" }}>{l.sections.blockchain}</h2>
             <p className="text-sm leading-relaxed" style={{ color: "var(--text-secondary)" }}>

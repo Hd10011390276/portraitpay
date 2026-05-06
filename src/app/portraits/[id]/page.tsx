@@ -174,8 +174,6 @@ export default function PortraitDetailPage() {
         // Map API error codes to user-friendly messages
         if (errMsg.includes("Portrait not found")) {
           setCertifyMsg("肖像不存在或已被删除，请在作品列表重新选择");
-        } else if (errMsg.includes("KYC")) {
-          setCertifyMsg("请先完成身份认证，再进行区块链上链");
         } else if (errMsg.includes("face") || errMsg.includes("人脸")) {
           setCertifyMsg("人脸核验未通过，请上传清晰的肖像照片和身份证照片");
         } else {

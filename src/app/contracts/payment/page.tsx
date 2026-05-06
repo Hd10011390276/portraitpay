@@ -1,6 +1,6 @@
 /**
  * /contracts/payment — Payment page to unlock Word download
- * Shows PayPal and Stripe card options, then unlocks Word download on confirmation.
+ * Shows PayPal options, then unlocks Word download on confirmation.
  */
 "use client";
 
@@ -21,8 +21,6 @@ const CONTRACT_LABELS: Record<string, { label: string; labelZh: string }> = {
 
 // PayPal.me link — PortraitPay AI official PayPal account
 const PAYPAL_LINK = "https://www.paypal.me/PortraitPayAI/1";
-// Stripe Payment Link — operator must replace with real link from Stripe Dashboard > Payment Links
-const STRIPE_LINK = "https://buy.stripe.com/test"; // TODO: replace with real Stripe Payment Link URL (e.g. https://buy.stripe.com/xxx)
 
 export default function PaymentPage() {
   return (
@@ -171,24 +169,6 @@ function PaymentPageInner() {
                 </p>
               </div>
             </a>
-
-            {/* Stripe Card */}
-            <a
-              href={STRIPE_LINK}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex flex-col items-center gap-3 p-5 rounded-xl border-2 border-[#635bff] hover:bg-[#635bff]/5 transition-colors"
-            >
-              <div className="w-12 h-12 rounded-lg bg-[#635bff] flex items-center justify-center">
-                <span className="text-white font-bold text-xs">stripe</span>
-              </div>
-              <div className="text-center">
-                <p className="font-semibold text-gray-900 dark:text-white">{isZh ? "银行卡支付" : "Pay with Card"}</p>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                  {isZh ? "支持 Visa, Mastercard 等" : "Visa, Mastercard & more"}
-                </p>
-              </div>
-            </a>
           </div>
 
           <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 text-sm text-blue-700 dark:text-blue-300">
@@ -233,13 +213,13 @@ function PaymentPageInner() {
                 type="text"
                 value={txId}
                 onChange={(e) => setTxId(e.target.value)}
-                placeholder={isZh ? "输入交易 ID" : "e.g., PAYPAL-ORDER-ID or stripe_pi_xxx"}
+                placeholder={isZh ? "输入交易 ID" : "e.g., PAYPAL-ORDER-ID"}
                 className="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#244169] focus:border-transparent"
               />
               <p className="text-xs text-gray-400 mt-1">
                 {isZh
-                  ? "PayPal: 确认邮件中的 Order ID；Stripe: stripe_pi_xxx 格式"
-                  : "PayPal: Order ID from confirmation email; Stripe: stripe_pi_xxx format"}
+                  ? "PayPal: 确认邮件中的 Order ID"
+                  : "PayPal: Order ID from confirmation email"}
               </p>
             </div>
 

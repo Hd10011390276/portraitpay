@@ -3,9 +3,9 @@
  *
  * Flow:
  *  1. Upload portrait photo (with crop)
- *  2. Upload ID card front (stored for KYC, used at mint time for face verification)
+ *  2. Upload ID card front (stored for face verification at mint time)
  *  3. Create portrait record
- *  4. Upload to S3 storage
+ *  4. Upload to R2 storage
  *  5. Register URL + save face embedding (for similarity search, NOT identity verification)
  *
  * Note: Face identity verification happens at mint time on the blockchain API, not at upload time.
@@ -13,7 +13,7 @@
 
 "use client";
 
-import React, { useState, useCallback, useRef } from "react";
+import React, { useState, useCallback, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import UploadZone from "@/components/portrait/UploadZone";
 import { DashboardShell } from "@/components/layout/DashboardShell";
@@ -92,6 +92,8 @@ async function savePortraitLocally(portraitId: string, imageBlob: Blob) {
 }
 
 // ── Component ─────────────────────────────────────────────────────
+const MAX_PORTRAITS = 5;
+
 export default function UploadPortraitPage() {
   const router = useRouter();
   const { t } = useLanguage();
@@ -99,6 +101,8 @@ export default function UploadPortraitPage() {
   // ── Stage ─────────────────────────────────────────────────────
   const [stage, setStage] = useState<Stage>("form");
   const [progress, setProgress] = useState("");
+  const [portraitCount, setPortraitCount] = useState<number>(0);
+  const [countLoaded, setCountLoaded] = useState(false);
 
   // ── Portrait ─────────────────────────────────────────────────
   const [croppedFile, setCroppedFile] = useState<File | null>(null);
@@ -109,8 +113,44 @@ export default function UploadPortraitPage() {
   const [idCardFrontPreview, setIdCardFrontPreview] = useState<string | null>(null);
 
   // ── Form ─────────────────────────────────────────────────────
-  const [form, setForm] = useState({ title: "", description: "", category: "general", tags: "", isPublic: false });
+  const [form, setForm] = useState({
+    title: "", description: "", category: "general", tags: "", isPublic: false,
+    idCardType: "", idCardName: "", idCardNumber: "",
+  });
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  // ── Portrait count check ─────────────────────────────────────
+  useEffect(() => {
+    const checkCount = async () => {
+      try {
+        const res = await fetch("/api/portraits?limit=1", { credentials: "include" });
+        const json = await res.json();
+        if (json.success) setPortraitCount(json.meta?.total ?? 0);
+      } catch { /* non-fatal */ }
+      setCountLoaded(true);
+    };
+    checkCount();
+  }, []);
+
+  if (countLoaded && portraitCount >= MAX_PORTRAITS) {
+    return (
+      <DashboardShell title={t.upload?.title} subtitle={t.upload?.subtitle}>
+        <div className="max-w-3xl">
+          <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-8 text-center">
+            <div className="text-5xl mb-4">🚫</div>
+            <h2 className="text-xl font-semibold text-red-700 dark:text-red-300 mb-2">您已达到最大肖像数量限制</h2>
+            <p className="text-gray-500 dark:text-gray-400 mb-6">普通用户最多上传 {MAX_PORTRAITS} 张肖像，您当前已有 {portraitCount} 张。</p>
+            <button
+              onClick={() => router.push("/portraits")}
+              className="px-6 py-2.5 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              返回我的肖像
+            </button>
+          </div>
+        </div>
+      </DashboardShell>
+    );
+  }
 
   // ── Handlers ─────────────────────────────────────────────────
   const handleIdCardFrontChange = useCallback((file: File) => {
@@ -147,6 +187,10 @@ export default function UploadPortraitPage() {
     if (!form.title.trim()) errs.title = t.upload?.titleRequiredError;
     if (form.title.length > 200) errs.title = t.upload?.titleLengthError;
     if (!croppedFile) errs.image = t.upload?.imageRequiredError;
+    if (!idCardFront) errs.idCardFront = t.upload?.idCardRequiredError ?? "请上传身份证照片";
+    if (!form.idCardType) errs.idCardType = t.upload?.idCardTypeRequired ?? "请选择证件类型";
+    if (!form.idCardName.trim()) errs.idCardName = t.upload?.idCardNameRequired ?? "请输入真实姓名";
+    if (!form.idCardNumber.trim()) errs.idCardNumber = t.upload?.idCardNumberRequired ?? "请输入身份证号码";
     setErrors(errs);
     return Object.keys(errs).length === 0;
   };
@@ -161,16 +205,28 @@ export default function UploadPortraitPage() {
 
     try {
       // 1. Create portrait record
+      const idCardHash = await computeHash(idCardFront!);
       const createRes = await fetch("/api/portraits", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title: form.title, description: form.description || undefined, category: form.category, tags: form.tags.split(",").map((t) => t.trim()).filter(Boolean), isPublic: form.isPublic, imageHash }),
+        body: JSON.stringify({
+          title: form.title,
+          description: form.description || undefined,
+          category: form.category,
+          tags: form.tags.split(",").map((t) => t.trim()).filter(Boolean),
+          isPublic: form.isPublic,
+          imageHash,
+          idCardType: form.idCardType,
+          idCardName: form.idCardName,
+          idCardNumber: form.idCardNumber,
+          idCardFrontHash: idCardHash,
+        }),
       });
       const createJson = await createRes.json();
       if (!createJson.success) throw new Error(createJson.error);
       const id = createJson.data.id as string;
 
-      // 2. Upload ID card front to R2 (stored for KYC verification at mint time)
+      // 2. Upload ID card front to R2 (stored for face verification at mint time)
       let idCardFrontUrl: string | null = null;
       if (idCardFront) {
         setProgress(t.upload?.uploadingIdDoc);
@@ -217,8 +273,7 @@ export default function UploadPortraitPage() {
         if (!verifyRes.ok || !verifyJson.success) {
           // Face verification failed — show warning but DO NOT abort upload
           // User can still upload portrait; faceVerifiedAt will remain null
-          // They will need to pass KYC before certifying on blockchain
-          setProgress(t.upload?.faceVerifyFailed ?? "Face verification failed - portrait uploaded but KYC required before blockchain certification");
+          setProgress(t.upload?.faceVerifyFailed ?? "Face verification failed - portrait uploaded but face verification required before blockchain certification");
           await new Promise(res => setTimeout(res, 3000)); // show warning for 3s
           console.warn("[face-verify] Failed — continuing upload flow without face verification:", verifyJson.error);
         } else {
@@ -325,11 +380,70 @@ export default function UploadPortraitPage() {
           {/* Section 2: ID Card */}
           <section className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
             <h2 className="font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-              🪪 {t.upload?.idCardSectionTitle}
+              🪪 {t.upload?.idCardSectionTitle} <span className="text-red-500">*</span>
             </h2>
             <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
               {t.upload?.idCardSectionDesc}
             </p>
+
+            {/* Legal Warning */}
+            <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl p-4 mb-4">
+              <p className="text-sm text-amber-700 dark:text-amber-400">
+                ⚠️ <strong>重要提示：</strong>如果肖像与身份证信息不匹配，该证书将不具备法律效益。
+              </p>
+            </div>
+
+            {/* ID Card fields */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  证件类型 <span className="text-red-500">*</span>
+                </label>
+                <select
+                  value={form.idCardType}
+                  onChange={e => { setForm(f => ({ ...f, idCardType: e.target.value })); setErrors(prev => ({ ...prev, idCardType: "" })); }}
+                  className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+                >
+                  <option value="">请选择证件类型</option>
+                  <option value="passport">护照 Passport</option>
+                  <option value="driver_license">驾驶证 Driver License</option>
+                  <option value="us_id">身份证 ID Card</option>
+                  <option value="other">其他 Other</option>
+                </select>
+                {errors.idCardType && <p className="mt-1 text-sm text-red-600">{errors.idCardType}</p>}
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  真实姓名 <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={form.idCardName}
+                  onChange={e => { setForm(f => ({ ...f, idCardName: e.target.value })); setErrors(prev => ({ ...prev, idCardName: "" })); }}
+                  placeholder="请输入证件上的真实姓名"
+                  maxLength={100}
+                  className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+                />
+                {errors.idCardName && <p className="mt-1 text-sm text-red-600">{errors.idCardName}</p>}
+              </div>
+              <div className="sm:col-span-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  身份证号码 <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={form.idCardNumber}
+                  onChange={e => { setForm(f => ({ ...f, idCardNumber: e.target.value })); setErrors(prev => ({ ...prev, idCardNumber: "" })); }}
+                  placeholder="请输入身份证号码"
+                  maxLength={50}
+                  className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+                />
+                {errors.idCardNumber && <p className="mt-1 text-sm text-red-600">{errors.idCardNumber}</p>}
+              </div>
+            </div>
+
+            {/* ID Card photo upload */}
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">身份证照片（正面）<span className="text-red-500">*</span></p>
             {!idCardFrontPreview ? (
               <label
                 className="flex flex-col items-center justify-center border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl cursor-pointer hover:border-blue-400 dark:hover:border-blue-500 transition-colors"
@@ -347,6 +461,7 @@ export default function UploadPortraitPage() {
                   onChange={(e) => {
                     const file = e.target.files?.[0];
                     if (file) handleIdCardFrontChange(file);
+                    setErrors(prev => ({ ...prev, idCardFront: "" }));
                   }}
                 />
               </label>
@@ -373,6 +488,7 @@ export default function UploadPortraitPage() {
                 </p>
               </div>
             )}
+            {errors.idCardFront && <p className="mt-2 text-sm text-red-600">{errors.idCardFront}</p>}
           </section>
 
           {/* Section 3: Details */}

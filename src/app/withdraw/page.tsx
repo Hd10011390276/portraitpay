@@ -1,8 +1,6 @@
 /**
  * /withdraw — Withdrawal Application Page
- * Supports region-based payment methods:
- * - US: PayPal, Credit Card (Stripe), Bank Transfer
- * - HK/TW/OTHER: PayPal, Bank Transfer
+ * US-only: PayPal withdrawals only
  */
 
 "use client";
@@ -32,14 +30,6 @@ interface WithdrawalRecord {
   region?: string;
 }
 
-interface StripeAccountStatus {
-  hasStripeAccount: boolean;
-  stripeAccountId: string | null;
-  accountStatus: string | null;
-  payoutsEnabled: boolean;
-  bankAccountConnected: boolean;
-}
-
 const STATUS_COLOR: Record<string, string> = {
   PENDING: "text-yellow-600 bg-yellow-50",
   PROCESSING: "text-blue-600 bg-blue-50",
@@ -52,18 +42,9 @@ const STATUS_COLOR: Record<string, string> = {
 
 const MIN_WITHDRAWAL_USD = 10;
 
-type PaymentMethod = "paypal" | "credit_card" | "bank";
-type Region = "US" | "HK" | "TW" | "OTHER";
+type PaymentMethod = "paypal" | "bank";
 
-const REGION_OPTIONS: { value: Region; flag: string }[] = [
-  { value: "US", flag: "🇺🇸" },
-  { value: "HK", flag: "🇭🇰" },
-  { value: "TW", flag: "🇹🇼" },
-  { value: "OTHER", flag: "🌍" },
-];
-
-function getPaymentMethodsForRegion(region: Region, t: Record<string, any>) {
-  // Only PayPal available
+const getPaymentMethods = (t: Record<string, any>) => {
   return [
     { value: "paypal" as PaymentMethod, label: t.withdraw.paypal, icon: "🟣" },
   ];
@@ -74,19 +55,16 @@ function WithdrawPageContent() {
   const searchParams = useSearchParams();
   const [balance, setBalance] = useState<EarningsSummary | null>(null);
   const [history, setHistory] = useState<WithdrawalRecord[]>([]);
-  const [stripeAccount, setStripeAccount] = useState<StripeAccountStatus | null>(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
-  const [settingUpStripe, setSettingUpStripe] = useState(false);
   const { t, locale } = useLanguage();
 
   // Form state
-  const [region, setRegion] = useState<Region>("US");
   const [amount, setAmount] = useState("");
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("paypal");
-  const [accountId, setAccountId] = useState(""); // PayPal email / Account ID
+  const [accountId, setAccountId] = useState(""); // PayPal email
   const [accountName, setAccountName] = useState(""); // Account holder name
   const [bankName, setBankName] = useState("");
   const [bankAccount, setBankAccount] = useState("");
@@ -95,21 +73,19 @@ function WithdrawPageContent() {
   const minAmount = MIN_WITHDRAWAL_USD;
   const currencySymbol = "$";
 
-  const paymentMethods = getPaymentMethodsForRegion(region, t);
+  const paymentMethods = getPaymentMethods(t);
 
-  // Update payment method when region changes
+  // Update payment method when options change
   useEffect(() => {
-    const methods = getPaymentMethodsForRegion(region, t);
-    if (!methods.find(m => m.value === paymentMethod)) {
-      setPaymentMethod(methods[0].value);
+    if (!paymentMethods.find(m => m.value === paymentMethod)) {
+      setPaymentMethod(paymentMethods[0].value);
     }
-  }, [region, t, paymentMethod]);
+  }, [t, paymentMethod]);
 
   const loadData = useCallback(async () => {
-    const [balanceRes, historyRes, stripeRes] = await Promise.all([
+    const [balanceRes, historyRes] = await Promise.all([
       fetch("/api/v1/earnings/summary"),
       fetch("/api/v1/withdrawals"),
-      fetch("/api/v1/withdrawals/stripe-account"),
     ]);
     if (balanceRes.ok) {
       const d = await balanceRes.json();
@@ -119,18 +95,8 @@ function WithdrawPageContent() {
       const d = await historyRes.json();
       setHistory(d.data ?? []);
     }
-    if (stripeRes.ok) {
-      const d = await stripeRes.json();
-      setStripeAccount(d.data);
-    }
     setLoading(false);
   }, []);
-
-  useEffect(() => {
-    if (searchParams.get("stripe_refresh") === "true") {
-      loadData();
-    }
-  }, [searchParams, loadData]);
 
   useEffect(() => { loadData(); }, [loadData]);
 
@@ -148,28 +114,6 @@ function WithdrawPageContent() {
       if (!bankAccount.trim() || bankAccount.length < 8) return t.withdraw.pleaseFillBankAccount;
     }
     return null;
-  };
-
-  const handleSetupStripe = async () => {
-    setSettingUpStripe(true);
-    setError(null);
-    try {
-      const res = await fetch("/api/v1/withdrawals/stripe-account", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ returnUrl: window.location.href }),
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        setError(data.error ?? t.withdraw.submitFailed);
-        return;
-      }
-      window.location.href = data.data.onboardingUrl;
-    } catch {
-      setError(t.withdraw.networkError);
-    } finally {
-      setSettingUpStripe(false);
-    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -191,7 +135,6 @@ function WithdrawPageContent() {
         body: JSON.stringify({
           amount: Number(amount),
           currency,
-          region,
           paymentMethod,
           accountId,
           accountName,
@@ -235,7 +178,6 @@ function WithdrawPageContent() {
   const getMethodIcon = (pm: string) => {
     switch (pm) {
       case "paypal": return "🟣";
-      case "credit_card": return "💳";
       case "bank": return "🏦";
       default: return "💰";
     }
@@ -244,7 +186,6 @@ function WithdrawPageContent() {
   const getMethodLabel = (pm: string) => {
     switch (pm) {
       case "paypal": return t.withdraw.paypal;
-      case "credit_card": return t.withdraw.creditCard;
       case "bank": return t.withdraw.bankTransfer;
       default: return pm;
     }
@@ -323,15 +264,15 @@ function WithdrawPageContent() {
 
 
 
-            {/* Account ID (PayPal / Credit Card) */}
+            {/* Account ID (PayPal) */}
             {paymentMethod !== "bank" && (
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  {paymentMethod === "paypal" ? t.withdraw.paypalAccount : t.withdraw.creditCardAccount}
+                  {t.withdraw.paypalAccount}
                 </label>
                 <input
                   type="text"
-                  placeholder={paymentMethod === "paypal" ? t.withdraw.paypalPlaceholder : t.withdraw.creditCardPlaceholder}
+                  placeholder={t.withdraw.paypalPlaceholder}
                   className="w-full border border-gray-200 dark:border-gray-700 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
                   value={accountId}
                   onChange={(e) => setAccountId(e.target.value)}

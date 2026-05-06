@@ -296,17 +296,6 @@ export default function EarningsPage() {
                 ))}
               </div>
             </div>
-
-            <div className="bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-950/30 dark:to-purple-950/30 rounded-xl border border-blue-100 dark:border-blue-900/50 p-5">
-              <h3 className="font-semibold text-gray-900 dark:text-white mb-2">💡 {t.earnings.boostEarnings}</h3>
-              <p className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed">
-                {t.earnings.boostEarningsDesc}
-              </p>
-              <Link href="/kyc"
-                className="mt-3 inline-flex items-center text-xs text-blue-600 dark:text-blue-400 font-medium hover:underline">
-                {t.earnings.goCertify}
-              </Link>
-            </div>
           </div>
         </div>
 
