@@ -19,45 +19,8 @@ import UploadZone from "@/components/portrait/UploadZone";
 import { DashboardShell } from "@/components/layout/DashboardShell";
 import { useLanguage } from "@/context/LanguageContext";
 import ImageCropper from "@/components/portrait/ImageCropper";
-import { descriptorToArray } from "@/lib/face";
 
 type Stage = "form" | "uploading" | "done";
-
-const FACE_EMBEDDING_MODEL_URL = "/models";
-
-// ── Face embedding helpers ─────────────────────────────────────────────
-async function extractFaceEmbedding(file: File): Promise<number[]> {
-  const faceapi = await import("@vladmandic/face-api");
-  await Promise.all([
-    faceapi.nets.tinyFaceDetector.loadFromUri(FACE_EMBEDDING_MODEL_URL),
-    faceapi.nets.faceLandmark68Net.loadFromUri(FACE_EMBEDDING_MODEL_URL),
-    faceapi.nets.faceRecognitionNet.loadFromUri(FACE_EMBEDDING_MODEL_URL),
-  ]);
-  const img = await createImageBitmap(file);
-  const canvas = document.createElement("canvas");
-  canvas.width = img.width;
-  canvas.height = img.height;
-  const ctx = canvas.getContext("2d")!;
-  ctx.drawImage(img, 0, 0);
-  const tinyOptions = new faceapi.TinyFaceDetectorOptions();
-  const detections = await faceapi.detectAllFaces(canvas, tinyOptions);
-  if (detections.length === 0) throw new Error("No face detected");
-  const withDescriptor = await faceapi.detectSingleFace(canvas, tinyOptions).withFaceDescriptor();
-  if (!withDescriptor?.descriptor) throw new Error("Could not extract face embedding");
-  return descriptorToArray(withDescriptor.descriptor);
-}
-
-
-async function saveFaceEmbedding(portraitId: string, embedding: number[]) {
-  const res = await fetch(`/api/portraits/${portraitId}/embedding`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ embedding }),
-  });
-  const json = await res.json();
-  if (!json.success) console.error("[face-embedding] Save failed:", json.error);
-  return json.success;
-}
 
 async function computeHash(file: File): Promise<string> {
   const buf = await file.arrayBuffer();
@@ -260,50 +223,6 @@ export default function UploadPortraitPage() {
         throw new Error(errMsg);
       }
       const originalImageUrl = s3Json.data.originalImageUrl;
-
-      // 3.5 立即做人脸比对（上传肖像+身份证后自动触发）
-      if (idCardFrontUrl) {
-        setProgress(t.upload?.faceVerifying);
-        const verifyRes = await fetch(`/api/portraits/${id}/verify-face`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ originalImageUrl, idCardFrontUrl }),
-        });
-        const verifyJson = await verifyRes.json();
-        if (!verifyRes.ok || !verifyJson.success) {
-          // Face verification failed — show warning but DO NOT abort upload
-          // User can still upload portrait; faceVerifiedAt will remain null
-          setProgress(t.upload?.faceVerifyFailed ?? "Face verification failed - portrait uploaded but face verification required before blockchain certification");
-          await new Promise(res => setTimeout(res, 3000)); // show warning for 3s
-          console.warn("[face-verify] Failed — continuing upload flow without face verification:", verifyJson.error);
-        } else {
-          console.log("[face-verify] Passed! Score:", verifyJson.data.verifyScore);
-        }
-      }
-
-      await savePortraitLocally(id, croppedFile);
-
-      // 4. Register URL
-      setProgress(t.upload?.saving);
-      const updateRes = await fetch(`/api/portraits/${id}/upload`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ originalImageUrl, imageHash, idCardFrontUrl }),
-      });
-      const updateJson = await updateRes.json();
-      if (!updateRes.ok || !updateJson.success) {
-        const msg = updateJson.error || t.upload?.saveFailed?.replace("{status}", String(updateRes.status));
-        throw new Error(msg);
-      }
-
-      // 5. Save face embedding (for similarity search, not identity verification)
-      try {
-        setProgress(t.upload?.extractFeatures);
-        const embedding = await extractFaceEmbedding(croppedFile);
-        await saveFaceEmbedding(id, embedding);
-      } catch (embErr) {
-        console.error("[face-embedding] Failed to save:", embErr);
-      }
 
       setProgress(t.upload?.uploadSuccess);
       setStage("done");

@@ -36,6 +36,8 @@ export default function PortraitsPage() {
   const [statusFilter, setStatusFilter] = useState("");
   const [certifyStatus, setCertifyStatus] = useState<{ id: string; message: string } | null>(null);
   const [search, setSearch] = useState("");
+  const MAX_PORTRAITS = 5;
+  const atPortraitLimit = portraits.length >= MAX_PORTRAITS;
 
   const STATUS_OPTIONS = [
     { value: "", label: t.portraits.all },
@@ -137,13 +139,22 @@ export default function PortraitsPage() {
       title={t.sidebar.myPortraits}
       subtitle={`${t.portraits.total} ${portraits.length} ${t.portraits.onChain} · ${counts["ACTIVE"] ?? 0} ${t.portraits.active}`}
       action={
-        <Link href="/portraits/upload"
-          className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors shadow-sm">
-          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
-          </svg>
-          {t.portraits.upload}
-        </Link>
+        <div className="flex items-center gap-2">
+          {atPortraitLimit && (
+            <span className="text-xs text-orange-500 dark:text-orange-400 mr-1">已达上限({portraits.length}/{MAX_PORTRAITS})</span>
+          )}
+          <Link href="/portraits/upload"
+            className={`inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg shadow-sm transition-colors ${
+              atPortraitLimit
+                ? "bg-gray-300 dark:bg-gray-700 text-gray-400 dark:text-gray-500 cursor-not-allowed pointer-events-none"
+                : "bg-blue-600 text-white hover:bg-blue-700"
+            }`}>
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+            </svg>
+            {t.portraits.upload}
+          </Link>
+        </div>
       }
     >
       <div className="space-y-6">

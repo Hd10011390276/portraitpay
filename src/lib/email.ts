@@ -246,9 +246,9 @@ export async function sendPortraitCertifiedEmail(params: PortraitCertifiedEmailP
       attachments: certificateBuffer
         ? [
             {
-              filename: `portrait-certificate-${certificateNo ?? portraitTitle.replace(/\s+/g, "-")}.pdf`,
+              filename: `portrait-certificate-${certificateNo ?? portraitTitle.replace(/\s+/g, "-")}.png`,
               content: certificateBuffer,
-              contentType: "application/pdf",
+              contentType: "image/png",
             },
           ]
         : undefined,
