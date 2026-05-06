@@ -21,8 +21,8 @@ jobs:
       - name: Generate Prisma Client
         run: npx prisma generate
 
-      - name: Push Database Schema
-        run: npx prisma db push --accept-data-loss --skip-generate
+      - name: Deploy Database Migration
+        run: npx prisma migrate deploy
 
       - name: Configure git
         run: |
