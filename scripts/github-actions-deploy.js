@@ -1,16 +1,30 @@
 const https = require('https');
 
 const VER_TOKEN = (process.env.VERCEL_TOKEN || '').replace(/[\n\r]/g, '');
-const DB_URL = process.env.DATABASE_URL || '';
-const DIRECT_URL = process.env.DIRECT_URL || '';
+const DB_URL = (process.env.DATABASE_URL || '').replace(/[\n\r\t]/g, '').trim();
+const DIRECT_URL = (process.env.DIRECT_URL || '').replace(/[\n\r\t]/g, '').trim();
+
+// Validate URLs
+if (!DB_URL || /[^\x20-\x7E]/.test(DB_URL)) {
+  console.error('DATABASE_URL contains invalid characters');
+  process.exit(1);
+}
+if (!DIRECT_URL || /[^\x20-\x7E]/.test(DIRECT_URL)) {
+  console.error('DIRECT_URL contains invalid characters');
+  process.exit(1);
+}
+
+const SHA = require('child_process').execSync('git rev-parse HEAD').toString().trim();
 
 const payload = JSON.stringify({
   name: 'portraitpay',
+  projectId: 'prj_6FYHbjqW3UebcAxGAwuIk0wXcVpr',
+  target: 'production',
   gitSource: {
     type: 'github',
-    repo: 'Hd10011390276/portraitpay',
+    repoId: 1196064714,
     ref: 'main',
-    sha: require('child_process').execSync('git rev-parse HEAD').toString().trim()
+    sha: SHA
   },
   buildCommand: 'npm run build',
   outputDirectory: '.next',
@@ -38,14 +52,41 @@ const req = https.request(options, (res) => {
   res.on('end', () => {
     console.log('Deploy status:', res.statusCode);
     const parsed = JSON.parse(data);
-    if (parsed.url) {
-      console.log('✅ Deployment: https://' + parsed.url);
+    if (parsed.id) {
+      console.log('✅ Deployment created:', parsed.id);
+      // Poll for ready state
+      checkDeployment(parsed.id);
+    } else if (parsed.error) {
+      console.error('❌ Failed:', parsed.error.code, parsed.error.message);
+      process.exit(1);
     } else {
       console.log('❌ Failed:', JSON.stringify(parsed, null, 2));
       process.exit(1);
     }
   });
 });
+
+function checkDeployment(id) {
+  const check = https.request({
+    hostname: 'api.vercel.com',
+    path: '/v13/deployments/' + id,
+    method: 'GET',
+    headers: { 'Authorization': 'Bearer ' + VER_TOKEN }
+  }, (res) => {
+    let data = '';
+    res.on('data', c => data += c);
+    res.on('end', () => {
+      const d = JSON.parse(data);
+      if (d.readyState === 'READY' || d.readyState === 'ERROR') {
+        console.log('Final state:', d.readyState, d.url || d.errorMessage);
+        if (d.readyState === 'ERROR') process.exit(1);
+      } else {
+        setTimeout(() => checkDeployment(id), 5000);
+      }
+    });
+  });
+  check.end();
+}
 
 req.on('error', (e) => { console.error('Request error:', e.message); process.exit(1); });
 req.write(payload);
