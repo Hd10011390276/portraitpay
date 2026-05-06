@@ -21,13 +21,19 @@ jobs:
       - name: Generate Prisma Client
         run: npx prisma generate
 
+      - name: Install Vercel CLI
+        run: npm install -g vercel
+
+      - name: Pull Vercel Environment Variables
+        run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN_2 }}
+
       - name: Deploy Database Migration
         run: npx prisma migrate deploy
 
       - name: Configure git
         run: |
-          git config --global user.email "128709612+Hd10011390276@users.noreply.github.com"
-          git config --global user.name "Hd10011390276"
+          git config --global user.email "hangdivision@gmail.com"
+          git config --global user.name "Hang"
 
       - name: Deploy to Vercel
         run: npx vercel --prod --yes --token ${{ secrets.VERCEL_TOKEN_2 }}
