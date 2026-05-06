@@ -22,7 +22,6 @@ const payload = JSON.stringify({
   },
   buildCommand: 'npm run build',
   outputDirectory: '.next',
-  runtime: 'nodejs20',
   env
 });
 
