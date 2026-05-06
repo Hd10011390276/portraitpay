@@ -26,43 +26,37 @@ jobs:
           git config --global user.email "hangdivision@gmail.com"
           git config --global user.name "Hang"
 
-      - name: Install Vercel CLI
-        run: npm install -g vercel
-
-      - name: Deploy to Vercel
+      - name: Deploy via Vercel REST API
+        id: deploy
         run: |
-          # Try CLI first
-          CLI_OUTPUT=$(vercel --prod --yes --token $VERCEL_TOKEN 2>&1)
-          CLI_EXIT=$?
-          echo "$CLI_OUTPUT"
-
-          if [ $CLI_EXIT -eq 0 ]; then
-            echo "✅ CLI deploy succeeded"
-          elif echo "$CLI_OUTPUT" | grep -q "api-deployments-free-per-day"; then
-            echo "⚠️ Vercel CLI rate limited — falling back to REST API"
-            # Fall back to Vercel REST API
-            SHA=$(git rev-parse HEAD)
-            curl -s -X POST "https://api.vercel.com/v13/deployments" \
-              -H "Authorization: Bearer $VERCEL_TOKEN" \
-              -H "Content-Type: application/json" \
-              -d "{
-                \"name\": \"portraitpay\",
-                \"gitSource\": {
-                  \"type\": \"github\",
-                  \"repo\": \"Hd10011390276/portraitpay\",
-                  \"ref\": \"main\",
-                  \"sha\": \"$SHA\"
-                },
-                \"buildCommand\": \"npm run build\",
-                \"outputDirectory\": \".next\",
-                \"env\": {
-                  \"DATABASE_URL\": { \"type\": \"encrypted\", \"value\": \"$DATABASE_URL\" },
-                  \"DIRECT_URL\": { \"type\": \"encrypted\", \"value\": \"$DIRECT_URL\" }
-                }
-              }"
+          SHA=$(git rev-parse HEAD)
+          RESPONSE=$(curl -s -X POST "https://api.vercel.com/v13/deployments" \
+            -H "Authorization: Bearer $VERCEL_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d "{
+              \"name\": \"portraitpay\",
+              \"gitSource\": {
+                \"type\": \"github\",
+                \"repo\": \"Hd10011390276/portraitpay\",
+                \"ref\": \"main\",
+                \"sha\": \"$SHA\"
+              },
+              \"buildCommand\": \"npm run build\",
+              \"outputDirectory\": \".next\",
+              \"runtime\": \"nodejs20\",
+              \"env\": {
+                \"DATABASE_URL\": \"$DATABASE_URL\",
+                \"DIRECT_URL\": \"$DIRECT_URL\"
+              }
+            }")
+          echo "Deployment response: $RESPONSE"
+          DEPLOY_URL=$(echo "$RESPONSE" | grep -o '"url":"[^"]*"' | head -1 | cut -d'"' -f4)
+          if [ -n "$DEPLOY_URL" ]; then
+            echo "✅ Deployment initiated: https://$DEPLOY_URL"
           else
-            echo "❌ Deploy failed with exit code $CLI_EXIT"
-            exit $CLI_EXIT
+            echo "❌ Deployment failed"
+            echo "$RESPONSE"
+            exit 1
           fi
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
