@@ -26,12 +26,42 @@ jobs:
           git config --global user.email "hangdivision@gmail.com"
           git config --global user.name "Hang"
 
-      - name: Install Vercel CLI
-        run: npm install -g vercel
-
       - name: Deploy to Vercel
         run: |
-          vercel --prod --yes --token ${{ secrets.VERCEL_TOKEN_2 }}
+          set -e
+          # Try CLI first
+          if vercel --prod --yes --token $VERCEL_TOKEN; then
+            echo "CLI deploy succeeded"
+          else
+            CLI_EXIT=$?
+            LAST_LOG=$(vercel --prod --yes --token $VERCEL_TOKEN 2>&1 | tail -1)
+            if echo "$LAST_LOG" | grep -q "api-deployments-free-per-day"; then
+              echo "Vercel CLI rate limited — falling back to REST API"
+              # Fall back to Vercel REST API
+              curl -s -X POST "https://api.vercel.com/v13/deployments" \
+                -H "Authorization: Bearer $VERCEL_TOKEN" \
+                -H "Content-Type: application/json" \
+                -d '{
+                  "name": "portraitpay",
+                  "gitSource": {
+                    "type": "github",
+                    "repo": "Hd10011390276/portraitpay",
+                    "ref": "main",
+                    "sha": "'$(git rev-parse HEAD)'"
+                  },
+                  "buildCommand": "npm run build",
+                  "outputDirectory": ".next",
+                  "env": {
+                    "DATABASE_URL": { "type": "encrypted", "value": "'$DATABASE_URL'" },
+                    "DIRECT_URL": { "type": "encrypted", "value": "'$DIRECT_URL'" }
+                  }
+                }'
+            else
+              echo "CLI deploy failed with exit code $CLI_EXIT"
+              exit $CLI_EXIT
+            fi
+          fi
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           DIRECT_URL: ${{ secrets.DIRECT_URL }}
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN_2 }}
