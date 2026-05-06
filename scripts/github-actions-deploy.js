@@ -16,6 +16,7 @@ const payload = JSON.stringify({
   gitSource: {
     type: 'github',
     repo: 'Hd10011390276/portraitpay',
+    repoId: 1196064714,
     ref: 'main',
     sha: SHA
   },
