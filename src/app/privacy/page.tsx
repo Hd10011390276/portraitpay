@@ -112,12 +112,7 @@ export default function PrivacyPage() {
               {l.sections.yourRightsDesc}
             </p>
             <ul className="list-disc pl-5 text-sm space-y-1 mb-3" style={{ color: "var(--text-secondary)" }}>
-              <li>{l.sections.yourRightsList.access}</li>
-              <li>{l.sections.yourRightsList.correct}</li>
-              <li>{l.sections.yourRightsList.deletion}</li>
-              <li>{l.sections.yourRightsList.object}</li>
-              <li>{l.sections.yourRightsList.portability}</li>
-              <li>{l.sections.yourRightsList.withdraw}</li>
+              <li>{l.sections.yourRightsContact}</li>
             </ul>
             <p className="text-sm leading-relaxed" style={{ color: "var(--text-secondary)" }}>
               {l.sections.yourRightsContact} <a href={`mailto:${l.sections.contactEmail}`} className="underline" style={{ color: "var(--accent-primary)" }}>{l.sections.contactEmail}</a>
