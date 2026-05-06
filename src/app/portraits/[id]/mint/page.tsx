@@ -67,8 +67,6 @@ export default function MintPage() {
   const [errorMsg, setErrorMsg] = useState("");
   const [mintResult, setMintResult] = useState<{
     txHash: string;
-    blockNumber: number;
-    ipfsCid: string;
     network: string;
     certifiedAt: string;
   } | null>(null);
@@ -93,9 +91,6 @@ export default function MintPage() {
       setMintStep("minting");
       await delay(1500);
 
-      setMintStep("uploading_ipfs");
-      await delay(1500);
-
       setMintStep("confirming");
 
       const res = await fetch(`/api/portraits/${id}/mint`, {
@@ -113,10 +108,7 @@ export default function MintPage() {
 
       setMintResult({
         txHash: json.data.blockchainTxHash,
-        blockNumber: json.data.blockNumber,
-        ipfsCid: json.data.ipfsCid,
         network: json.data.network,
-        certifiedAt: json.data.certifiedAt,
       });
       setMintStep("success");
     } catch {
@@ -177,14 +169,10 @@ export default function MintPage() {
             </div>
             {portrait.imageHash && (
               <div className="flex justify-between">
-                <span className="text-gray-500">Image Hash</span>
+                <span className="text-gray-500">Portrait Hash</span>
                 <span className="font-mono text-xs break-all">{portrait.imageHash}</span>
               </div>
             )}
-            <div className="flex justify-between">
-              <span className="text-gray-500">IPFS</span>
-              <span className="font-medium text-xs">Metadata will be uploaded</span>
-            </div>
           </div>
 
           <p className="text-xs text-gray-400 mb-6">
@@ -237,34 +225,9 @@ export default function MintPage() {
               }
             />
             <MintField
-              label={tc.ipfsCid}
-              value={
-                <a
-                  href={`https://ipfs.io/ipfs/${mintResult.ipfsCid}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-blue-600 hover:underline break-all"
-                >
-                  {mintResult.ipfsCid}
-                </a>
-              }
-            />
-            <MintField
               label={tc.certifiedAt}
               value={new Date(mintResult.certifiedAt).toLocaleString()}
             />
-            <MintField
-              label="Block #"
-              value={`#${mintResult.blockNumber}`}
-            />
-            {portrait.imageHash && (
-              <MintField
-                label={tc.imageHash}
-                value={
-                  <span className="font-mono text-xs break-all">{portrait.imageHash}</span>
-                }
-              />
-            )}
           </div>
 
           <div className="flex gap-3">
@@ -319,7 +282,6 @@ export default function MintPage() {
   // Progress states
   const stepLabels: Record<string, string> = {
     minting: tc.certifyStepHash,
-    uploading_ipfs: tc.certifyStepUploadMeta,
     confirming: tc.certifyStepMint,
   };
 
@@ -385,8 +347,8 @@ export default function MintPage() {
               This creates an immutable proof-of-existence with:
             </p>
             <ul className="list-disc list-inside space-y-1 ml-2">
-              <li>Your portrait image SHA-256 hash (fingerprint)</li>
-              <li>IPFS metadata storage (decentralized)</li>
+              <li>Portrait SHA-256 hash (fingerprint)</li>
+              <li>ID card SHA-256 hash (identity verification)</li>
               <li>Blockchain timestamp (Sepolia block)</li>
               <li>Transaction hash (verifiable on Etherscan)</li>
             </ul>
