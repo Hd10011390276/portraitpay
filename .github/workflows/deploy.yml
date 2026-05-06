@@ -26,51 +26,9 @@ jobs:
           git config --global user.email "hangdivision@gmail.com"
           git config --global user.name "Hang"
 
-      - name: Deploy via Vercel REST API (Node.js)
-        run: |
-          node -e "
-            const https = require('https');
-            const { execSync } = require('child_process');
-            const sha = execSync('git rev-parse HEAD').toString().trim();
-            const payload = JSON.stringify({
-              name: 'portraitpay',
-              gitSource: {
-                type: 'github',
-                repo: 'Hd10011390276/portraitpay',
-                ref: 'main',
-                sha: sha
-              },
-              buildCommand: 'npm run build',
-              outputDirectory: '.next',
-              runtime: 'nodejs20'
-            });
-            const options = {
-              hostname: 'api.vercel.com',
-              path: '/v13/deployments',
-              method: 'POST',
-              headers: {
-                'Authorization': 'Bearer ' + process.env.VERCEL_TOKEN,
-                'Content-Type': 'application/json',
-                'Content-Length': Buffer.byteLength(payload)
-              }
-            };
-            const req = https.request(options, (res) => {
-              let data = '';
-              res.on('data', (chunk) => data += chunk);
-              res.on('end', () => {
-                console.log('Status:', res.statusCode);
-                const parsed = JSON.parse(data);
-                if (parsed.url) {
-                  console.log('✅ Deployment initiated: https://' + parsed.url);
-                } else {
-                  console.log('❌ Deployment failed:', JSON.stringify(parsed, null, 2));
-                  process.exit(1);
-                }
-              });
-            });
-            req.on('error', (e) => { console.error('Request error:', e.message); process.exit(1); });
-            req.write(payload);
-            req.end();
-          "
+      - name: Deploy via Vercel REST API
+        run: node scripts/github-actions-deploy.js
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN_2 }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          DIRECT_URL: ${{ secrets.DIRECT_URL }}
