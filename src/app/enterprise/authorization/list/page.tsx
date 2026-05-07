@@ -19,6 +19,15 @@ const STATUS_LABELS_EN: Record<string, { label: string; color: string }> = {
   EXPIRED: { label: "Expired", color: "bg-gray-100 text-gray-600" },
 };
 
+const STATUS_LABELS_ES: Record<string, { label: string; color: string }> = {
+  PENDING_PORTRAIT_OWNER: { label: "Pendiente del Dueño del Retrato", color: "bg-yellow-100 text-yellow-800" },
+  PENDING_PLATFORM_REVIEW: { label: "Pendiente de Revisión de Plataforma", color: "bg-blue-100 text-blue-800" },
+  APPROVED: { label: "Aprobado", color: "bg-green-100 text-green-800" },
+  REJECTED: { label: "Rechazado", color: "bg-red-100 text-red-800" },
+  REVOKED: { label: "Revocado", color: "bg-gray-100 text-gray-800" },
+  EXPIRED: { label: "Expirado", color: "bg-gray-100 text-gray-600" },
+};
+
 const STATUS_LABELS_ZH: Record<string, { label: string; color: string }> = {
   PENDING_PORTRAIT_OWNER: { label: "待肖像所有者确认", color: "bg-yellow-100 text-yellow-800" },
   PENDING_PLATFORM_REVIEW: { label: "待平台审核", color: "bg-blue-100 text-blue-800" },
@@ -39,7 +48,7 @@ export default function AuthorizationListPage() {
   const [loading, setLoading] = useState(true);
   const [filterStatus, setFilterStatus] = useState<string>("");
 
-  const STATUS_LABELS = isZh ? STATUS_LABELS_ZH : STATUS_LABELS_EN;
+  const STATUS_LABELS = locale === "zh-CN" || locale === "zh-Hant" ? STATUS_LABELS_ZH : locale === "es-ES" ? STATUS_LABELS_ES : STATUS_LABELS_EN;
   const tc = t.enterpriseAuthList || {};
 
   useEffect(() => { fetchData(); }, [tab, filterStatus]);

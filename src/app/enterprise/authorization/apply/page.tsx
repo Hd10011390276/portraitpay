@@ -11,14 +11,14 @@ import { LanguageToggle } from "@/components/layout/LanguageToggle";
 import ThemeToggle from "@/components/ThemeToggle";
 import Link from "next/link";
 
-const USAGE_SCOPES_EN = [
-  { value: "commercial", label: "Commercial Use" },
-  { value: "advertising", label: "Advertising" },
-  { value: "merchandise", label: "Merchandise" },
-  { value: "ai_training", label: "AI Training" },
-  { value: "editorial", label: "Editorial Use" },
+const USAGE_SCOPES_ES = [
+  { value: "commercial", label: "Uso Comercial" },
+  { value: "advertising", label: "Publicidad" },
+  { value: "merchandise", label: "Mercancía" },
+  { value: "ai_training", label: "Entrenamiento de IA" },
+  { value: "editorial", label: "Uso Editorial" },
 ];
-const TERRITORIES_EN = [
+const TERRITORIES_ES = [
   { value: "global", label: "Global" },
   { value: "asia", label: "Asia" },
 ];
@@ -40,8 +40,8 @@ export default function EnterpriseAuthorizationPage() {
   const isZh = locale === "zh-CN" || locale === "zh-Hant";
   const router = useRouter();
 
-  const USAGE_SCOPES = isZh ? USAGE_SCOPES_ZH : USAGE_SCOPES_EN;
-  const TERRITORIES = isZh ? TERRITORIES_ZH : TERRITORIES_EN;
+  const USAGE_SCOPES = locale === "zh-CN" || locale === "zh-Hant" ? USAGE_SCOPES_ZH : locale === "es-ES" ? USAGE_SCOPES_ES : USAGE_SCOPES_EN;
+  const TERRITORIES = locale === "zh-CN" || locale === "zh-Hant" ? TERRITORIES_ZH : locale === "es-ES" ? TERRITORIES_ES : TERRITORIES_EN;
 
   const [step, setStep] = useState<"select" | "apply" | "done">("select");
   const [portraits, setPortraits] = useState<any[]>([]);
