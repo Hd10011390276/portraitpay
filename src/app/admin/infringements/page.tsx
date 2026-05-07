@@ -1,8 +1,8 @@
 "use client";
 /**
- * 管理员 - 企业资质审核页面
- * /admin/enterprise
- * 审核企业认证申请
+ * 管理员 - 侵权举报审核页面
+ * /admin/infringements
+ * 审核侵权举报
  */
 import { useState, useEffect } from "react";
 import { useLanguage } from "@/context/LanguageContext";
@@ -10,7 +10,7 @@ import { LanguageToggle } from "@/components/layout/LanguageToggle";
 import ThemeToggle from "@/components/ThemeToggle";
 import Link from "next/link";
 
-const STATUS_LABELS_EN: Record<string, { label: string; color: string }> = {
+const STATUS_CONFIG: Record<string, { label: string; color: string }> = {
   PENDING_REVIEW: { label: "Pending Review", color: "bg-yellow-100 text-yellow-800" },
   VALIDATED: { label: "Confirmed", color: "bg-red-100 text-red-800" },
   REJECTED: { label: "Rejected", color: "bg-gray-100 text-gray-600" },
@@ -18,15 +18,7 @@ const STATUS_LABELS_EN: Record<string, { label: string; color: string }> = {
   LEGAL_ACTION: { label: "Legal Action", color: "bg-purple-100 text-purple-800" },
 };
 
-const STATUS_LABELS_ZH: Record<string, { label: string; color: string }> = {
-  PENDING_REVIEW: { label: "待审核", color: "bg-yellow-100 text-yellow-800" },
-  VALIDATED: { label: "已确认侵权", color: "bg-red-100 text-red-800" },
-  REJECTED: { label: "举报不成立", color: "bg-gray-100 text-gray-600" },
-  SETTLED: { label: "已和解", color: "bg-blue-100 text-blue-800" },
-  LEGAL_ACTION: { label: "法律程序", color: "bg-purple-100 text-purple-800" },
-};
-
-const TYPE_LABELS_EN: Record<string, string> = {
+const TYPE_CONFIG: Record<string, string> = {
   UNAUTHORIZED_USE: "Unauthorized Use",
   EXPIRED_LICENSE: "License Expired",
   SCOPE_VIOLATION: "Scope Violation",
@@ -34,22 +26,9 @@ const TYPE_LABELS_EN: Record<string, string> = {
   DEEPFAKE: "AI Deepfake",
 };
 
-const TYPE_LABELS_ZH: Record<string, string> = {
-  UNAUTHORIZED_USE: "未经授权使用",
-  EXPIRED_LICENSE: "授权过期",
-  SCOPE_VIOLATION: "超范围使用",
-  RESALE: "二次转售",
-  DEEPFAKE: "AI换脸/合成",
-};
-
 export default function AdminInfringementsPage() {
-  const { t, locale } = useLanguage();
-  const isZh = locale === "zh-CN" || locale === "zh-Hant";
-
-  const STATUS_LABELS = isZh ? STATUS_LABELS_ZH : STATUS_LABELS_EN;
-  const TYPE_LABELS = isZh ? TYPE_LABELS_ZH : TYPE_LABELS_EN;
-
-  const tc = t.adminInfringements || {};
+  const { t } = useLanguage();
+  const tc = t.infringements?.detail || {};
 
   const [reports, setReports] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -85,7 +64,7 @@ export default function AdminInfringementsPage() {
         setSelectedId(null);
         fetchReports();
       } else {
-        alert(json.error ?? (tc.reviewFailed || (isZh ? "审核失败" : "Review failed")));
+        alert(json.error ?? tc.reviewFailed ?? "Review failed");
       }
     } finally {
       setSubmitting(false);
@@ -96,13 +75,13 @@ export default function AdminInfringementsPage() {
     <div className="min-h-screen bg-gray-100 p-6">
       {/* Header */}
       <div className="mb-6 flex items-center gap-4">
-        <Link href="/dashboard" className="text-gray-500 hover:text-gray-700">← {tc.backToDashboard || (isZh ? "控制台" : "Dashboard")}</Link>
+        <Link href="/dashboard" className="text-gray-500 hover:text-gray-700">← {tc.backToInfringements || "Back to Infringements"}</Link>
         <div>
           <h1 className="text-2xl font-bold text-gray-900">
-            {tc.pageTitle || (isZh ? "侵权举报审核" : "Infringement Report Review")}
+            {tc.reportDetail || "Infringement Report Review"}
           </h1>
           <p className="mt-1 text-sm text-gray-500">
-            {tc.pageSubtitle || (isZh ? "平台管理员 / 审核员专用" : "For platform admin / verifier only")}
+            {tc.pageSubtitle || "For platform admin / verifier only"}
           </p>
         </div>
         <div className="ml-auto flex items-center gap-2">
@@ -113,7 +92,7 @@ export default function AdminInfringementsPage() {
 
       {/* Filter tabs */}
       <div className="mb-4 flex gap-2">
-        {Object.entries(STATUS_LABELS).map(([key, { label }]) => (
+        {Object.entries(STATUS_CONFIG).map(([key, { label }]) => (
           <button key={key}
             onClick={() => { setFilter(key); setSelectedId(null); }}
             className={`rounded-lg px-3 py-1.5 text-sm font-medium transition ${
@@ -129,14 +108,14 @@ export default function AdminInfringementsPage() {
         {/* Report list */}
         <div className="col-span-2 space-y-3">
           {loading ? (
-            <p className="text-center text-gray-500 py-10">{tc.loading || (isZh ? "加载中..." : "Loading...")}</p>
+            <p className="text-center text-gray-500 py-10">{tc.loading || "Loading..."}</p>
           ) : reports.length === 0 ? (
             <div className="rounded-lg bg-white py-12 text-center text-gray-500 text-sm">
-              {tc.noReports || (isZh ? "暂无待审核举报" : "No pending reports")}
+              {tc.noReports || "No pending reports"}
             </div>
           ) : (
             reports.map((r) => {
-              const s = STATUS_LABELS[r.status] ?? { label: r.status, color: "bg-gray-100" };
+              const s = STATUS_CONFIG[r.status] ?? { label: r.status, color: "bg-gray-100" };
               return (
                 <div key={r.id}
                   onClick={() => setSelectedId(r.id)}
@@ -151,7 +130,7 @@ export default function AdminInfringementsPage() {
                     <span className="text-xs text-gray-400">{r.source}</span>
                   </div>
                   <p className="text-sm font-medium text-gray-900 truncate">{r.portrait?.title}</p>
-                  <p className="text-xs text-gray-500">{TYPE_LABELS[r.type] ?? r.type}</p>
+                  <p className="text-xs text-gray-500">{TYPE_CONFIG[r.type] ?? r.type}</p>
                   <p className="mt-1 text-xs text-gray-400 truncate">{r.reporter?.displayName}</p>
                 </div>
               );
@@ -168,14 +147,11 @@ export default function AdminInfringementsPage() {
               setReviewForm={setReviewForm}
               onSubmit={() => submitReview(selectedId)}
               submitting={submitting}
-              STATUS_LABELS={STATUS_LABELS}
-              TYPE_LABELS={TYPE_LABELS}
               tc={tc}
-              isZh={isZh}
             />
           ) : (
             <div className="flex h-full items-center justify-center rounded-xl bg-white p-12 text-gray-400 text-sm">
-              {tc.clickToReview || (isZh ? "点击左侧举报卡片查看详情并进行审核" : "Click a report card on the left to view details and review")}
+              {tc.clickToReview || "Click a report card on the left to view details and review"}
             </div>
           )}
         </div>
@@ -190,20 +166,14 @@ function ReportDetailPanel({
   setReviewForm,
   onSubmit,
   submitting,
-  STATUS_LABELS,
-  TYPE_LABELS,
   tc,
-  isZh,
 }: {
   report: any;
   reviewForm: { decision: string; resolution: string };
   setReviewForm: (f: any) => void;
   onSubmit: () => void;
   submitting: boolean;
-  STATUS_LABELS: Record<string, { label: string; color: string }>;
-  TYPE_LABELS: Record<string, string>;
   tc: any;
-  isZh: boolean;
 }) {
   if (!report) return null;
 
@@ -214,39 +184,39 @@ function ReportDetailPanel({
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-lg font-bold text-gray-900">{report.portrait?.title}</h2>
-          <p className="text-sm text-gray-500">{tc.reportId || (isZh ? "举报ID" : "Report ID")}：{report.id}</p>
+          <p className="text-sm text-gray-500">{tc.reportId || "Report ID"}：{report.id}</p>
         </div>
         <span className="text-xs text-gray-400">
-          {new Date(report.createdAt).toLocaleString(isZh ? "zh-CN" : "en-US")}
+          {new Date(report.createdAt).toLocaleString()}
         </span>
       </div>
 
       <dl className="grid grid-cols-2 gap-3 text-sm">
-        <div><dt className="text-gray-500">{tc.reporter || (isZh ? "举报人" : "Reporter")}</dt><dd className="font-medium">{report.reporter?.displayName}</dd></div>
-        <div><dt className="text-gray-500">{tc.infringementType || (isZh ? "侵权类型" : "Type")}</dt><dd className="font-medium">{TYPE_LABELS[report.type] ?? report.type}</dd></div>
-        <div className="col-span-2"><dt className="text-gray-500">{tc.detectedUrl || (isZh ? "发现链接" : "Detected URL")}</dt>
+        <div><dt className="text-gray-500">{tc.reporter || "Reporter"}</dt><dd className="font-medium">{report.reporter?.displayName}</dd></div>
+        <div><dt className="text-gray-500">{tc.infringementType || "Type"}</dt><dd className="font-medium">{tc[report.type] || TYPE_CONFIG[report.type] ?? report.type}</dd></div>
+        <div className="col-span-2"><dt className="text-gray-500">{tc.detectedUrl || "Detected URL"}</dt>
           <dd>{report.detectedUrl
             ? <a href={report.detectedUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline text-xs">{report.detectedUrl}</a>
             : "—"}</dd>
         </div>
         {report.similarityScore && (
-          <div className="col-span-2"><dt className="text-gray-500">{tc.similarityScore || (isZh ? "系统相似度" : "Similarity Score")}</dt>
+          <div className="col-span-2"><dt className="text-gray-500">{tc.similarityScore || "Similarity Score"}</dt>
             <dd className="font-medium text-red-600">{(report.similarityScore * 100).toFixed(1)}%</dd>
           </div>
         )}
       </dl>
 
       <div>
-        <h3 className="mb-1 text-sm font-medium text-gray-700">{tc.infringementDesc || (isZh ? "侵权描述" : "Description")}</h3>
+        <h3 className="mb-1 text-sm font-medium text-gray-700">{tc.infringementDesc || "Description"}</h3>
         <p className="text-sm text-gray-600 whitespace-pre-wrap">{report.description}</p>
       </div>
 
       {report.evidenceUrls?.length > 0 && (
         <div>
-          <h3 className="mb-2 text-sm font-medium text-gray-700">{tc.evidenceScreenshots || (isZh ? "证据截图" : "Evidence")}</h3>
+          <h3 className="mb-2 text-sm font-medium text-gray-700">{tc.evidenceScreenshots || "Evidence"}</h3>
           <div className="flex gap-2 overflow-x-auto">
             {report.evidenceUrls.map((url: string, i: number) => (
-              <img key={i} src={url} alt={`${tc.evidence || (isZh ? "证据" : "Evidence")} ${i + 1}`}
+              <img key={i} src={url} alt={`${tc.evidence || "Evidence"} ${i + 1}`}
                 className="h-24 rounded-lg border border-gray-200 object-cover flex-shrink-0"
                 onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
             ))}
@@ -257,12 +227,12 @@ function ReportDetailPanel({
       {/* Review action (only if PENDING_REVIEW) */}
       {canReview && (
         <div className="border-t pt-4 space-y-3">
-          <h3 className="text-sm font-semibold text-gray-900">{tc.reviewAction || (isZh ? "审核操作" : "Review Action")}</h3>
+          <h3 className="text-sm font-semibold text-gray-900">{tc.reviewAction || "Review Action"}</h3>
           <div className="flex gap-2">
             {[
-              { d: "VALIDATED", label: tc.confirmInfringement || (isZh ? "确认侵权" : "Confirm") },
-              { d: "REJECTED", label: tc.notEstablished || (isZh ? "不成立" : "Not Established") },
-              { d: "SETTLED", label: tc.settled || (isZh ? "和解" : "Settled") },
+              { d: "VALIDATED", label: tc.confirmInfringement || "Confirm Infringement" },
+              { d: "REJECTED", label: tc.notEstablished || "Not Established" },
+              { d: "SETTLED", label: tc.settled || "Settled" },
             ].map(({ d, label }) => (
               <label key={d} className="flex items-center gap-1.5 text-sm">
                 <input type="radio" name="decision" value={d}
@@ -274,7 +244,7 @@ function ReportDetailPanel({
             ))}
           </div>
           <textarea
-            placeholder={tc.resolutionPlaceholder || (isZh ? "填写处理意见或备注（可选）" : "Enter resolution notes (optional)")}
+            placeholder={tc.resolutionPlaceholder || "Enter resolution notes (optional)"}
             value={reviewForm.resolution}
             onChange={(e) => setReviewForm((f: any) => ({ ...f, resolution: e.target.value }))}
             className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
@@ -285,14 +255,14 @@ function ReportDetailPanel({
             disabled={submitting}
             className="w-full rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-blue-700 disabled:bg-gray-300"
           >
-            {submitting ? (tc.submitting || (isZh ? "提交中..." : "Submitting...")) : (tc.confirmReview || (isZh ? "确认审核" : "Confirm Review"))}
+            {submitting ? (tc.submitting || "Submitting...") : (tc.confirmReview || "Confirm Review")}
           </button>
         </div>
       )}
 
       {report.resolution && (
         <div className="border-t pt-4">
-          <h3 className="mb-1 text-sm font-medium text-gray-700">{tc.resolutionOpinion || (isZh ? "处理意见" : "Resolution")}</h3>
+          <h3 className="mb-1 text-sm font-medium text-gray-700">{tc.resolutionOpinion || "Resolution"}</h3>
           <p className="text-sm text-gray-600 whitespace-pre-wrap">{report.resolution}</p>
         </div>
       )}
