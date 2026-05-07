@@ -38,8 +38,7 @@ const CATEGORY_OPTIONS: { value: string; icon: string }[] = [
 ];
 
 export default function CelebrityPage() {
-  const { t, locale } = useLanguage();
-  const isZh = locale === "zh-CN" || locale === "zh-Hant";
+  const { t } = useLanguage();
   const [form, setForm] = useState<FormData>({
     name: "",
     email: "",
@@ -57,11 +56,11 @@ export default function CelebrityPage() {
 
   function validate(): boolean {
     const e: FieldError = {};
-    if (!form.name.trim()) e.name = isZh ? "请填写真实姓名" : "Real name is required";
-    if (!form.email.trim()) e.email = isZh ? "请填写邮箱" : "Email is required";
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) e.email = isZh ? "邮箱格式不正确" : "Invalid email format";
-    if (!form.stageName.trim()) e.stageName = isZh ? "请填写艺名/舞台名" : "Stage name is required";
-    if (!form.category) e.category = isZh ? "请选择艺人类型" : "Please select artist category";
+    if (!form.name.trim()) e.name = t.celebrity.realNameError;
+    if (!form.email.trim()) e.email = t.celebrity.emailError;
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) e.email = t.celebrity.emailInvalidError;
+    if (!form.stageName.trim()) e.stageName = t.celebrity.stageNameError;
+    if (!form.category) e.category = t.celebrity.categoryError;
     setErrors(e);
     return Object.keys(e).length === 0;
   }
@@ -92,10 +91,10 @@ export default function CelebrityPage() {
       if (json.success) {
         setSuccess(true);
       } else {
-        setServerError(json.error ?? (isZh ? "提交失败，请稍后重试" : "Submission failed, please try again later"));
+        setServerError(json.error ?? t.celebrity.error);
       }
     } catch {
-      setServerError(isZh ? "网络错误，请检查网络连接" : "Network error, please check your connection");
+      setServerError(t.celebrity.networkError);
     } finally {
       setSubmitting(false);
     }
@@ -209,7 +208,7 @@ export default function CelebrityPage() {
                       type="text"
                       value={form.name}
                       onChange={(e) => update("name", e.target.value)}
-                      placeholder={isZh ? "张三" : "Zhang San"}
+                      placeholder={t.celebrity.nameZhPlaceholder}
                       className={`w-full px-4 py-3 border rounded-xl text-sm transition focus:outline-none focus:ring-2 focus:ring-purple-500 ${
                         errors.name ? "border-red-400 bg-red-50" : "border-gray-200"
                       }`}
@@ -355,7 +354,7 @@ export default function CelebrityPage() {
                 </button>
 
                 <p className="text-center text-xs text-gray-400">
-                  {isZh ? "提交即表示您同意我们的" : "By submitting, you agree to our"}{" "}
+                  {t.celebrity.agreeToTerms}{" "}
                   <a href="/privacy" className="text-purple-600 hover:underline">{t.celebrity.privacyPolicy}</a>
                 </p>
               </form>
