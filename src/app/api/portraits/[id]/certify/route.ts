@@ -12,6 +12,7 @@ import { getSessionFromRequest } from "@/lib/auth/session";
 import { certifyPortrait, SUPPORTED_NETWORKS } from "@/lib/blockchain";
 import { sendPortraitCertifiedEmail } from "@/lib/email";
 import { buildPortraitCertificate } from "@/lib/export/portrait-certificate";
+import { uploadFile } from "@/lib/storage";
 
 export const dynamic = "force-dynamic";
 
@@ -115,10 +116,11 @@ export async function POST(request: NextRequest, context: RouteContext) {
       },
     });
 
-    // Build PNG certificate
+    // Build PNG certificate and upload to R2
     let certificateUrl = "";
+    let pngBuffer = null;
     try {
-      const certData = await buildPortraitCertificate({
+      pngBuffer = await buildPortraitCertificate({
         portraitId: id,
         portraitTitle: portrait.title,
         portraitHash: portraitImageHash,
@@ -130,12 +132,16 @@ export async function POST(request: NextRequest, context: RouteContext) {
         certifiedAt: certificationResult.certifiedAt,
         network,
       });
-      certificateUrl = certData.url;
+      
+      // Upload to R2
+      const certKey = `certificates/${id}/${Date.now()}.png`;
+      certificateUrl = await uploadFile(pngBuffer, certKey, "image/png");
+      console.log("[Certify] Certificate uploaded:", certificateUrl);
     } catch (certErr) {
       console.error("[Certify] Certificate build failed:", certErr);
     }
 
-    // Send email
+    // Send email with PNG buffer attached
     try {
       await sendPortraitCertifiedEmail({
         portraitId: id,
@@ -150,6 +156,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
         blockchainTxHash: certificationResult.txHash,
         certifiedAt: certificationResult.certifiedAt,
         network,
+        certificateBuffer: pngBuffer,
         certificateUrl,
       });
     } catch (emailErr) {

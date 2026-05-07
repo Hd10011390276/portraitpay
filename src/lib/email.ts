@@ -191,11 +191,12 @@ interface PortraitCertifiedEmailParams {
   network: string;
   certifiedAt: string;
   certificateBuffer?: Buffer;
+  certificateUrl?: string;
   certificateNo?: string;
 }
 
 export async function sendPortraitCertifiedEmail(params: PortraitCertifiedEmailParams): Promise<void> {
-  const { name, email, portraitTitle, portraitImageHash, idCardFrontHash, idCardName, idCardType, idCardNumberMasked, blockchainTxHash, network, certifiedAt, certificateBuffer, certificateNo } = params;
+  const { name, email, portraitTitle, portraitImageHash, idCardFrontHash, idCardName, idCardType, idCardNumberMasked, blockchainTxHash, network, certifiedAt, certificateBuffer, certificateUrl, certificateNo } = params;
   const explorerUrl = network === "base" ? "https://basescan.org/tx/" : "https://etherscan.io/tx/";
   const txUrl = `${explorerUrl}${blockchainTxHash}`;
   const certifiedAtStr = new Date(certifiedAt).toLocaleString("zh-CN", { timeZone: "Asia/Shanghai" });
