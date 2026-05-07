@@ -1,14 +1,13 @@
 /**
  * GET /api/portraits/[id]/certificate
  * 
- * Download PNG certificate - generates on-demand from stored R2 URL or regenerate
+ * Download PNG certificate - generates on-demand
  */
 
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getSessionFromRequest } from "@/lib/auth/session";
 import { buildPortraitCertificate } from "@/lib/export/portrait-certificate";
-import { storageService } from "@/lib/storage";
 
 export const dynamic = "force-dynamic";
 
@@ -22,21 +21,10 @@ export async function GET(request: NextRequest, context: RouteContext) {
     }
 
     const { id } = await context.params;
+    console.log('[Certificate API] Fetching portrait:', id);
+    
     const portrait = await prisma.portrait.findUnique({
       where: { id, deletedAt: null },
-      select: {
-        id: true,
-        ownerId: true,
-        title: true,
-        portraitImageHash: true,
-        idCardFrontHash: true,
-        idCardType: true,
-        idCardName: true,
-        idCardNumber: true,
-        blockchainTxHash: true,
-        blockchainNetwork: true,
-        certifiedAt: true,
-      },
     });
 
     if (!portrait) {
@@ -51,18 +39,30 @@ export async function GET(request: NextRequest, context: RouteContext) {
       return NextResponse.json({ success: false, error: "Portrait not certified on blockchain" }, { status: 400 });
     }
 
+    // Use default values for missing fields
+    const portraitTitle = portrait.title || 'Untitled';
+    const idCardName = portrait.idCardName || 'Unknown';
+    const idCardType = portrait.idCardType || 'id_card';
+    const idCardNumber = portrait.idCardNumber || '****';
+    const portraitHash = portrait.portraitImageHash || portrait.imageHash || 'N/A';
+    const idCardHash = portrait.idCardFrontHash || 'N/A';
+    const network = portrait.blockchainNetwork || 'sepolia';
+    const certifiedAt = portrait.certifiedAt || new Date().toISOString();
+
+    console.log('[Certificate API] Generating certificate for:', portraitTitle);
+
     // Generate certificate on-demand
     const pngBuffer = await buildPortraitCertificate({
       portraitId: id,
-      portraitTitle: portrait.title,
-      portraitHash: portrait.portraitImageHash,
-      idCardHash: portrait.idCardFrontHash,
-      idCardType: portrait.idCardType,
-      idCardName: portrait.idCardName,
-      idCardNumber: portrait.idCardNumber,
+      portraitTitle,
+      portraitHash,
+      idCardHash,
+      idCardType,
+      idCardName,
+      idCardNumber,
       blockchainTxHash: portrait.blockchainTxHash,
-      network: portrait.blockchainNetwork,
-      certifiedAt: portrait.certifiedAt,
+      network,
+      certifiedAt: new Date(certifiedAt),
     });
 
     return new Response(pngBuffer, {
@@ -73,6 +73,6 @@ export async function GET(request: NextRequest, context: RouteContext) {
     });
   } catch (error) {
     console.error("[GET /api/portraits/[id]/certificate]", error);
-    return NextResponse.json({ success: false, error: "Internal server error" }, { status: 500 });
+    return NextResponse.json({ success: false, error: "Internal server error: " + (error instanceof Error ? error.message : String(error)) }, { status: 500 });
   }
 }
