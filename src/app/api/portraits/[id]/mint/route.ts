@@ -96,7 +96,6 @@ export async function POST(request: NextRequest, context: RouteContext) {
     const idCardType = body.idCardType ?? portrait.idCardType;
     const idCardName = body.idCardName ?? portrait.idCardName;
     const idCardNumber = body.idCardNumber ?? portrait.idCardNumber;
-    const idCardNumber = body.idCardNumber;
 
     if (!idCardType || !idCardName || !idCardNumber) {
       return NextResponse.json(

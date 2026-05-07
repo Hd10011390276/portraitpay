@@ -257,7 +257,7 @@ export default function LawyerDashboard() {
                       </a>
                     )}
                     <p className="text-xs text-gray-400 mt-1">
-                      {new Date(c.createdAt).toLocaleDateString(isZh ? "zh-CN" : "en-US", { timeZone: "Asia/Shanghai" })}
+                      {new Date(c.createdAt).toLocaleDateString(locale, { timeZone: "Asia/Shanghai" })}
                       {c.infringementReport?.reporter?.displayName && (
                         <span> · {c.infringementReport.reporter.displayName}</span>
                       )}
