@@ -1,6 +1,6 @@
 """
 Add Spanish portraits and kyc to es-ES section.
-Uses line-based insertion at the es-ES footer closing (line 4430).
+Uses line-based insertion at the es-ES footer closing.
 """
 import sys
 sys.stdout.reconfigure(encoding='utf-8')
@@ -8,25 +8,14 @@ sys.stdout.reconfigure(encoding='utf-8')
 with open('src/lib/i18n/translations.ts', 'r', encoding='utf-8') as f:
     lines = f.readlines()
 
-# The es-ES footer closing is at line 4431 (0-indexed: 4430)
-# line 4431: '    },\n' (footer closing)
-# line 4432: '    // Agency page\n' (enterpriseAgency start)
-print(f"Line 4431 (index 4430): {repr(lines[4430])}")
-print(f"Line 4432 (index 4431): {repr(lines[4431])}")
-
-# Verify
+# The es-ES footer }, is at index 4429, // Agency page at 4430
+# We insert Spanish content AFTER }, and BEFORE // Agency page
 closing = lines[4429].strip()
 agency = lines[4430]
-assert closing == '},', "Expected closing brace at 4430, got: " + repr(closing)
-assert 'Agency page' in agency, "Expected Agency page at 4431, got: " + repr(agency)
-
-# Build new content:
-# lines[:4430] = indices 0-4429 = includes footer closing }, at idx 4429
-# Then Spanish content
-# Then lines[4431:] = from enterpriseAgency onwards (skipping the // Agency page line since we replace it)
-new_lines = lines[:4430]  # indices 0-4429 = everything through footer closing }
-new_lines.append(es_portraits_kyc)
-new_lines.extend(lines[4431:])  # skip // Agency page line
+print(f"Index 4429: {repr(lines[4429])}")
+print(f"Index 4430: {repr(lines[4430])}")
+assert closing == '},', "Expected }, at 4429, got: " + repr(closing)
+assert 'Agency page' in agency, "Expected Agency page at 4430"
 
 es_portraits_kyc = """
     // Portraits
@@ -153,11 +142,13 @@ es_portraits_kyc = """
     },
 """
 
-# Build new lines
-new_lines = lines[:4431]  # Everything before // Agency page (includes }, at 4430)
-new_lines.append(es_portraits_kyc)  # Add Spanish content
-new_lines.append('    // Agency page\n')  # Keep Agency page comment
-new_lines.extend(lines[4432:])  # Everything after Agency page (skip duplicate)
+# Build new content:
+# lines[:4430] = indices 0-4429 = everything up to and including }
+# Then Spanish content (no need to append }, again since it's already included)
+# Then lines[4431:] = from enterpriseAgency onwards (skipping // Agency page)
+new_lines = lines[:4430]  # indices 0-4429
+new_lines.append(es_portraits_kyc)
+new_lines.extend(lines[4431:])  # skip // Agency page line
 
 print(f"Original lines: {len(lines)}, New lines: {len(new_lines)}")
 

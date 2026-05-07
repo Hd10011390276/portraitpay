@@ -19,18 +19,15 @@ const loginReq = https.request({
       path: '/api/portraits/cmov3bdn60001ecx4cjv9pt07/certificate',
       headers: { 'Authorization': 'Bearer ' + token }
     }, (certRes) => {
-      console.log('Status:', certRes.statusCode);
+      console.log('Status:', certRes.statusCode, '| Type:', certRes.headers['content-type']);
       let cb = '';
       certRes.on('data', c => cb += c);
       certRes.on('end', () => {
-        console.log('Response:', cb.slice(0, 500));
-        process.exit(0);
+        console.log(cb.slice(0, 500));
       });
     });
-    certReq.on('error', e => { console.error(e.message); process.exit(1); });
     certReq.end();
   });
 });
 
-loginReq.on('error', e => { console.error(e.message); process.exit(1); });
 loginReq.end(loginData);
