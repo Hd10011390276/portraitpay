@@ -393,7 +393,13 @@ export default function PortraitDetailPage() {
               <div className="mt-4">
                 <button
                   onClick={() => {
-                    window.open(`/api/portraits/${id}/certificate`, '_blank');
+                    const link = document.createElement('a');
+                    link.href = `/api/portraits/${id}/certificate`;
+                    link.download = `portrait-certificate-${id}.png`;
+                    link.target = '_blank';
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
                   }}
                   className="w-full px-4 py-2.5 bg-purple-600 text-white font-medium rounded-lg hover:bg-purple-700 transition-colors flex items-center justify-center gap-2"
                 >
