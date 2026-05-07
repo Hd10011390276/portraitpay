@@ -752,6 +752,7 @@ export const translations = {
       fileEndorsementDesc: "用于品牌代言、广告宣传等商业代言场景的肖像授权",
       fileFilm: "影视改编许可协议",
       fileFilmDesc: "适用于影视作品改编、游戏、动画等创意产业的肖像授权",
+      contractLabel: "合同：",
     },
     // Enterprise Certification
     enterpriseCert: {
@@ -2830,6 +2831,7 @@ export const translations = {
       fileEndorsementDesc: "Portrait authorization for brand endorsement and advertising campaigns",
       fileFilm: "Film Adaptation License Agreement",
       fileFilmDesc: "Portrait authorization for film adaptation, games, animation and creative industries",
+      contractLabel: "Contract: ",
     },
     // Enterprise Certification
     enterpriseCert: {
@@ -4672,6 +4674,7 @@ export const translations = {
       fileEndorsementDesc: "Autorización de retrato para campañas de marca y publicidad",
       fileFilm: "Acuerdo de Licencia de Adaptación Cinematográfica",
       fileFilmDesc: "Autorización de retrato para adaptación cinematográfica, juegos, animación e industrias creativas",
+      contractLabel: "Contrato: ",
     },
     // Enterprise Certification
     enterpriseCert: {

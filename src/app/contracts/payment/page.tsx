@@ -38,6 +38,11 @@ function PaymentPageLoading() {
   );
 }
 
+function getContractLabel(contract: { label: string; labelZh: string } | undefined, locale: string): string {
+  if (!contract) return "";
+  return locale === "zh-CN" || locale === "zh-Hant" ? contract.labelZh : contract.label;
+}
+
 function PaymentPageInner() {
   const { t, locale } = useLanguage();
   const isZh = locale === "zh-CN" || locale === "zh-Hant";

@@ -32,6 +32,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
       select: {
         id: true, ownerId: true, title: true, originalImageUrl: true, thumbnailUrl: true,
         portraitImageHash: true, idCardFrontHash: true, blockchainTxHash: true, status: true,
+        idCardType: true, idCardName: true, idCardNumber: true,
         owner: { select: { walletAddress: true, email: true, name: true } },
       },
     });
@@ -75,9 +76,9 @@ export async function POST(request: NextRequest, context: RouteContext) {
       );
     }
 
-    const idCardType = body.idCardType;
-    const idCardName = body.idCardName;
-    const idCardNumber = body.idCardNumber;
+    const idCardType = body.idCardType ?? portrait.idCardType;
+    const idCardName = body.idCardName ?? portrait.idCardName;
+    const idCardNumber = body.idCardNumber ?? portrait.idCardNumber;
 
     if (!idCardType || !idCardName || !idCardNumber) {
       return NextResponse.json(
