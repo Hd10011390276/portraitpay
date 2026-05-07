@@ -118,7 +118,7 @@ export default function EnterprisePage() {
             <LanguageToggle />
             <ThemeToggle />
             <Link href="/login" className="text-sm text-gray-600 dark:text-gray-300 hover:text-blue-600">
-              {isZh ? "登录" : "Sign In"}
+              {t.enterpriseContact.signIn}
             </Link>
           </div>
         </div>
@@ -129,22 +129,20 @@ export default function EnterprisePage() {
         <section className="bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-950/30 dark:to-purple-950/30 py-16 sm:py-24">
           <div className="max-w-4xl mx-auto px-6 text-center">
             <div className="inline-block px-4 py-1.5 bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 text-sm font-medium rounded-full mb-6">
-              🏢 {isZh ? "企业解决方案" : "Enterprise Solutions"}
+              🏢 {t.enterpriseContact.enterpriseSolutions}
             </div>
             <h1 className="text-3xl sm:text-5xl font-bold text-gray-900 dark:text-white mb-6">
-              {isZh ? "为企业和代理机构打造" : "Built for Enterprises & Agencies"}
+              {t.enterpriseContact.builtForEnterprise}
             </h1>
             <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto mb-8">
-              {isZh
-                ? "批量管理艺术家肖像、定制授权条款、专属客户经理，以及完整的 API 接口访问。"
-                : "Bulk manage artist portraits, custom licensing terms, dedicated account managers, and full API access."}
+              {t.enterpriseContact.builtForEnterpriseSub}
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <a href="#contact" className="px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors">
-                {isZh ? "联系销售" : "Contact Sales"}
+                {t.enterpriseContact.contactSales}
               </a>
               <Link href="/enterprise/agency" className="px-6 py-3 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 font-medium rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-                {isZh ? "了解代理功能" : "Learn about Agency Features"}
+                {t.enterpriseContact.learnAgency}
               </Link>
             </div>
           </div>
@@ -154,16 +152,16 @@ export default function EnterprisePage() {
         <section className="py-16 sm:py-20">
           <div className="max-w-6xl mx-auto px-6">
             <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white text-center mb-12">
-              {isZh ? "企业版功能" : "Enterprise Features"}
+              {t.enterpriseContact.enterpriseFeatures}
             </h2>
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {[
-                { icon: "👥", title: isZh ? "多艺术家管理" : "Multi-Artist Management", desc: isZh ? "在一个仪表板中管理多位艺术家和他们的作品集" : "Manage multiple artists and their portfolios in one dashboard" },
-                { icon: "📋", title: isZh ? "批量上传" : "Bulk Upload", desc: isZh ? "一次上传多位艺术家的多个肖像作品" : "Upload multiple portraits for multiple artists at once" },
-                { icon: "📜", title: isZh ? "白标证书" : "White-Label Certificates", desc: isZh ? "为您的品牌定制区块链证书外观" : "Customize blockchain certificate appearance for your brand" },
-                { icon: "🔗", title: isZh ? "API 接口" : "API Access", desc: isZh ? "完整的 REST API 用于系统集成" : "Full REST API for system integration" },
-                { icon: "👔", title: isZh ? "专属客户经理" : "Dedicated Account Manager", desc: isZh ? "获得专门的支持团队帮助您成功" : "Get a dedicated support team to help you succeed" },
-                { icon: "⚙️", title: isZh ? "自定义授权条款" : "Custom Licensing Terms", desc: isZh ? "灵活定制授权规则和分成比例" : "Flexibly customize licensing rules and revenue splits" },
+                { icon: "👥", title: t.enterpriseContact.multiArtistMgmt, desc: t.enterpriseContact.multiArtistMgmtDesc },
+                { icon: "📋", title: t.enterpriseContact.bulkUpload, desc: t.enterpriseContact.bulkUploadDesc },
+                { icon: "📜", title: t.enterpriseContact.whiteLabelCert, desc: t.enterpriseContact.whiteLabelCertDesc },
+                { icon: "🔗", title: t.enterpriseContact.apiAccess, desc: t.enterpriseContact.apiAccessDesc },
+                { icon: "👔", title: t.enterpriseContact.dedicatedAccountMgr, desc: t.enterpriseContact.dedicatedAccountMgrDesc },
+                { icon: "⚙️", title: t.enterpriseContact.customLicenseTerms, desc: t.enterpriseContact.customLicenseTermsDesc },
               ].map((feature, i) => (
                 <div key={i} className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 hover:shadow-lg transition-shadow">
                   <div className="text-3xl mb-4">{feature.icon}</div>
@@ -180,10 +178,10 @@ export default function EnterprisePage() {
           <div className="max-w-6xl mx-auto px-6">
             <div className="text-center mb-10">
               <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-                {isZh ? "企业服务" : "Enterprise Services"}
+                {t.enterpriseContact.enterpriseServices}
               </h2>
               <p className="text-gray-500 dark:text-gray-400">
-                {isZh ? "一站式满足企业数字人授权和肖像权保护需求" : "All-in-one platform for digital avatar licensing and portrait rights protection"}
+                {t.enterpriseContact.enterpriseServicesSub}
               </p>
             </div>
             <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -191,29 +189,29 @@ export default function EnterprisePage() {
                 {
                   href: "/enterprise/authorization/apply",
                   icon: "📄",
-                  title: isZh ? "申请授权" : "Apply for License",
-                  desc: isZh ? "申请数字人授权合同模板" : "Request digital avatar licensing contracts",
+                  title: t.enterpriseContact.applyForLicense,
+                  desc: t.enterpriseContact.applyForLicenseDesc,
                   color: "blue",
                 },
                 {
                   href: "/enterprise/authorization/list",
                   icon: "📋",
-                  title: isZh ? "授权查询" : "License Records",
-                  desc: isZh ? "查询已申请的数字人授权" : "Check your digital avatar license records",
+                  title: t.enterpriseContact.licenseRecords,
+                  desc: t.enterpriseContact.licenseRecordsDesc,
                   color: "purple",
                 },
                 {
                   href: "/enterprise/certification",
                   icon: "🏢",
-                  title: isZh ? "企业认证" : "Enterprise Cert",
-                  desc: isZh ? "企业级肖像批量认证服务" : "Enterprise-level portrait certification",
+                  title: t.enterpriseContact.enterpriseCert,
+                  desc: t.enterpriseContact.enterpriseCertDesc,
                   color: "emerald",
                 },
                 {
                   href: "/contact",
                   icon: "📞",
-                  title: isZh ? "联系我们" : "Contact Us",
-                  desc: isZh ? "联系销售团队获取定制方案" : "Get a customized plan from sales",
+                  title: t.enterpriseContact.contactUs,
+                  desc: t.enterpriseContact.contactUsDesc,
                   color: "amber",
                 },
               ].map((service) => (
