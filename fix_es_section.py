@@ -15,8 +15,18 @@ print(f"Line 4431 (index 4430): {repr(lines[4430])}")
 print(f"Line 4432 (index 4431): {repr(lines[4431])}")
 
 # Verify
-assert lines[4430].strip() == '},', f"Expected }, at 4430, got {repr(lines[4430])}"
-assert 'Agency page' in lines[4431], f"Expected Agency page at 4431"
+closing = lines[4429].strip()
+agency = lines[4430]
+assert closing == '},', "Expected closing brace at 4430, got: " + repr(closing)
+assert 'Agency page' in agency, "Expected Agency page at 4431, got: " + repr(agency)
+
+# Build new content:
+# lines[:4430] = indices 0-4429 = includes footer closing }, at idx 4429
+# Then Spanish content
+# Then lines[4431:] = from enterpriseAgency onwards (skipping the // Agency page line since we replace it)
+new_lines = lines[:4430]  # indices 0-4429 = everything through footer closing }
+new_lines.append(es_portraits_kyc)
+new_lines.extend(lines[4431:])  # skip // Agency page line
 
 es_portraits_kyc = """
     // Portraits
@@ -144,11 +154,10 @@ es_portraits_kyc = """
 """
 
 # Build new lines
-new_lines = lines[:4430]  # Everything before footer closing }
-new_lines.append('    },\n')  # Keep footer closing
+new_lines = lines[:4431]  # Everything before // Agency page (includes }, at 4430)
 new_lines.append(es_portraits_kyc)  # Add Spanish content
 new_lines.append('    // Agency page\n')  # Keep Agency page comment
-new_lines.extend(lines[4431:])  # Everything after Agency page
+new_lines.extend(lines[4432:])  # Everything after Agency page (skip duplicate)
 
 print(f"Original lines: {len(lines)}, New lines: {len(new_lines)}")
 
