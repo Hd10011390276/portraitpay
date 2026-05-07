@@ -41,12 +41,12 @@ export default function EnterprisePage() {
 
   function validate(): boolean {
     const e: FieldError = {};
-    if (!form.name.trim()) e.name = isZh ? "请填写姓名" : "Please enter your name";
-    if (!form.email.trim()) e.email = isZh ? "请填写邮箱" : "Please enter your email";
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) e.email = isZh ? "邮箱格式不正确" : "Invalid email format";
-    if (!form.company.trim()) e.company = isZh ? "请填写公司名称" : "Please enter your company name";
-    if (!form.message.trim()) e.message = isZh ? "请填写留言内容" : "Please enter your message";
-    else if (form.message.trim().length < 10) e.message = isZh ? "留言至少10个字符" : "Message must be at least 10 characters";
+    if (!form.name.trim()) e.name = t.enterpriseContact.validationName;
+    if (!form.email.trim()) e.email = t.enterpriseContact.validationEmail;
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) e.email = t.enterpriseContact.validationEmailFormat;
+    if (!form.company.trim()) e.company = t.enterpriseContact.validationEnterprise;
+    if (!form.message.trim()) e.message = t.enterpriseContact.validationUse;
+    else if (form.message.trim().length < 10) e.message = t.enterpriseContact.validationUseLen;
     setErrors(e);
     return Object.keys(e).length === 0;
   }
@@ -68,10 +68,10 @@ export default function EnterprisePage() {
       if (json.success) {
         setSuccess(true);
       } else {
-        setServerError(json.error ?? (isZh ? "提交失败，请稍后重试" : "Submission failed, please try again later"));
+        setServerError(json.error ?? t.enterpriseContact.serverError);
       }
     } catch {
-      setServerError(isZh ? "网络错误，请检查网络连接" : "Network error, please check your connection");
+      setServerError(t.enterpriseContact.networkError);
     } finally {
       setSubmitting(false);
     }
@@ -90,16 +90,16 @@ export default function EnterprisePage() {
         <div className="max-w-md w-full bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 text-center">
           <div className="text-6xl mb-4">✅</div>
           <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-            {isZh ? "提交成功！" : "Submitted Successfully!"}
+            {t.enterpriseContact.success}
           </h2>
           <p className="text-gray-500 dark:text-gray-400 mb-6">
-            {isZh ? "感谢您的留言，我们的团队会在 1-3 个工作日内与您联系。" : "Thank you for your message. Our team will get back to you within 1-3 business days."}
+            {t.enterpriseContact.successMsg}
           </p>
           <Link
             href="/"
             className="inline-block w-full py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
           >
-            {isZh ? "返回首页" : "Back to Home"}
+            {t.enterpriseContact.backHome}
           </Link>
         </div>
       </div>
@@ -305,10 +305,10 @@ export default function EnterprisePage() {
           <div className="max-w-2xl mx-auto px-6">
             <div className="text-center mb-10">
               <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-4">
-                {isZh ? "联系销售团队" : "Contact Our Sales Team"}
+                {t.enterpriseContact.formTitle}
               </h2>
               <p className="text-gray-500 dark:text-gray-400">
-                {isZh ? "告诉我们您的需求，我们将为您提供定制方案" : "Tell us about your needs and we'll provide a customized plan"}
+                {t.enterpriseContact.subtitle}
               </p>
             </div>
 
@@ -317,20 +317,20 @@ export default function EnterprisePage() {
                 <div className="grid sm:grid-cols-2 gap-5">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1.5">
-                      {isZh ? "姓名" : "Name"} <span className="text-red-500">*</span>
+                      {t.enterpriseContact.name} <span className="text-red-500">*</span>
                     </label>
                     <input
                       type="text"
                       value={form.name}
                       onChange={(e) => update("name", e.target.value)}
-                      placeholder={isZh ? "您的姓名" : "Your name"}
+                      placeholder={t.enterpriseContact.namePlaceholder}
                       className={`w-full px-4 py-2.5 rounded-lg border text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.name ? "border-red-500" : ""}`}
                     />
                     {errors.name && <p className="text-xs text-red-500 mt-1">{errors.name}</p>}
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1.5">
-                      {isZh ? "邮箱" : "Email"} <span className="text-red-500">*</span>
+                      {t.enterpriseContact.email} <span className="text-red-500">*</span>
                     </label>
                     <input
                       type="email"
@@ -346,26 +346,26 @@ export default function EnterprisePage() {
                 <div className="grid sm:grid-cols-2 gap-5">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1.5">
-                      {isZh ? "公司" : "Company"} <span className="text-red-500">*</span>
+                      {t.enterpriseContact.company} <span className="text-red-500">*</span>
                     </label>
                     <input
                       type="text"
                       value={form.company}
                       onChange={(e) => update("company", e.target.value)}
-                      placeholder={isZh ? "公司名称" : "Company name"}
+                      placeholder={t.enterpriseContact.companyPlaceholder}
                       className={`w-full px-4 py-2.5 rounded-lg border text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.company ? "border-red-500" : ""}`}
                     />
                     {errors.company && <p className="text-xs text-red-500 mt-1">{errors.company}</p>}
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1.5">
-                      {isZh ? "电话" : "Phone"}
+                      {t.enterpriseContact.phone}
                     </label>
                     <input
                       type="tel"
                       value={form.phone}
                       onChange={(e) => update("phone", e.target.value)}
-                      placeholder={isZh ? "手机号（选填）" : "Phone (optional)"}
+                      placeholder={t.enterpriseContact.phonePlaceholder}
                       className="w-full px-4 py-2.5 rounded-lg border text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                   </div>
@@ -373,12 +373,12 @@ export default function EnterprisePage() {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1.5">
-                    {isZh ? "留言内容" : "Message"} <span className="text-red-500">*</span>
+                    {t.enterpriseContact.message} <span className="text-red-500">*</span>
                   </label>
                   <textarea
                     value={form.message}
                     onChange={(e) => update("message", e.target.value)}
-                    placeholder={isZh ? "请描述您的需求..." : "Please describe your needs..."}
+                    placeholder={t.enterpriseContact.messagePlaceholder}
                     rows={4}
                     className={`w-full px-4 py-2.5 rounded-lg border text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none ${errors.message ? "border-red-500" : ""}`}
                   />
@@ -399,7 +399,7 @@ export default function EnterprisePage() {
                   {submitting && (
                     <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
                   )}
-                  {submitting ? (isZh ? "提交中..." : "Submitting...") : (isZh ? "提交" : "Submit")}
+                  {submitting ? t.enterpriseContact.submitting : t.enterpriseContact.submit}
                 </button>
               </form>
             </div>

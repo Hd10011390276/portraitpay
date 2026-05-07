@@ -58,6 +58,8 @@ export const translations = {
       successTitle: "申请已提交！",
       successDesc: "感谢您的入驻申请。我们的审核团队会在 3-5 个工作日内完成审核，并通过邮件通知您结果。",
       backToHome: "返回首页",
+      submitError: "提交失败，请重试",
+      networkError: "网络错误，请检查连接后重试",
     },
     // Common UI labels
     common: {
@@ -1815,6 +1817,8 @@ export const translations = {
       successTitle: "Application Submitted!",
       successDesc: "Thank you for your application. Our review team will complete the review within 3-5 business days and notify you via email.",
       backToHome: "Back to Home",
+      submitError: "Submission failed, please try again",
+      networkError: "Network error, please check your connection",
     },
     // Common UI labels
     common: {
@@ -3406,6 +3410,8 @@ export const translations = {
       successTitle: "¡Solicitud Enviada!",
       successDesc: "Gracias por su solicitud. Nuestro equipo de revisión completará la revisión en 3-5 días hábiles y le notificará por email.",
       backToHome: "Volver al Inicio",
+      submitError: "Error al enviar, por favor intente de nuevo",
+      networkError: "Error de red, por favor verifique su conexión",
     },
     // Legal - Terms of Service
     legal: {

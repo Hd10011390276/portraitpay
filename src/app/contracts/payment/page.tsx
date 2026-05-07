@@ -30,7 +30,7 @@ export default function PaymentPage() {
   );
 }
 
-function PaymentPageLoading({ isZh }: { isZh: boolean }) {
+function PaymentPageLoading() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex items-center justify-center">
       <div className="animate-spin h-6 w-6 border-2 border-[#244169] border-t-transparent rounded-full" />
@@ -53,7 +53,7 @@ function PaymentPageInner() {
 
   async function handleUnlock() {
     if (!email.trim() || !txId.trim()) {
-      setError(isZh ? "请填写邮箱和交易ID" : "Please fill in both email and transaction ID");
+      setError(t.contracts.errorEmailTxId);
       return;
     }
     setVerifying(true);
@@ -71,10 +71,10 @@ function PaymentPageInner() {
         window.dispatchEvent(new Event("contracts:unlock"));
         setSuccess(true);
       } else {
-        setError(data.error || (isZh ? "验证失败，请检查交易信息" : "Verification failed, please check your transaction"));
+        setError(data.error || t.contracts.errorVerifyFailed);
       }
     } catch {
-      setError(isZh ? "验证失败，请稍后重试" : "Verification failed, please try again");
+      setError(t.contracts.errorGeneric);
     } finally {
       setVerifying(false);
     }
@@ -90,18 +90,16 @@ function PaymentPageInner() {
             </svg>
           </div>
           <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-            {isZh ? "解锁成功！" : "Unlocked!"}
+            {t.contracts.unlockSuccess}
           </h2>
           <p className="text-gray-500 dark:text-gray-400 mb-6">
-            {isZh
-              ? `您已成功解锁 ${contract ? (isZh ? contract.labelZh : contract.label) : "Word"} 下载。`
-              : `You have successfully unlocked Word download for ${contract?.label || "this contract"}.`}
+            {t.contracts.unlockSuccessDesc}
           </p>
           <Link
             href="/contracts"
             className="inline-flex items-center gap-2 px-6 py-3 bg-[#244169] hover:bg-[#1a3354] text-white font-medium rounded-lg transition-colors"
           >
-            {isZh ? "返回下载中心" : "Back to Download Center"}
+            {t.contracts.backToCenter}
           </Link>
         </div>
       </div>
@@ -119,7 +117,7 @@ function PaymentPageInner() {
             </svg>
           </Link>
           <span className="text-sm text-gray-500 dark:text-gray-400 flex-1">
-            {isZh ? "合同模板下载中心" : "Contract Templates Download Center"}
+            {t.contracts.title}
           </span>
           <div className="flex items-center gap-2">
             <ThemeToggle />
@@ -132,7 +130,7 @@ function PaymentPageInner() {
         {/* Contract Info */}
         <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 p-6 mb-6">
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-1">
-            {isZh ? "解锁 Word 下载" : "Unlock Word Download"}
+            {t.contracts.unlockWord}
           </h1>
           <p className="text-gray-500 dark:text-gray-400">
             {isZh ? "合同：" : "Contract: "}
@@ -148,7 +146,7 @@ function PaymentPageInner() {
         {/* Payment Options */}
         <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 p-6 mb-6">
           <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-4">
-            {isZh ? "选择支付方式" : "Select Payment Method"}
+            {t.contracts.selectPayment}
           </h2>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
@@ -163,43 +161,39 @@ function PaymentPageInner() {
                 <span className="text-white font-bold text-sm">PayPal</span>
               </div>
               <div className="text-center">
-                <p className="font-semibold text-gray-900 dark:text-white">{isZh ? "PayPal 支付" : "Pay with PayPal"}</p>
+                <p className="font-semibold text-gray-900 dark:text-white">{t.contracts.paypal}</p>
                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                  {isZh ? "安全便捷的在线支付" : "Safe and secure online payment"}
+                  {t.contracts.paypalDesc}
                 </p>
               </div>
             </a>
           </div>
 
           <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 text-sm text-blue-700 dark:text-blue-300">
-            {isZh
-              ? "💡 支付完成后，请填写下方表单进行验证以解锁下载。"
-              : "💡 After payment, fill in the form below to verify and unlock your download."}
+            {t.contracts.paymentHint}
           </div>
         </div>
 
         {/* Verification Form */}
         <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 p-6">
           <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-1">
-            {isZh ? "验证支付" : "Verify Payment"}
+            {t.contracts.verifyPayment}
           </h2>
           <p className="text-sm text-gray-500 dark:text-gray-400 mb-5">
-            {isZh
-              ? "支付完成后，请提供您的邮箱和交易 ID 以解锁 Word 下载。"
-              : "After payment, provide your email and transaction ID to unlock Word download."}
+            {t.contracts.verifyPaymentDesc}
           </p>
 
           <div className="space-y-4">
             {/* Email */}
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-                {isZh ? "支付时使用的邮箱" : "Email used for payment"}
+                {t.contracts.emailLabel}
               </label>
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder={isZh ? "your@email.com" : "your@email.com"}
+                placeholder={t.contracts.emailPlaceholder}
                 className="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#244169] focus:border-transparent"
               />
             </div>
@@ -207,19 +201,17 @@ function PaymentPageInner() {
             {/* Transaction ID */}
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-                {isZh ? "交易 ID / Transaction ID" : "Transaction ID / PayPal Order ID"}
+                {t.contracts.txIdLabel}
               </label>
               <input
                 type="text"
                 value={txId}
                 onChange={(e) => setTxId(e.target.value)}
-                placeholder={isZh ? "输入交易 ID" : "e.g., PAYPAL-ORDER-ID"}
+                placeholder={t.contracts.txIdPlaceholder}
                 className="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#244169] focus:border-transparent"
               />
               <p className="text-xs text-gray-400 mt-1">
-                {isZh
-                  ? "PayPal: 确认邮件中的 Order ID"
-                  : "PayPal: Order ID from confirmation email"}
+                {t.contracts.txIdHint}
               </p>
             </div>
 
@@ -240,14 +232,14 @@ function PaymentPageInner() {
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                   </svg>
-                  {isZh ? "验证中..." : "Verifying..."}
+                  {t.contracts.verifying}
                 </>
               ) : (
                 <>
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                   </svg>
-                  {isZh ? "验证并解锁下载" : "Verify & Unlock Download"}
+                  {t.contracts.verifyBtn}
                 </>
               )}
             </button>
@@ -257,7 +249,7 @@ function PaymentPageInner() {
         {/* Back link */}
         <div className="mt-6 text-center">
           <Link href="/contracts" className="text-sm text-gray-500 hover:text-[#244169] dark:hover:text-blue-400 transition-colors">
-            ← {isZh ? "返回下载中心" : "Back to Download Center"}
+            ← {t.contracts.backToCenter}
           </Link>
         </div>
       </main>

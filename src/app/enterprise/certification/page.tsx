@@ -41,16 +41,14 @@ const PAYPAL_ENTERPRISE = "https://www.paypal.me/PortraitPayAI/299";
 const PAYPAL_PERSONAL = "https://www.paypal.me/PortraitPayAI/199";
 
 export default function EnterpriseCertificationPage() {
-  const { t, locale } = useLanguage();
-  const isZh = locale === "zh-CN" || locale === "zh-Hant";
+  const { t } = useLanguage();
 
   const [step, setStep] = useState<"form" | "payment" | "pending">("form");
   const [pendingData, setPendingData] = useState<FormData | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const tc = isZh ? t.enterpriseCert : t.enterpriseCert;
-  const lang = isZh ? "" : "En";
+  const tc = t.enterpriseCert;
 
   const schema = createSchema(tc);
 
@@ -82,32 +80,28 @@ export default function EnterpriseCertificationPage() {
       if (!json.success) throw new Error(json.error);
       setStep("pending");
     } catch (err) {
-      setError(err instanceof Error ? err.message : (isZh ? "提交失败" : "Submission failed"));
+      setError(err instanceof Error ? err.message : (tc.submitError || "Submission failed"));
     } finally {
       setLoading(false);
     }
   };
 
-  const feeLabel = isAgency
-    ? (isZh ? tc.feeAgency : tc.feeAgency)
-    : (isZh ? tc.feePersonal : tc.feePersonal);
-
-  const getLabel = (zh: string, en: string) => isZh ? zh : en;
+  const feeLabel = isAgency ? tc.feeAgency : tc.feePersonal;
 
   if (step === "pending") {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
         <div className="bg-white rounded-2xl shadow-lg p-8 max-w-md text-center">
           <div className="text-5xl mb-4">⏳</div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">{tc.submittedSuccessfully || tc.submittedSuccessfullyEn}</h2>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">{tc.submittedSuccessfully}</h2>
           <p className="text-gray-600 mb-6">
-            {tc.submittedDesc || tc.submittedDescEn}
+            {tc.submittedDesc}
           </p>
           <button
             onClick={() => setStep("form")}
             className="text-purple-600 font-medium hover:underline"
           >
-            {tc.backToForm || tc.backToFormEn}
+            {tc.backToForm}
           </button>
         </div>
       </div>
@@ -124,10 +118,10 @@ export default function EnterpriseCertificationPage() {
               <span className="text-3xl">💳</span>
             </div>
             <h2 className="text-2xl font-bold text-gray-900 mb-1">
-              {tc.payCertificationFee || tc.payCertificationFeeEn}
+              {tc.payCertificationFee}
             </h2>
             <p className="text-gray-500 text-sm">
-              {tc.payDesc || tc.payDescEn}
+              {tc.payDesc}
             </p>
           </div>
 
@@ -135,7 +129,7 @@ export default function EnterpriseCertificationPage() {
           <div className="bg-purple-50 rounded-xl p-4 mb-6 flex items-center justify-between">
             <div>
               <p className="font-medium text-gray-800">{feeLabel}</p>
-              <p className="text-xs text-gray-500 mt-0.5">{tc.validFor1Year || tc.validFor1YearEn}</p>
+              <p className="text-xs text-gray-500 mt-0.5">{tc.validFor1Year}</p>
             </div>
             <div className="text-right">
               <span className="text-3xl font-bold text-purple-600">${certificationFee}</span>
@@ -151,7 +145,7 @@ export default function EnterpriseCertificationPage() {
 
           {/* Payment options */}
           <div className="space-y-3 mb-6">
-            <p className="text-sm font-medium text-gray-700 mb-2">{tc.selectPaymentMethod || tc.selectPaymentMethodEn}</p>
+            <p className="text-sm font-medium text-gray-700 mb-2">{tc.selectPaymentMethod}</p>
 
             <a
               href={paypalLink}
@@ -163,8 +157,8 @@ export default function EnterpriseCertificationPage() {
                 <span className="text-white font-bold text-xs">PayPal</span>
               </div>
               <div className="flex-1">
-                <p className="font-semibold text-gray-900">{tc.paypal || tc.paypalEn}</p>
-                <p className="text-xs text-gray-500">{tc.paypalDesc || tc.paypalDescEn}</p>
+                <p className="font-semibold text-gray-900">{tc.paypal}</p>
+                <p className="text-xs text-gray-500">{tc.paypalDesc}</p>
               </div>
               <span className="font-bold text-gray-900">${certificationFee}</span>
             </a>
@@ -172,7 +166,7 @@ export default function EnterpriseCertificationPage() {
 
           {/* Payment note */}
           <div className="bg-blue-50 rounded-lg p-3 text-xs text-blue-700 mb-6">
-            💡 {tc.paymentNote || tc.paymentNoteEn}
+            💡 {tc.paymentNote}
           </div>
 
           {/* Confirm + back buttons */}
@@ -181,7 +175,7 @@ export default function EnterpriseCertificationPage() {
               onClick={() => setStep("form")}
               className="flex-1 py-3 border border-gray-300 text-gray-700 font-medium rounded-xl hover:bg-gray-50 transition-colors"
             >
-              ← {tc.goBack || tc.goBackEn}
+              ← {tc.goBack}
             </button>
             <button
               onClick={handlePaymentConfirm}
@@ -194,10 +188,10 @@ export default function EnterpriseCertificationPage() {
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                   </svg>
-                  {tc.submitting || tc.submittingEn}
+                  {tc.submitting}
                 </>
               ) : (
-                tc.paymentDoneSubmit || tc.paymentDoneSubmitEn
+                tc.paymentDoneSubmit
               )}
             </button>
           </div>
@@ -229,9 +223,9 @@ export default function EnterpriseCertificationPage() {
       <div className="max-w-3xl mx-auto">
         <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
           <div className="bg-purple-600 px-8 py-6">
-            <h1 className="text-2xl font-bold text-white">{tc.title || "企业认证"}</h1>
+            <h1 className="text-2xl font-bold text-white">{tc.title}</h1>
             <p className="text-purple-200 mt-1">
-              {tc.subtitle || "提交营业执照及联系人信息，支付认证费用后完成认证"}
+              {tc.subtitle}
             </p>
           </div>
 
@@ -246,9 +240,9 @@ export default function EnterpriseCertificationPage() {
             <div className="bg-purple-50 border border-purple-100 rounded-xl p-4 flex items-start gap-3">
               <span className="text-purple-600 text-lg flex-shrink-0 mt-0.5">💡</span>
               <div className="text-sm text-purple-800">
-                <p className="font-semibold">{tc.certificationFee || tc.certificationFeeEn}</p>
+                <p className="font-semibold">{tc.certificationFee}</p>
                 <p className="mt-0.5">
-                  {tc.feeExplanation || tc.feeExplanationEn}
+                  {tc.feeExplanation}
                 </p>
               </div>
             </div>
@@ -257,44 +251,44 @@ export default function EnterpriseCertificationPage() {
             <section>
               <h2 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
                 <span className="w-6 h-6 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center text-sm font-bold">1</span>
-                {tc.basicInfo || tc.basicInfoEn}
+                {tc.basicInfo}
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">{tc.companyName || tc.companyNameEn} *</label>
-                  <input {...register("companyName")} className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-transparent" placeholder={tc.companyNamePlaceholder || tc.companyNamePlaceholderEn} />
+                  <label className="block text-sm font-medium text-gray-700 mb-1">{tc.companyName} *</label>
+                  <input {...register("companyName")} className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-transparent" placeholder={tc.companyNamePlaceholder} />
                   {errors.companyName && <p className="text-red-500 text-xs mt-1">{errors.companyName.message}</p>}
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">{tc.unifiedCreditCode || tc.unifiedCreditCodeEn} *</label>
-                  <input {...register("unifiedCreditCode")} className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500" placeholder={tc.unifiedCreditCodePlaceholder || tc.unifiedCreditCodePlaceholderEn || "18位统一社会信用代码"} maxLength={18} />
+                  <label className="block text-sm font-medium text-gray-700 mb-1">{tc.unifiedCreditCode} *</label>
+                  <input {...register("unifiedCreditCode")} className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500" placeholder={tc.unifiedCreditCodePlaceholder} maxLength={18} />
                   {errors.unifiedCreditCode && <p className="text-red-500 text-xs mt-1">{errors.unifiedCreditCode.message}</p>}
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">{tc.legalRep || tc.legalRepEn} *</label>
-                  <input {...register("legalPersonName")} className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500" placeholder={tc.legalRepPlaceholder || tc.legalRepPlaceholderEn} />
+                  <label className="block text-sm font-medium text-gray-700 mb-1">{tc.legalRep} *</label>
+                  <input {...register("legalPersonName")} className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500" placeholder={tc.legalRepPlaceholder} />
                   {errors.legalPersonName && <p className="text-red-500 text-xs mt-1">{errors.legalPersonName.message}</p>}
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">{tc.idCardNumber || tc.idCardNumberEn} *</label>
-                  <input {...register("legalPersonIdCard")} className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500" placeholder={tc.idCardNumberPlaceholder || tc.idCardNumberPlaceholderEn || "请输入18位身份证号"} maxLength={18} />
+                  <label className="block text-sm font-medium text-gray-700 mb-1">{tc.idCardNumber} *</label>
+                  <input {...register("legalPersonIdCard")} className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500" placeholder={tc.idCardNumberPlaceholder} maxLength={18} />
                   {errors.legalPersonIdCard && <p className="text-red-500 text-xs mt-1">{errors.legalPersonIdCard.message}</p>}
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">{tc.registeredCapital || tc.registeredCapitalEn}</label>
-                  <input {...register("registeredCapital")} className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500" placeholder={tc.registeredCapitalPlaceholder || tc.registeredCapitalPlaceholderEn} />
+                  <label className="block text-sm font-medium text-gray-700 mb-1">{tc.registeredCapital}</label>
+                  <input {...register("registeredCapital")} className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500" placeholder={tc.registeredCapitalPlaceholder} />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">{tc.establishedDate || tc.establishedDateEn}</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">{tc.establishedDate}</label>
                   <input {...register("establishedDate")} type="date" className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500" />
                 </div>
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">{tc.businessTerm || tc.businessTermEn}</label>
-                  <input {...register("businessTerm")} className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500" placeholder={tc.businessTermPlaceholder || tc.businessTermPlaceholderEn} />
+                  <label className="block text-sm font-medium text-gray-700 mb-1">{tc.businessTerm}</label>
+                  <input {...register("businessTerm")} className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500" placeholder={tc.businessTermPlaceholder} />
                 </div>
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">{tc.businessScope || tc.businessScopeEn}</label>
-                  <textarea {...register("businessScope")} rows={3} className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500" placeholder={tc.businessScopePlaceholder || tc.businessScopePlaceholderEn} />
+                  <label className="block text-sm font-medium text-gray-700 mb-1">{tc.businessScope}</label>
+                  <textarea {...register("businessScope")} rows={3} className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500" placeholder={tc.businessScopePlaceholder} />
                 </div>
               </div>
             </section>
@@ -303,23 +297,23 @@ export default function EnterpriseCertificationPage() {
             <section>
               <h2 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
                 <span className="w-6 h-6 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center text-sm font-bold">2</span>
-                {tc.documentUpload || tc.documentUploadEn}
+                {tc.documentUpload}
               </h2>
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">{tc.businessLicense || tc.businessLicenseEn} *</label>
-                  <input {...register("licenseImageUrl")} className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500" placeholder={tc.businessLicenseUrlPlaceholder || "https://"} />
-                  <p className="text-xs text-gray-500 mt-1">{tc.businessLicenseHint || tc.businessLicenseHintEn}</p>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">{tc.businessLicense} *</label>
+                  <input {...register("licenseImageUrl")} className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500" placeholder={tc.businessLicenseUrlPlaceholder} />
+                  <p className="text-xs text-gray-500 mt-1">{tc.businessLicenseHint}</p>
                   {errors.licenseImageUrl && <p className="text-red-500 text-xs mt-1">{errors.licenseImageUrl.message}</p>}
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">{tc.idCardFront || tc.idCardFrontEn}</label>
-                    <input {...register("legalPersonIdCardFrontUrl")} className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500" placeholder={tc.idCardFrontUrlPlaceholder || "https://"} />
+                    <label className="block text-sm font-medium text-gray-700 mb-1">{tc.idCardFront}</label>
+                    <input {...register("legalPersonIdCardFrontUrl")} className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500" placeholder={tc.idCardFrontUrlPlaceholder} />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">{tc.idCardBack || tc.idCardBackEn}</label>
-                    <input {...register("legalPersonIdCardBackUrl")} className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500" placeholder={tc.idCardBackUrlPlaceholder || "https://"} />
+                    <label className="block text-sm font-medium text-gray-700 mb-1">{tc.idCardBack}</label>
+                    <input {...register("legalPersonIdCardBackUrl")} className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500" placeholder={tc.idCardBackUrlPlaceholder} />
                   </div>
                 </div>
               </div>
@@ -329,21 +323,21 @@ export default function EnterpriseCertificationPage() {
             <section>
               <h2 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
                 <span className="w-6 h-6 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center text-sm font-bold">3</span>
-                {tc.contactInfo || tc.contactInfoEn}
+                {tc.contactInfo}
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">{tc.contactName || tc.contactNameEn} *</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">{tc.contactName} *</label>
                   <input {...register("contactName")} className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500" />
                   {errors.contactName && <p className="text-red-500 text-xs mt-1">{errors.contactName.message}</p>}
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">{tc.phone || tc.phoneEn} *</label>
-                  <input {...register("contactPhone")} className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500" placeholder={tc.phonePlaceholder || "请输入手机号"} maxLength={11} />
+                  <label className="block text-sm font-medium text-gray-700 mb-1">{tc.phone} *</label>
+                  <input {...register("contactPhone")} className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500" placeholder={tc.phonePlaceholder} maxLength={11} />
                   {errors.contactPhone && <p className="text-red-500 text-xs mt-1">{errors.contactPhone.message}</p>}
                 </div>
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">{tc.email || tc.emailEn} *</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">{tc.email} *</label>
                   <input {...register("contactEmail")} type="email" className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500" />
                   {errors.contactEmail && <p className="text-red-500 text-xs mt-1">{errors.contactEmail.message}</p>}
                 </div>
@@ -355,14 +349,14 @@ export default function EnterpriseCertificationPage() {
               <label className="flex items-center gap-3 cursor-pointer">
                 <input type="checkbox" {...register("isAgency")} className="w-5 h-5 text-purple-600 rounded" />
                 <div>
-                  <span className="font-medium text-gray-800">{tc.iAmAgency || tc.iAmAgencyEn}</span>
-                  <p className="text-xs text-gray-500">{tc.agencyDesc || tc.agencyDescEn}</p>
+                  <span className="font-medium text-gray-800">{tc.iAmAgency}</span>
+                  <p className="text-xs text-gray-500">{tc.agencyDesc}</p>
                 </div>
               </label>
               {isAgency && (
                 <div className="mt-3">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">{tc.agencyLicenseUrl || tc.agencyLicenseUrlEn}</label>
-                  <input {...register("agencyLicenseUrl")} className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500" placeholder={tc.agencyLicenseUrlPlaceholder || "https://"} />
+                  <label className="block text-sm font-medium text-gray-700 mb-1">{tc.agencyLicenseUrl}</label>
+                  <input {...register("agencyLicenseUrl")} className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500" placeholder={tc.agencyLicenseUrlPlaceholder} />
                 </div>
               )}
             </section>
@@ -371,7 +365,7 @@ export default function EnterpriseCertificationPage() {
               type="submit"
               className="w-full bg-purple-600 text-white font-semibold py-3 rounded-xl hover:bg-purple-700 transition-colors"
             >
-              {tc.nextPayFee || tc.nextPayFeeEn}
+              {tc.nextPayFee}
             </button>
           </form>
         </div>

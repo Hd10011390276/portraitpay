@@ -37,7 +37,6 @@ const COUNTRIES = [
 
 export default function LawyerRegistrationPage() {
   const { t, locale } = useLanguage();
-  const isZh = locale === "zh-CN" || locale === "zh-Hant";
 
   const [theme, setTheme] = useState<"light" | "dark">("light");
   const [form, setForm] = useState({
@@ -70,16 +69,16 @@ export default function LawyerRegistrationPage() {
   function validate() {
     const errs: Record<string, string> = {};
     const lr = t.lawyerRegistration || {};
-    if (!form.companyName.trim()) errs.companyName = isZh ? "请填写" + (form.lawyerType === "personal" ? "个人姓名" : "律所/公司名称") : (form.lawyerType === "personal" ? (lr.companyNamePersonalRequired || "Please enter your name") : (lr.companyNameRequired || "Please enter company name"));
-    if (!form.country) errs.country = isZh ? "请选择国家/地区" : (lr.countryRequired || "Please select a country/region");
+    if (!form.companyName.trim()) errs.companyName = form.lawyerType === "personal" ? t.lawyerRegistration.companyNamePersonalRequired : t.lawyerRegistration.companyNameRequired;
+    if (!form.country) errs.country = t.lawyerRegistration.countryRequired;
     const selected = COUNTRIES.find(c => c.code === form.country);
     if (selected && !selected.available) {
-      errs.country = isZh ? "该地区尚未开放，请选择其他地区" : (lr.countryNotAvailable || "This region is not yet available. Please select another.");
+      errs.country = t.lawyerRegistration.countryNotAvailable;
     }
-    if (!form.contactName.trim()) errs.contactName = isZh ? "请填写联系人姓名" : (lr.contactNameRequired || "Please enter contact name");
-    if (!form.contactEmail.trim()) errs.contactEmail = isZh ? "请填写邮箱" : (lr.emailRequired || "Please enter email");
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.contactEmail)) errs.contactEmail = isZh ? "邮箱格式不正确" : (lr.emailInvalid || "Invalid email format");
-    if (!form.contactPhone.trim()) errs.contactPhone = isZh ? "请填写联系电话" : (lr.phoneRequired || "Please enter phone number");
+    if (!form.contactName.trim()) errs.contactName = t.lawyerRegistration.contactNameRequired;
+    if (!form.contactEmail.trim()) errs.contactEmail = t.lawyerRegistration.emailRequired;
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.contactEmail)) errs.contactEmail = t.lawyerRegistration.emailInvalid;
+    if (!form.contactPhone.trim()) errs.contactPhone = t.lawyerRegistration.phoneRequired;
     setErrors(errs);
     return Object.keys(errs).length === 0;
   }
@@ -100,10 +99,10 @@ export default function LawyerRegistrationPage() {
       if (json.success) {
         setSuccess(true);
       } else {
-        setServerError(json.error || (isZh ? "提交失败，请重试" : "Submission failed, please try again"));
+        setServerError(json.error || t.lawyerRegistration.submitError || "Submission failed, please try again");
       }
     } catch {
-      setServerError(isZh ? "网络错误，请检查连接后重试" : "Network error, please check your connection");
+      setServerError(t.lawyerRegistration.networkError || "Network error, please check your connection");
     } finally {
       setLoading(false);
     }
@@ -138,15 +137,13 @@ export default function LawyerRegistrationPage() {
             <div className="card" style={{ textAlign: "center", padding: "48px 40px" }}>
               <div style={{ fontSize: "64px", marginBottom: "20px" }}>🏛️</div>
               <h2 style={{ fontSize: "var(--text-h2)", fontWeight: 700, color: "var(--text-primary)", letterSpacing: "-0.02em", marginBottom: "12px" }}>
-                {isZh ? "申请已提交！" : "Application Submitted!"}
+                {t.lawyerRegistration.successTitle}
               </h2>
               <p style={{ fontSize: "var(--text-body)", color: "var(--text-secondary)", lineHeight: 1.65, marginBottom: "32px" }}>
-                {isZh
-                  ? "感谢您的入驻申请。我们的审核团队会在 3-5 个工作日内完成审核，并通过邮件通知您结果。"
-                  : "Thank you for your application. Our review team will complete the review within 3-5 business days and notify you via email."}
+                {t.lawyerRegistration.successDesc}
               </p>
               <Link href="/" className="btn btn-primary" style={{ padding: "12px 32px" }}>
-                {isZh ? "返回首页" : "Back to Home"}
+                {t.lawyerRegistration.backToHome}
               </Link>
             </div>
           </div>
@@ -187,12 +184,10 @@ export default function LawyerRegistrationPage() {
           }}>
             <div style={{ fontSize: "48px", marginBottom: "16px" }}>🏛️</div>
             <h1 style={{ fontSize: "var(--text-h2)", fontWeight: 700, color: "white", letterSpacing: "-0.02em", marginBottom: "12px" }}>
-              {isZh ? "律师入驻申请" : "Lawyer Registration"}
+              {t.lawyerRegistration.pageTitle}
             </h1>
             <p style={{ fontSize: "var(--text-body)", color: "rgba(255,255,255,0.75)", maxWidth: "480px", margin: "0 auto", lineHeight: 1.65 }}>
-              {isZh
-                ? "选择\"入驻律师\"后，您的律所或个人将作为平台授权的肖像权保护机构，为用户提供法律咨询、维权代理等服务。所有用户授权通过平台统一管理，避免私下交易。"
-                : "After joining, your firm or practice will act as a platform-authorized portrait rights protection agency, providing users with legal consulting, rights protection, and infringement handling services."}
+              {t.lawyerRegistration.pageSubtitle}
             </p>
           </div>
 
@@ -202,13 +197,13 @@ export default function LawyerRegistrationPage() {
             {/* Lawyer Type Selector */}
             <div style={{ marginBottom: "32px" }}>
               <label style={{ display: "block", fontSize: "var(--text-body-sm)", fontWeight: 600, color: "var(--text-primary)", marginBottom: "12px" }}>
-                {isZh ? "入驻类型" : "Registration Type"}
+                {t.lawyerRegistration.registrationType}
                 <span style={{ color: "var(--error)", marginLeft: "2px" }}>*</span>
               </label>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
                 {[
-                  { value: "firm", labelZh: "律师楼", labelEn: "Law Firm", icon: "🏛️", desc: isZh ? "律师事务所、公司化运营" : "Law firm, incorporated" },
-                  { value: "personal", labelZh: "个人律师", labelEn: "Personal Lawyer", icon: "⚖️", desc: isZh ? "独立执业律师" : "Solo practitioner" },
+                  { value: "firm", labelZh: t.lawyerRegistration.lawFirm, labelEn: t.lawyerRegistration.lawFirm, icon: "🏛️", desc: t.lawyerRegistration.lawFirmDesc },
+                  { value: "personal", labelZh: t.lawyerRegistration.personalLawyer, labelEn: t.lawyerRegistration.personalLawyer, icon: "⚖️", desc: t.lawyerRegistration.personalLawyerDesc },
                 ].map((opt) => (
                   <button
                     key={opt.value}
@@ -227,7 +222,7 @@ export default function LawyerRegistrationPage() {
                     <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "4px" }}>
                       <span style={{ fontSize: "20px" }}>{opt.icon}</span>
                       <span style={{ fontWeight: 600, fontSize: "var(--text-body)", color: "var(--text-primary)" }}>
-                        {isZh ? opt.labelZh : opt.labelEn}
+                        {opt.labelZh}
                       </span>
                     </div>
                     <p style={{ fontSize: "var(--text-caption)", color: "var(--text-secondary)", margin: 0 }}>{opt.desc}</p>
@@ -255,14 +250,14 @@ export default function LawyerRegistrationPage() {
               {/* Company Name */}
               <div>
                 <label style={{ display: "block", fontSize: "var(--text-body-sm)", fontWeight: 600, color: "var(--text-primary)", marginBottom: "8px" }}>
-                  {form.lawyerType === "personal" ? (isZh ? "个人姓名" : "Your Name") : (isZh ? "律所/公司名称" : "Law Firm / Company Name")}
+                  {form.lawyerType === "personal" ? t.lawyerRegistration.companyNamePersonal : t.lawyerRegistration.companyName}
                   <span style={{ color: "var(--error)", marginLeft: "2px" }}>*</span>
                 </label>
                 <input
                   type="text"
                   value={form.companyName}
                   onChange={(e) => set("companyName", e.target.value)}
-                  placeholder={form.lawyerType === "personal" ? (isZh ? "请输入您的姓名" : "Enter your full name") : (isZh ? "例如：Smith & Associates Law Firm" : "e.g. Smith & Associates Law Firm")}
+                  placeholder={form.lawyerType === "personal" ? t.lawyerRegistration.companyNamePersonal : "e.g. Smith & Associates Law Firm"}
                   style={{
                     width: "100%",
                     height: "44px",
@@ -286,7 +281,7 @@ export default function LawyerRegistrationPage() {
               {/* Country */}
               <div>
                 <label style={{ display: "block", fontSize: "var(--text-body-sm)", fontWeight: 600, color: "var(--text-primary)", marginBottom: "8px" }}>
-                  {isZh ? "国家/地区" : "Country / Region"}
+                  {t.lawyerRegistration.selectCountry}
                   <span style={{ color: "var(--error)", marginLeft: "2px" }}>*</span>
                 </label>
                 <select
@@ -310,7 +305,7 @@ export default function LawyerRegistrationPage() {
                   onBlur={(e) => { e.currentTarget.style.borderColor = errors.country ? "var(--error)" : "var(--border-default)"; e.currentTarget.style.boxShadow = "none"; }}
                 >
                   <option value="" style={{ color: "var(--text-tertiary)" }}>
-                    {isZh ? "请选择国家/地区" : "Select a country/region"}
+                    {t.lawyerRegistration.selectCountry}
                   </option>
                   {COUNTRIES.map((c) => (
                     <option key={c.code} value={c.code} disabled={!c.available} style={{ color: "var(--text-primary)" }}>
@@ -326,14 +321,14 @@ export default function LawyerRegistrationPage() {
               {/* Contact Name */}
               <div>
                 <label style={{ display: "block", fontSize: "var(--text-body-sm)", fontWeight: 600, color: "var(--text-primary)", marginBottom: "8px" }}>
-                  {isZh ? "联系人姓名" : "Contact Person"}
+                  {t.lawyerRegistration.contactName}
                   <span style={{ color: "var(--error)", marginLeft: "2px" }}>*</span>
                 </label>
                 <input
                   type="text"
                   value={form.contactName}
                   onChange={(e) => set("contactName", e.target.value)}
-                  placeholder={isZh ? "请输入联系人姓名" : "Enter contact name"}
+                  placeholder={t.lawyerRegistration.contactNameRequired}
                   style={{
                     width: "100%",
                     height: "44px",
@@ -358,7 +353,7 @@ export default function LawyerRegistrationPage() {
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
                 <div>
                   <label style={{ display: "block", fontSize: "var(--text-body-sm)", fontWeight: 600, color: "var(--text-primary)", marginBottom: "8px" }}>
-                    {isZh ? "邮箱" : "Email"}
+                    {t.lawyerRegistration.email}
                     <span style={{ color: "var(--error)", marginLeft: "2px" }}>*</span>
                   </label>
                   <input
@@ -387,7 +382,7 @@ export default function LawyerRegistrationPage() {
                 </div>
                 <div>
                   <label style={{ display: "block", fontSize: "var(--text-body-sm)", fontWeight: 600, color: "var(--text-primary)", marginBottom: "8px" }}>
-                    {isZh ? "联系电话" : "Phone"}
+                    {t.lawyerRegistration.phone}
                     <span style={{ color: "var(--error)", marginLeft: "2px" }}>*</span>
                   </label>
                   <input
@@ -419,9 +414,9 @@ export default function LawyerRegistrationPage() {
               {/* License URL */}
               <div>
                 <label style={{ display: "block", fontSize: "var(--text-body-sm)", fontWeight: 600, color: "var(--text-primary)", marginBottom: "8px" }}>
-                  {isZh ? "资质证明链接" : "License / Certificate Link"}
+                  {t.lawyerRegistration.licenseUrl}
                   <span style={{ color: "var(--text-tertiary)", fontWeight: 400, fontSize: "var(--text-caption)", marginLeft: "6px" }}>
-                    ({isZh ? "选填" : "Optional"})
+                    ({t.lawyerRegistration.licenseUrlOptional})
                   </span>
                 </label>
                 <input
@@ -445,7 +440,7 @@ export default function LawyerRegistrationPage() {
                   onBlur={(e) => { e.currentTarget.style.borderColor = "var(--border-default)"; e.currentTarget.style.boxShadow = "none"; }}
                 />
                 <p style={{ marginTop: "6px", fontSize: "var(--text-caption)", color: "var(--text-tertiary)" }}>
-                  {isZh ? "可上传至云存储后粘贴链接，或留空后续补充" : "Upload to cloud storage and paste the link, or leave blank to add later"}
+                  {t.lawyerRegistration.licenseUrlHint}
                 </p>
               </div>
 
@@ -457,13 +452,13 @@ export default function LawyerRegistrationPage() {
                 border: "1px solid var(--accent-primary)",
               }}>
                 <h3 style={{ fontSize: "var(--text-body-sm)", fontWeight: 600, color: "var(--accent-primary)", marginBottom: "10px" }}>
-                  {isZh ? "入驻须知" : "Notes"}
+                  {t.lawyerRegistration.notes}
                 </h3>
                 <ul style={{ fontSize: "var(--text-body-sm)", color: "var(--text-secondary)", listStyle: "disc", listStylePosition: "inside", display: "flex", flexDirection: "column", gap: "6px", margin: 0, padding: 0 }}>
-                  <li>{isZh ? "审核周期：3-5 个工作日" : "Review period: 3-5 business days"}</li>
-                  <li>{isZh ? "需要提供有效的律师事务所营业执照" : "Valid law firm business license required"}</li>
-                  <li>{isZh ? "入驻后可在平台接单，提供肖像权保护服务" : "After approval, you can receive orders on the platform"}</li>
-                  <li>{isZh ? "平台收取一定比例的服务费，详情见协议" : "Platform charges a percentage service fee, see agreement for details"}</li>
+                  <li>{t.lawyerRegistration.note1}</li>
+                  <li>{t.lawyerRegistration.note2}</li>
+                  <li>{t.lawyerRegistration.note3}</li>
+                  <li>{t.lawyerRegistration.note4}</li>
                 </ul>
               </div>
 
@@ -477,10 +472,10 @@ export default function LawyerRegistrationPage() {
                 {loading ? (
                   <span style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                     <div style={{ width: "16px", height: "16px", border: "2px solid rgba(255,255,255,0.3)", borderTopColor: "white", borderRadius: "50%", animation: "spin 0.7s linear infinite" }} />
-                    {isZh ? "提交中..." : "Submitting..."}
+                    {t.lawyerRegistration.submitting}
                   </span>
                 ) : (
-                  isZh ? "提交入驻申请" : "Submit Application"
+                  t.lawyerRegistration.submit
                 )}
               </button>
 

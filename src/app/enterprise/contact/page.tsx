@@ -77,8 +77,7 @@ const USE_CASES = [
 ] as const;
 
 export default function EnterpriseContactPage() {
-  const { t, locale } = useLanguage();
-  const isZh = locale === "zh-CN" || locale === "zh-Hant";
+  const { t } = useLanguage();
 
   const [form, setForm] = useState<FormData>({
     name: "", email: "", contactPhone: "", company: "",
@@ -293,7 +292,7 @@ export default function EnterpriseContactPage() {
                 </label>
                 <div className="flex flex-wrap gap-2 mb-3">
                   {USE_CASES.map((uc) => {
-                    const label = isZh ? uc.zh : (t.enterpriseContact[uc.key as keyof typeof t.enterpriseContact] as string);
+                    const label = t.enterpriseContact[uc.key as keyof typeof t.enterpriseContact] as string;
                     return (
                       <button
                         key={uc.key}
