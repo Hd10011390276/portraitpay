@@ -73,7 +73,7 @@ export default function PortraitDetailPage() {
   const [editScopes, setEditScopes] = useState<string[]>([]);
   const [editProhibited, setEditProhibited] = useState<string[]>([]);
   const [editTerritory, setEditTerritory] = useState("");
-  const tc = t.portraits.detail; // Define tc early so it's available in handlers
+  const tc = t.portraits.detail;
   const [hasImageError, setHasImageError] = useState(false);
 
   useEffect(() => {
@@ -86,8 +86,6 @@ export default function PortraitDetailPage() {
       .catch(() => router.push("/portraits"))
       .finally(() => setLoading(false));
   }, [id, router]);
-
-  const tc = t.portraits.detail;
 
   function getNetworkLabel(network: string | null | undefined): string {
     if (!network) return tc.networkEthereumSepolia;
