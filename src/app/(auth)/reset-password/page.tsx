@@ -13,8 +13,11 @@ import { LanguageToggle } from "@/components/layout/LanguageToggle";
 function ResetPasswordContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { locale, t } = useLanguage();
+  const { t, locale } = useLanguage();
+  const isZh = locale === "zh-CN" || locale === "zh-Hant";
   const token = searchParams.get("token") ?? "";
+
+  const tc = t.resetPassword || {};
 
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -24,32 +27,30 @@ function ResetPasswordContent() {
   const [passwordError, setPasswordError] = useState("");
   const [confirmError, setConfirmError] = useState("");
 
-  const isZh = locale === "zh-CN" || locale === "zh-Hant";
-
   function validateForm() {
     let valid = true;
     setPasswordError("");
     setConfirmError("");
 
     if (!password) {
-      setPasswordError(isZh ? "请输入新密码" : "Please enter a new password");
+      setPasswordError(tc.passwordRequired);
       valid = false;
     } else if (password.length < 8) {
-      setPasswordError(isZh ? "密码至少8位" : "Password must be at least 8 characters");
+      setPasswordError(tc.passwordMinLength);
       valid = false;
     } else if (!/[A-Z]/.test(password)) {
-      setPasswordError(isZh ? "密码需包含至少一个大写字母" : "Password must contain at least one uppercase letter");
+      setPasswordError(tc.passwordUppercase);
       valid = false;
     } else if (!/[0-9]/.test(password)) {
-      setPasswordError(isZh ? "密码需包含至少一个数字" : "Password must contain at least one number");
+      setPasswordError(tc.passwordNumber);
       valid = false;
     }
 
     if (!confirmPassword) {
-      setConfirmError(isZh ? "请确认密码" : "Please confirm your password");
+      setConfirmError(tc.confirmRequired);
       valid = false;
     } else if (password !== confirmPassword) {
-      setConfirmError(isZh ? "两次密码不一致" : "Passwords do not match");
+      setConfirmError(tc.confirmMismatch);
       valid = false;
     }
 
@@ -60,7 +61,7 @@ function ResetPasswordContent() {
     e.preventDefault();
     if (!validateForm()) return;
     if (!token) {
-      setError(isZh ? "重置链接无效或已过期" : "Reset link is invalid or expired");
+      setError(tc.invalidToken);
       return;
     }
 
@@ -75,12 +76,12 @@ function ResetPasswordContent() {
       });
       const json = await res.json();
       if (!json.success) {
-        setError(json.error ?? (isZh ? "重置失败，请稍后重试" : "Reset failed, please try again"));
+        setError(json.error ?? tc.resetFailed);
         return;
       }
       setSuccess(true);
     } catch {
-      setError(isZh ? "网络错误，请检查网络连接" : "Network error, please check your connection");
+      setError(tc.networkError);
     } finally {
       setLoading(false);
     }
@@ -93,17 +94,17 @@ function ResetPasswordContent() {
           <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-lg p-8 text-center">
             <div className="text-4xl mb-4">🔗</div>
             <h1 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
-              {isZh ? "重置链接无效" : "Invalid Reset Link"}
+              {tc.invalidToken}
             </h1>
             <p className="text-gray-500 dark:text-gray-400 text-sm mb-6">
-              {isZh ? "重置密码链接无效或已过期，请重新申请" : "The reset link is invalid or expired. Please request a new one."}
+              {tc.invalidTokenDesc}
             </p>
             <Link href="/forgot-password" className="text-purple-600 dark:text-purple-400 font-medium text-sm hover:underline">
-              {isZh ? "重新申请重置密码" : "Request a new password reset"}
+              {tc.requestNewReset}
             </Link>
             <div className="mt-6 pt-6 border-t border-gray-100 dark:border-gray-800">
               <Link href="/login" className="text-sm text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">
-                ← {isZh ? "返回登录" : "Back to login"}
+                ← {tc.backToLogin}
               </Link>
             </div>
           </div>
@@ -119,13 +120,13 @@ function ResetPasswordContent() {
           <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-lg p-8 text-center">
             <div className="text-5xl mb-4">✅</div>
             <h1 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
-              {isZh ? "密码重置成功！" : "Password Reset Successful!"}
+              {tc.resetSuccess}
             </h1>
             <p className="text-gray-500 dark:text-gray-400 text-sm mb-6">
-              {isZh ? "你的密码已成功更新，请使用新密码登录" : "Your password has been updated. Please login with your new password."}
+              {tc.resetSuccessDesc}
             </p>
             <Link href="/login" className="inline-block w-full py-3 bg-purple-600 text-white font-semibold rounded-xl hover:bg-purple-700 transition-colors">
-              {isZh ? "前往登录" : "Go to Login"}
+              {tc.goToLogin}
             </Link>
           </div>
         </div>
@@ -152,9 +153,9 @@ function ResetPasswordContent() {
         <div className="w-full max-w-md">
           <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-800 overflow-hidden">
             <div className="bg-gradient-to-r from-purple-600 to-blue-600 px-8 py-6">
-              <h1 className="text-2xl font-bold text-white">{isZh ? "设置新密码" : "Set New Password"}</h1>
+              <h1 className="text-2xl font-bold text-white">{tc.pageTitle}</h1>
               <p className="text-purple-200 text-sm mt-1">
-                {isZh ? "请输入你的新密码" : "Please enter your new password"}
+                {tc.pageSubtitle}
               </p>
             </div>
 
@@ -167,13 +168,13 @@ function ResetPasswordContent() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-                  {isZh ? "新密码" : "New Password"}
+                  {tc.newPasswordLabel}
                 </label>
                 <input
                   type="password"
                   value={password}
                   onChange={(e) => { setPassword(e.target.value); setPasswordError(""); }}
-                  placeholder={isZh ? "输入新密码" : "Enter new password"}
+                  placeholder={tc.newPasswordPlaceholder}
                   autoComplete="new-password"
                   className={`w-full border rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 transition-colors ${
                     passwordError
@@ -183,19 +184,19 @@ function ResetPasswordContent() {
                 />
                 {passwordError && <p className="mt-1 text-xs text-red-500">{passwordError}</p>}
                 <p className="mt-1 text-xs text-gray-400">
-                  {isZh ? "至少8位，包含大写字母和数字" : "At least 8 characters, with uppercase letter and number"}
+                  {tc.passwordHint}
                 </p>
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-                  {isZh ? "确认新密码" : "Confirm New Password"}
+                  {tc.confirmPasswordLabel}
                 </label>
                 <input
                   type="password"
                   value={confirmPassword}
                   onChange={(e) => { setConfirmPassword(e.target.value); setConfirmError(""); }}
-                  placeholder={isZh ? "再次输入新密码" : "Re-enter new password"}
+                  placeholder={tc.confirmPasswordPlaceholder}
                   autoComplete="new-password"
                   className={`w-full border rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 transition-colors ${
                     confirmError
@@ -214,16 +215,16 @@ function ResetPasswordContent() {
                 {loading ? (
                   <>
                     <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full" />
-                    {isZh ? "重置中..." : "Resetting..."}
+                    {tc.resetting}
                   </>
                 ) : (
-                  isZh ? "确认重置密码" : "Confirm Password Reset"
+                  tc.confirmButton
                 )}
               </button>
 
               <div className="text-center pt-2">
                 <Link href="/login" className="text-sm text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">
-                  ← {isZh ? "返回登录" : "Back to login"}
+                  ← {tc.backToLogin}
                 </Link>
               </div>
             </form>

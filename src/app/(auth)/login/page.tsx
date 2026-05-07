@@ -196,7 +196,7 @@ export default function LoginPage() {
                     : "text-gray-500 dark:text-gray-300 hover:text-gray-700 dark:hover:text-white"
                 }`}
               >
-                👤 {isZh ? "普通用户" : "User"}
+                👤 {t.login.userLabel}
               </button>
               <button
                 type="button"
@@ -207,7 +207,7 @@ export default function LoginPage() {
                     : "text-gray-500 dark:text-gray-300 hover:text-gray-700 dark:hover:text-white"
                 }`}
               >
-                ⚖️ {isZh ? "律师" : "Lawyer"}
+                ⚖️ {t.login.lawyerLabel}
               </button>
             </div>
           </div>

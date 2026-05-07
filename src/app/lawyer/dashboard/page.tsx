@@ -42,15 +42,25 @@ function StatCard({ label, value, color, suffix }: { label: string; value: numbe
 
 function StatusBadge({ status }: { status: string }) {
   const config: Record<string, { label: string; color: string }> = {
-    PENDING: { label: "待处理", color: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400" },
-    IN_PROGRESS: { label: "处理中", color: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400" },
-    RESOLVED: { label: "已解决", color: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400" },
-    REJECTED: { label: "已拒绝", color: "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400" },
+    PENDING: { label: "", color: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400" },
+    IN_PROGRESS: { label: "", color: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400" },
+    RESOLVED: { label: "", color: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400" },
+    REJECTED: { label: "", color: "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400" },
   };
   const c = config[status] || { label: status, color: "bg-gray-100 text-gray-600" };
   return (
     <span className={`px-2.5 py-0.5 text-xs font-medium rounded-full ${c.color}`}>{c.label}</span>
   );
+}
+
+function getStatusLabel(status: string, t: any): string {
+  const map: Record<string, string> = {
+    PENDING: t.lawyerDashboard?.statusPending || "Pending",
+    IN_PROGRESS: t.lawyerDashboard?.statusInProgress || "In Progress",
+    RESOLVED: t.lawyerDashboard?.statusResolved || "Resolved",
+    REJECTED: t.lawyerDashboard?.statusRejected || "Rejected",
+  };
+  return map[status] || status;
 }
 
 export default function LawyerDashboard() {
@@ -60,6 +70,8 @@ export default function LawyerDashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
+  const td = t.lawyerDashboard || {};
+
   useEffect(() => {
     async function fetchCases() {
       try {
@@ -68,16 +80,16 @@ export default function LawyerDashboard() {
         if (json.success) {
           setCases(json.data || []);
         } else {
-          setError(json.error || "Failed to load cases");
+          setError(json.error || td.loadFailed || "Failed to load cases");
         }
       } catch {
-        setError(isZh ? "加载失败，请稍后重试" : "Failed to load cases");
+        setError(td.loadFailed || (isZh ? "加载失败，请稍后重试" : "Failed to load cases"));
       } finally {
         setLoading(false);
       }
     }
     fetchCases();
-  }, [isZh]);
+  }, [isZh, td.loadFailed]);
 
   const pendingCount = cases.filter((c) => c.status === "PENDING").length;
   const inProgressCount = cases.filter((c) => c.status === "IN_PROGRESS").length;
@@ -85,34 +97,34 @@ export default function LawyerDashboard() {
 
   return (
     <DashboardShell
-      title={isZh ? "律师工作台" : "Lawyer Dashboard"}
-      subtitle={isZh ? "管理您的肖像权保护案件" : "Manage your portrait rights protection cases"}
+      title={td.title || "Lawyer Dashboard"}
+      subtitle={td.subtitle || "Manage your portrait rights protection cases"}
     >
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
         <StatCard
-          label={isZh ? "待处理案件" : "Pending Cases"}
+          label={td.pendingCases || "Pending Cases"}
           value={pendingCount}
           color="#f59e0b"
         />
         <StatCard
-          label={isZh ? "处理中案件" : "In Progress"}
+          label={td.inProgressCases || "In Progress"}
           value={inProgressCount}
           color="#3b82f6"
         />
         <StatCard
-          label={isZh ? "已解决案件" : "Resolved"}
+          label={td.resolvedCases || "Resolved"}
           value={resolvedCount}
           color="#22c55e"
         />
         <StatCard
-          label={isZh ? "累计收益" : "Earnings"}
+          label={td.earnings || "Earnings"}
           value={0}
           color="#7c3aed"
           suffix=" USD"
         />
         <StatCard
-          label={isZh ? "案件总数" : "Total Cases"}
+          label={td.totalCases || "Total Cases"}
           value={cases.length}
           color="#1e293b"
         />
@@ -130,8 +142,8 @@ export default function LawyerDashboard() {
             </svg>
           </div>
           <div>
-            <p className="font-medium text-gray-900 dark:text-white text-sm">{isZh ? "全部案件" : "All Cases"}</p>
-            <p className="text-xs text-gray-500 dark:text-gray-400">{cases.length} {isZh ? "个案件" : "cases"}</p>
+            <p className="font-medium text-gray-900 dark:text-white text-sm">{td.allCases || "All Cases"}</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400">{cases.length} {td.casesCount || "cases"}</p>
           </div>
           <svg className="w-4 h-4 text-gray-400 ml-auto group-hover:text-blue-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
@@ -148,8 +160,8 @@ export default function LawyerDashboard() {
             </svg>
           </div>
           <div>
-            <p className="font-medium text-gray-900 dark:text-white text-sm">{isZh ? "侵权报告" : "Infringement Reports"}</p>
-            <p className="text-xs text-gray-500 dark:text-gray-400">{isZh ? "查看侵权举报" : "View submitted reports"}</p>
+            <p className="font-medium text-gray-900 dark:text-white text-sm">{td.infringementReports || "Infringement Reports"}</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400">{td.viewInfringementReports || "View submitted reports"}</p>
           </div>
           <svg className="w-4 h-4 text-gray-400 ml-auto group-hover:text-purple-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
@@ -166,8 +178,8 @@ export default function LawyerDashboard() {
             </svg>
           </div>
           <div>
-            <p className="font-medium text-gray-900 dark:text-white text-sm">{isZh ? "我的资料" : "My Profile"}</p>
-            <p className="text-xs text-gray-500 dark:text-gray-400">{isZh ? "查看律师资料" : "View lawyer profile"}</p>
+            <p className="font-medium text-gray-900 dark:text-white text-sm">{td.myProfile || "My Profile"}</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400">{td.viewProfile || "View lawyer profile"}</p>
           </div>
           <svg className="w-4 h-4 text-gray-400 ml-auto group-hover:text-emerald-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
@@ -179,15 +191,15 @@ export default function LawyerDashboard() {
       <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700">
         <div className="px-5 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
           <h2 className="font-semibold text-gray-900 dark:text-white">
-            {isZh ? "案件列表" : "Cases List"}
+            {td.caseList || "Cases List"}
           </h2>
-          <span className="text-xs text-gray-400">{cases.length} {isZh ? "个案件" : "cases"}</span>
+          <span className="text-xs text-gray-400">{cases.length} {td.casesCount || "cases"}</span>
         </div>
 
         {loading ? (
           <div className="p-8 text-center">
             <div className="animate-spin h-8 w-8 border-2 border-blue-500 border-t-transparent rounded-full mx-auto mb-3" />
-            <p className="text-gray-400 text-sm">{isZh ? "加载中..." : "Loading..."}</p>
+            <p className="text-gray-400 text-sm">{td.loading || "Loading..."}</p>
           </div>
         ) : error ? (
           <div className="p-8 text-center">
@@ -196,7 +208,7 @@ export default function LawyerDashboard() {
               onClick={() => window.location.reload()}
               className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-lg transition-colors"
             >
-              {isZh ? "重试" : "Retry"}
+              {td.retry || "Retry"}
             </button>
           </div>
         ) : cases.length === 0 ? (
@@ -206,11 +218,9 @@ export default function LawyerDashboard() {
                 <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
             </div>
-            <h3 className="font-medium text-gray-900 dark:text-white mb-1">{isZh ? "暂无案件" : "No cases yet"}</h3>
+            <h3 className="font-medium text-gray-900 dark:text-white mb-1">{td.noCasesYet || "No cases yet"}</h3>
             <p className="text-sm text-gray-500 dark:text-gray-400 max-w-xs mx-auto">
-              {isZh
-                ? "当用户提交侵权报告并选择您为代理律师时，案件将显示在这里。"
-                : "Cases will appear here when users submit infringement reports and select you as their assigned lawyer."}
+              {td.noCasesDesc || "Cases will appear here when users submit infringement reports and select you as their assigned lawyer."}
             </p>
           </div>
         ) : (
@@ -221,10 +231,17 @@ export default function LawyerDashboard() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
                       <span className="font-mono text-xs text-gray-400">#{c.id.slice(0, 8)}</span>
-                      <StatusBadge status={c.status} />
+                      <span className={`px-2.5 py-0.5 text-xs font-medium rounded-full ${
+                        c.status === "PENDING" ? "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400" :
+                        c.status === "IN_PROGRESS" ? "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400" :
+                        c.status === "RESOLVED" ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400" :
+                        "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400"
+                      }`}>
+                        {getStatusLabel(c.status, t)}
+                      </span>
                     </div>
                     <p className="text-sm text-gray-700 dark:text-gray-300 line-clamp-1">
-                      {c.infringementReport?.description || (isZh ? "无描述" : "No description")}
+                      {c.infringementReport?.description || td.noDescription || "No description"}
                     </p>
                     {c.infringementReport?.targetUrl && (
                       <a
@@ -250,7 +267,7 @@ export default function LawyerDashboard() {
                     href={`/lawyer/cases/${c.id}`}
                     className="shrink-0 px-3 py-1.5 text-xs font-medium text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors"
                   >
-                    {isZh ? "查看" : "View"}
+                    {td.view || "View"}
                   </a>
                 </div>
               </div>

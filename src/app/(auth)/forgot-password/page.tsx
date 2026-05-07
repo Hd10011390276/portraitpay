@@ -7,8 +7,7 @@ import { LanguageToggle } from "@/components/layout/LanguageToggle";
 import ThemeToggle from "@/components/ThemeToggle";
 
 export default function ForgotPasswordPage() {
-  const { t, locale } = useLanguage();
-  const isZh = locale === "zh-CN" || locale === "zh-Hant";
+  const { t } = useLanguage();
 
   const tc = t.forgotPassword || {};
 
@@ -33,7 +32,7 @@ export default function ForgotPasswordPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        alert(data.error || tc.sendFailed || (isZh ? "发送失败，请重试。" : "Failed to send reset email. Please try again."));
+        alert(data.error || tc.sendFailed);
         setSubmitting(false);
         return;
       }
@@ -41,7 +40,7 @@ export default function ForgotPasswordPage() {
       setSubmitted(true);
     } catch (error) {
       console.error("[ForgotPassword] Error:", error);
-      alert(tc.networkError || (isZh ? "发生错误，请稍后重试。" : "An error occurred. Please try again later."));
+      alert(tc.networkError);
     } finally {
       setSubmitting(false);
     }
@@ -67,27 +66,27 @@ export default function ForgotPasswordPage() {
             <div className="text-center py-4">
               <div className="text-5xl mb-4">📧</div>
               <h2 className="text-xl font-bold text-gray-900 mb-2">
-                {tc.successTitle || (isZh ? "发送成功！" : "Email Sent!")}
+                {tc.successTitle}
               </h2>
               <p className="text-gray-500 text-sm mb-6">
-                {tc.successDesc || (isZh ? `如果该邮箱已注册，我们已发送密码重置链接到 <strong>${email}</strong>。请检查您的收件箱。` : `If this email is registered, we have sent a password reset link to <strong>${email}</strong>. Please check your inbox.`)}
+                {tc.successDesc}
               </p>
               <Link href="/login" className="text-purple-600 text-sm font-medium hover:underline">
-                {tc.backToLogin || (isZh ? "返回登录" : "Back to Sign In")}
+                {tc.backToLogin}
               </Link>
             </div>
           ) : (
             <>
               <h1 className="text-xl font-bold text-gray-900 mb-1">
-                {tc.pageTitle || (isZh ? "忘记密码？" : "Forgot Password?")}
+                {tc.pageTitle}
               </h1>
               <p className="text-gray-500 text-sm mb-6">
-                {tc.pageSubtitle || (isZh ? "输入您的注册邮箱，我们会发送重置链接。" : "Enter your registered email and we will send a reset link.")}
+                {tc.pageSubtitle}
               </p>
               <form onSubmit={handleSubmit} className="space-y-5">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                    {tc.emailLabel || (isZh ? "邮箱地址" : "Email Address")}
+                    {tc.emailLabel}
                   </label>
                   <input
                     type="email"
@@ -106,15 +105,15 @@ export default function ForgotPasswordPage() {
                   {submitting ? (
                     <>
                       <span className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full" />
-                      {tc.sending || (isZh ? "发送中..." : "Sending...")}
+                      {tc.sending}
                     </>
                   ) : (
-                    tc.sendButton || (isZh ? "发送重置链接" : "Send Reset Link")
+                    tc.sendButton
                   )}
                 </button>
                 <div className="text-center">
                   <Link href="/login" className="text-sm text-gray-500 hover:text-gray-700 transition">
-                    {tc.backToLogin || (isZh ? "返回登录" : "Back to Sign In")}
+                    {tc.backToLogin}
                   </Link>
                 </div>
               </form>

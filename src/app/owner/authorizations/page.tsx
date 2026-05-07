@@ -1,51 +1,33 @@
 "use client";
 /**
- * 肖像所有者授权审批页面
+ * Portrait Owner Authorization Approvals Page
  * /owner/authorizations
- * 查看收到的授权申请，确认/拒绝
+ * Review and approve/reject received authorization requests
  */
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import { useLanguage } from "@/context/LanguageContext";
 import { LanguageToggle } from "@/components/layout/LanguageToggle";
 import ThemeToggle from "@/components/ThemeToggle";
 import Link from "next/link";
 
-const STATUS_LABELS_EN: Record<string, { label: string; color: string }> = {
-  PENDING_PORTRAIT_OWNER: { label: "Pending Confirmation", color: "bg-yellow-100 text-yellow-800" },
-  PENDING_PLATFORM_REVIEW: { label: "Platform Reviewing", color: "bg-blue-100 text-blue-800" },
-  APPROVED: { label: "Approved", color: "bg-green-100 text-green-800" },
-  REJECTED: { label: "Rejected", color: "bg-red-100 text-red-800" },
-  REVOKED: { label: "Revoked", color: "bg-gray-100 text-gray-800" },
+const STATUS_LABELS: Record<string, { label: string; color: string }> = {
+  PENDING_PORTRAIT_OWNER: { label: "", color: "bg-yellow-100 text-yellow-800" },
+  PENDING_PLATFORM_REVIEW: { label: "", color: "bg-blue-100 text-blue-800" },
+  APPROVED: { label: "", color: "bg-green-100 text-green-800" },
+  REJECTED: { label: "", color: "bg-red-100 text-red-800" },
+  REVOKED: { label: "", color: "bg-gray-100 text-gray-800" },
 };
-
-const STATUS_LABELS_ZH: Record<string, { label: string; color: string }> = {
-  PENDING_PORTRAIT_OWNER: { label: "待您确认", color: "bg-yellow-100 text-yellow-800" },
-  PENDING_PLATFORM_REVIEW: { label: "平台审核中", color: "bg-blue-100 text-blue-800" },
-  APPROVED: { label: "已批准", color: "bg-green-100 text-green-800" },
-  REJECTED: { label: "已拒绝", color: "bg-red-100 text-red-800" },
-  REVOKED: { label: "已撤销", color: "bg-gray-100 text-gray-800" },
-};
-
-const REJECT_PROMPT_EN = "Enter rejection reason (optional):";
-const REJECT_PROMPT_ZH = "请输入拒绝原因（可选）：";
-const ALERT_CONFIRMED_EN = "Authorization confirmed!";
-const ALERT_CONFIRMED_ZH = "授权已确认！";
-const ALERT_PROCESSING_EN = "Processing...";
-const ALERT_PROCESSING_ZH = "处理中...";
-const ALERT_APPROVED_EN = "Approved!";
-const ALERT_APPROVED_ZH = "已批准！";
-const ALERT_REJECTED_EN = "Rejected";
-const ALERT_REJECTED_ZH = "已拒绝";
-const ALERT_REJECT_REASON_EN = "Please enter a rejection reason:";
-const ALERT_REJECT_REASON_ZH = "请填写拒绝原因：";
 
 export default function OwnerAuthorizationsPage() {
   const { t, locale } = useLanguage();
   const isZh = locale === "zh-CN" || locale === "zh-Hant";
-  const router = useRouter();
 
-  const STATUS_LABELS = isZh ? STATUS_LABELS_ZH : STATUS_LABELS_EN;
+  // Fill status labels from translations
+  STATUS_LABELS.PENDING_PORTRAIT_OWNER.label = t.ownerAuth?.statusPendingOwner || "Pending Confirmation";
+  STATUS_LABELS.PENDING_PLATFORM_REVIEW.label = t.ownerAuth?.statusPendingPlatform || "Platform Reviewing";
+  STATUS_LABELS.APPROVED.label = t.ownerAuth?.statusApproved || "Approved";
+  STATUS_LABELS.REJECTED.label = t.ownerAuth?.statusRejected || "Rejected";
+  STATUS_LABELS.REVOKED.label = t.ownerAuth?.statusRevoked || "Revoked";
 
   const tc = t.ownerAuth || {};
 
@@ -77,7 +59,7 @@ export default function OwnerAuthorizationsPage() {
       const json = await res.json();
       if (json.success) {
         setApplications(prev => prev.map(a => a.id === applicationId ? { ...a, status: "PENDING_PLATFORM_REVIEW", portraitOwnerConfirmed: true } : a));
-        alert(isZh ? ALERT_CONFIRMED_ZH : ALERT_CONFIRMED_EN);
+        alert(tc.authorized || "Authorization confirmed!");
       } else {
         alert(json.error);
       }
@@ -87,7 +69,7 @@ export default function OwnerAuthorizationsPage() {
   }
 
   async function handleReject(applicationId: string) {
-    const reason = prompt(isZh ? ALERT_REJECT_REASON_ZH : ALERT_REJECT_PROMPT_EN);
+    const reason = prompt(tc.enterRejectReason || "Enter rejection reason (optional):");
     setActionLoading(applicationId);
     try {
       const res = await fetch(`/api/v1/authorizations/enterprise/apply/${applicationId}/reject`, {
@@ -98,7 +80,7 @@ export default function OwnerAuthorizationsPage() {
       const json = await res.json();
       if (json.success) {
         setApplications(prev => prev.map(a => a.id === applicationId ? { ...a, status: "REJECTED" } : a));
-        alert(isZh ? ALERT_REJECTED_ZH : ALERT_REJECTED_EN);
+        alert(tc.rejected || "Rejected");
       } else {
         alert(json.error);
       }
@@ -113,7 +95,7 @@ export default function OwnerAuthorizationsPage() {
       <div className="bg-white border-b border-gray-200 sticky top-0 z-20">
         <div className="max-w-5xl mx-auto px-4 h-14 flex items-center justify-between">
           <Link href="/dashboard" className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-900">
-            ‹ {tc.backToDashboard || (isZh ? "返回控制台" : "Back to Dashboard")}
+            ‹ {tc.backToDashboard}
           </Link>
           <div className="flex items-center gap-2">
             <LanguageToggle />
@@ -124,10 +106,10 @@ export default function OwnerAuthorizationsPage() {
 
       <div className="max-w-5xl mx-auto px-4 py-8">
         <h1 className="text-2xl font-bold text-gray-900 mb-2">
-          {tc.pageTitle || (isZh ? "授权审批" : "Authorization Approvals")}
+          {tc.pageTitle}
         </h1>
         <p className="text-gray-500 mb-6">
-          {tc.pageSubtitle || (isZh ? "管理您收到的肖像授权申请" : "Manage portrait authorization requests you have received")}
+          {tc.pageSubtitle}
         </p>
 
         <div className="mb-4 flex gap-2 flex-wrap">
@@ -136,7 +118,7 @@ export default function OwnerAuthorizationsPage() {
             onChange={e => setFilterStatus(e.target.value)}
             className="border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:ring-2 focus:ring-purple-500"
           >
-            <option value="">{tc.allStatuses || (isZh ? "全部状态" : "All Statuses")}</option>
+            <option value="">{tc.allStatuses}</option>
             {Object.entries(STATUS_LABELS).map(([k, v]) => (
               <option key={k} value={k}>{v.label}</option>
             ))}
@@ -145,15 +127,16 @@ export default function OwnerAuthorizationsPage() {
 
         <div className="space-y-4">
           {loading ? (
-            <div className="text-center py-12 text-gray-400">{tc.loading || (isZh ? "加载中..." : "Loading...")}</div>
+            <div className="text-center py-12 text-gray-400">{tc.loading}</div>
           ) : applications.length === 0 ? (
             <div className="text-center py-12 text-gray-400 bg-white rounded-xl">
-              {tc.noApplications || (isZh ? "暂无授权申请" : "No authorization requests")}
+              {tc.noApplications}
             </div>
           ) : (
             applications.map(app => {
               const status = STATUS_LABELS[app.status] ?? { label: app.status, color: "bg-gray-100" };
               const isPending = app.status === "PENDING_PORTRAIT_OWNER";
+              const daysLabel = tc.days || (locale === "zh-CN" || locale === "zh-Hant" ? "天" : "days");
               return (
                 <div key={app.id} className="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
                   <div className="flex gap-4">
@@ -162,7 +145,7 @@ export default function OwnerAuthorizationsPage() {
                         <img src={app.portrait.thumbnailUrl} alt="" className="w-full h-full object-cover" />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center text-gray-400 text-xs">
-                          {tc.noImage || (isZh ? "无图" : "No Image")}
+                          {tc.noImage}
                         </div>
                       )}
                     </div>
@@ -171,13 +154,13 @@ export default function OwnerAuthorizationsPage() {
                         <div>
                           <h3 className="font-semibold text-gray-900">{app.portrait?.title}</h3>
                           <p className="text-sm text-gray-500 mt-0.5">
-                            {tc.applicantEnterprise || (isZh ? "申请企业" : "Applicant Enterprise")}：{app.enterprise?.companyName ?? (isZh ? "未知" : "Unknown")}
+                            {tc.applicantEnterprise}：{app.enterprise?.companyName ?? tc.unknown}
                           </p>
                           <p className="text-sm text-gray-500">
-                            {tc.unifiedCreditCode || (isZh ? "统一社会信用代码" : "Unified Credit Code")}：{app.enterprise?.unifiedCreditCode}
+                            {tc.unifiedCreditCode}：{app.enterprise?.unifiedCreditCode}
                           </p>
                           <p className="text-sm text-gray-500">
-                            {tc.contactPerson || (isZh ? "联系人" : "Contact")}：{app.enterprise?.contactName} ({app.enterprise?.contactEmail})
+                            {tc.contactPerson}：{app.enterprise?.contactName} ({app.enterprise?.contactEmail})
                           </p>
                         </div>
                         <span className={`px-3 py-1 rounded-full text-xs font-medium ${status.color}`}>
@@ -187,13 +170,13 @@ export default function OwnerAuthorizationsPage() {
 
                       <div className="mt-3 bg-gray-50 rounded-lg p-3 space-y-1.5">
                         <p className="text-sm text-gray-700">
-                          <span className="font-medium">{tc.usageScope || (isZh ? "使用范围" : "Usage Scope")}：</span>{app.usageScope?.join("、")}
+                          <span className="font-medium">{tc.usageScope}：</span>{app.usageScope?.join("、")}
                         </p>
                         <p className="text-sm text-gray-700">
-                          <span className="font-medium">{tc.territory || (isZh ? "地域" : "Territory")}：</span>{app.territorialScope} | <span className="font-medium">{tc.duration || (isZh ? "期限" : "Duration")}：</span>{app.usageDuration}{isZh ? "天" : " days"}
+                          <span className="font-medium">{tc.territory}：</span>{app.territorialScope} | <span className="font-medium">{tc.duration}：</span>{app.usageDuration}{daysLabel}
                         </p>
                         <p className="text-sm text-gray-700">
-                          <span className="font-medium">{tc.applicationFee || (isZh ? "申请费用" : "Application Fee")}：</span>${app.proposedFee} {app.currency}
+                          <span className="font-medium">{tc.applicationFee}：</span>${app.proposedFee} {app.currency}
                         </p>
                         <p className="text-sm text-gray-600 mt-2">{app.purpose}</p>
                       </div>
@@ -205,14 +188,14 @@ export default function OwnerAuthorizationsPage() {
                             disabled={actionLoading === app.id}
                             className="px-5 py-2 bg-purple-600 text-white rounded-lg text-sm font-medium hover:bg-purple-700 disabled:opacity-50"
                           >
-                            {actionLoading === app.id ? (tc.processing || (isZh ? "处理中..." : ALERT_PROCESSING_EN)) : `✅ ${tc.confirmAuth || (isZh ? "确认授权" : "Confirm Authorization")}`}
+                            {actionLoading === app.id ? tc.processing : `✅ ${tc.confirmAuth}`}
                           </button>
                           <button
                             onClick={() => handleReject(app.id)}
                             disabled={actionLoading === app.id}
                             className="px-5 py-2 border border-red-300 text-red-600 rounded-lg text-sm font-medium hover:bg-red-50 disabled:opacity-50"
                           >
-                            ❌ {tc.reject || (isZh ? "拒绝" : "Reject")}
+                            ❌ {tc.reject}
                           </button>
                         </div>
                       )}
