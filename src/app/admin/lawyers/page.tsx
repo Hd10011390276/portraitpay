@@ -34,7 +34,7 @@ interface Stats {
   rejected: number;
 }
 
-const STATUS_CONFIG_EN: Record<
+const STATUS_CONFIG: Record<
   LawyerRegistration["status"],
   { label: string; color: string; bg: string }
 > = {
@@ -44,17 +44,7 @@ const STATUS_CONFIG_EN: Record<
   REJECTED: { label: "Rejected", color: "text-gray-500", bg: "bg-gray-50 border-gray-200" },
 };
 
-const STATUS_CONFIG_ZH: Record<
-  LawyerRegistration["status"],
-  { label: string; color: string; bg: string }
-> = {
-  PENDING: { label: "待审核", color: "text-red-600", bg: "bg-red-50 border-red-200" },
-  REVIEWING: { label: "审核中", color: "text-yellow-600", bg: "bg-yellow-50 border-yellow-200" },
-  APPROVED: { label: "已通过", color: "text-green-600", bg: "bg-green-50 border-green-200" },
-  REJECTED: { label: "已拒绝", color: "text-gray-500", bg: "bg-gray-50 border-gray-200" },
-};
-
-const FILTER_TABS_EN: { key: LawyerRegistration["status"] | "ALL"; label: string }[] = [
+const FILTER_TABS: { key: LawyerRegistration["status"] | "ALL"; label: string }[] = [
   { key: "ALL", label: "All" },
   { key: "PENDING", label: "Pending" },
   { key: "REVIEWING", label: "Reviewing" },
@@ -62,26 +52,11 @@ const FILTER_TABS_EN: { key: LawyerRegistration["status"] | "ALL"; label: string
   { key: "REJECTED", label: "Rejected" },
 ];
 
-const FILTER_TABS_ZH: { key: LawyerRegistration["status"] | "ALL"; label: string }[] = [
-  { key: "ALL", label: "全部" },
-  { key: "PENDING", label: "待审核" },
-  { key: "REVIEWING", label: "审核中" },
-  { key: "APPROVED", label: "已通过" },
-  { key: "REJECTED", label: "已拒绝" },
-];
-
-const REJECT_REASON_PROMPT_EN = "Please enter rejection reason:";
-const REJECT_REASON_PROMPT_ZH = "请填写拒绝原因：";
-
 export default function AdminLawyersPage() {
   const router = useRouter();
   const { t, locale } = useLanguage();
-  const isZh = locale === "zh-CN" || locale === "zh-Hant";
 
-  const STATUS_CONFIG = isZh ? STATUS_CONFIG_ZH : STATUS_CONFIG_EN;
-  const FILTER_TABS = isZh ? FILTER_TABS_ZH : FILTER_TABS_EN;
-
-  const tc = t.adminLawyers || {};
+  const tc = t.adminLawyers || {} as Record<string, string>;
 
   const [registrations, setRegistrations] = useState<LawyerRegistration[]>([]);
   const [loading, setLoading] = useState(true);
@@ -152,7 +127,7 @@ export default function AdminLawyersPage() {
         setSelected((prev) => (prev?.id === id ? { ...prev, ...json.data } : prev));
         load(page);
       } else {
-        alert(json.error ?? (tc.operationFailed || (isZh ? "操作失败" : "Operation failed")));
+        alert(json.error ?? tc.operationFailed);
       }
     } finally {
       setActionLoading(false);
@@ -161,7 +136,7 @@ export default function AdminLawyersPage() {
 
   async function handleReject(id: string, reason: string) {
     if (!reason.trim()) {
-      alert(tc.pleaseEnterRejectReason || (isZh ? "请填写拒绝原因" : "Please enter rejection reason"));
+      alert(tc.pleaseEnterRejectReason);
       return;
     }
     setActionLoading(true);
@@ -182,7 +157,7 @@ export default function AdminLawyersPage() {
         setRejectReason("");
         load(page);
       } else {
-        alert(json.error ?? (tc.operationFailed || (isZh ? "操作失败" : "Operation failed")));
+        alert(json.error ?? tc.operationFailed);
       }
     } finally {
       setActionLoading(false);
@@ -190,7 +165,7 @@ export default function AdminLawyersPage() {
   }
 
   function formatDate(d: string) {
-    return new Date(d).toLocaleString(isZh ? "zh-CN" : "en-US", {
+    return new Date(d).toLocaleString(locale === "zh-CN" || locale === "zh-Hant" ? "zh-CN" : "en-US", {
       year: "numeric",
       month: "2-digit",
       day: "2-digit",
@@ -221,14 +196,14 @@ export default function AdminLawyersPage() {
             onClick={() => router.push("/dashboard")}
             className="text-gray-500 hover:text-gray-700 text-sm"
           >
-            ← {tc.backToConsole || (isZh ? "控制台" : "Dashboard")}
+            ← {tc.backToConsole}
           </button>
           <div className="w-px h-5 bg-gray-200" />
           <h1 className="text-lg font-bold text-gray-900">
-            {tc.pageTitle || (isZh ? "律师楼入驻管理" : "Lawyer Firm Management")}
+            {tc.pageTitle}
           </h1>
           <span className="ml-auto text-xs text-gray-400">
-            {tc.totalRecords || (isZh ? "共" : "Total")} {total} {tc.records || (isZh ? "条记录" : "records")}
+            {tc.totalRecords} {total} {tc.records}
           </span>
           <div className="flex items-center gap-2 ml-4">
             <LanguageToggle />
@@ -242,11 +217,11 @@ export default function AdminLawyersPage() {
         {stats && (
           <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
             {[
-              { key: "ALL", label: tc.all || (isZh ? "全部" : "All"), count: stats.total, color: null },
-              { key: "PENDING", label: tc.pending || (isZh ? "待审核" : "Pending"), count: stats.pending, color: "text-red-600" },
-              { key: "REVIEWING", label: tc.reviewing || (isZh ? "审核中" : "Reviewing"), count: stats.reviewing, color: "text-yellow-600" },
-              { key: "APPROVED", label: tc.approved || (isZh ? "已通过" : "Approved"), count: stats.approved, color: "text-green-600" },
-              { key: "REJECTED", label: tc.rejected || (isZh ? "已拒绝" : "Rejected"), count: stats.rejected, color: "text-gray-500" },
+              { key: "ALL", label: tc.all, count: stats.total, color: null },
+              { key: "PENDING", label: tc.pending, count: stats.pending, color: "text-red-600" },
+              { key: "REVIEWING", label: tc.reviewing, count: stats.reviewing, color: "text-yellow-600" },
+              { key: "APPROVED", label: tc.approved, count: stats.approved, color: "text-green-600" },
+              { key: "REJECTED", label: tc.rejected, count: stats.rejected, color: "text-gray-500" },
             ].map((s) => (
               <button
                 key={s.key}
@@ -290,14 +265,14 @@ export default function AdminLawyersPage() {
               <thead className="bg-gray-50 border-b">
                 <tr>
                   {[
-                    tc.colCompanyName || (isZh ? "公司名称" : "Company Name"),
-                    tc.colRegion || (isZh ? "地区" : "Region"),
-                    tc.colContact || (isZh ? "联系人" : "Contact"),
-                    tc.colPhone || (isZh ? "联系电话" : "Phone"),
-                    tc.colEmail || (isZh ? "邮箱" : "Email"),
-                    tc.colStatus || (isZh ? "状态" : "Status"),
-                    tc.colApplyTime || (isZh ? "申请时间" : "Applied"),
-                    tc.colAction || (isZh ? "操作" : "Action"),
+                    tc.colCompanyName,
+                    tc.colRegion,
+                    tc.colContact,
+                    tc.colPhone,
+                    tc.colEmail,
+                    tc.colStatus,
+                    tc.colApplyTime,
+                    tc.colAction,
                   ].map((h) => (
                     <th
                       key={h}
@@ -312,13 +287,13 @@ export default function AdminLawyersPage() {
                 {loading ? (
                   <tr>
                     <td colSpan={8} className="text-center py-12 text-gray-400">
-                      {tc.loading || (isZh ? "加载中..." : "Loading...")}
+                      {tc.loading}
                     </td>
                   </tr>
                 ) : registrations.length === 0 ? (
                   <tr>
                     <td colSpan={8} className="text-center py-12 text-gray-400">
-                      {tc.noData || (isZh ? "暂无数据" : "No data")}
+                      {tc.noData}
                     </td>
                   </tr>
                 ) : (
@@ -357,7 +332,7 @@ export default function AdminLawyersPage() {
                               openDetail(r);
                             }}
                           >
-                            {tc.viewDetail || (isZh ? "查看详情" : "View Detail")}
+                            {tc.viewDetail}
                           </button>
                         </td>
                       </tr>
@@ -372,7 +347,7 @@ export default function AdminLawyersPage() {
           {totalPages > 1 && (
             <div className="px-4 py-3 border-t flex items-center justify-between text-sm text-gray-500">
               <span>
-                {tc.totalRecords2 || (isZh ? "共" : "Total")} {total} {tc.records || (isZh ? "条" : "")}，{tc.page || (isZh ? "第" : "Page")} {page} / {totalPages} {tc.pages || (isZh ? "页" : "")}
+                {tc.totalRecords2} {total} {tc.records}，{tc.page} {page} / {totalPages} {tc.pages}
               </span>
               <div className="flex gap-2">
                 <button
@@ -380,14 +355,14 @@ export default function AdminLawyersPage() {
                   className="px-3 py-1.5 border rounded-lg disabled:opacity-40 hover:bg-gray-50"
                   onClick={() => load(page - 1)}
                 >
-                  {tc.prevPage || (isZh ? "上一页" : "Previous")}
+                  {tc.prevPage}
                 </button>
                 <button
                   disabled={page >= totalPages}
                   className="px-3 py-1.5 border rounded-lg disabled:opacity-40 hover:bg-gray-50"
                   onClick={() => load(page + 1)}
                 >
-                  {tc.nextPage || (isZh ? "下一页" : "Next")}
+                  {tc.nextPage}
                 </button>
               </div>
             </div>
@@ -409,7 +384,7 @@ export default function AdminLawyersPage() {
             <div className="sticky top-0 bg-white border-b border-gray-100 px-6 py-4 flex items-center justify-between rounded-t-2xl">
               <div className="flex items-center gap-3">
                 <span className="text-sm font-bold text-gray-900">
-                  {tc.lawyerFirmDetail || (isZh ? "律师楼详情" : "Lawyer Firm Detail")}
+                  {tc.lawyerFirmDetail}
                 </span>
                 {(() => {
                   const st = STATUS_CONFIG[selected.status];
@@ -435,11 +410,11 @@ export default function AdminLawyersPage() {
               {/* Company info */}
               <div className="grid grid-cols-2 gap-4">
                 {[
-                  [tc.companyName || (isZh ? "公司名称" : "Company Name"), selected.companyName],
-                  [tc.region || (isZh ? "地区" : "Region"), selected.region],
-                  [tc.contactPerson || (isZh ? "联系人" : "Contact"), selected.contactName],
-                  [tc.phone || (isZh ? "联系电话" : "Phone"), selected.contactPhone],
-                  [tc.email || (isZh ? "邮箱" : "Email"), selected.contactEmail],
+                  [tc.companyName, selected.companyName],
+                  [tc.region, selected.region],
+                  [tc.contactPerson, selected.contactName],
+                  [tc.phone, selected.contactPhone],
+                  [tc.email, selected.contactEmail],
                 ].map(([label, value]) => (
                   <div key={label as string}>
                     <p className="text-xs text-gray-400 mb-0.5">{label}</p>
@@ -451,14 +426,14 @@ export default function AdminLawyersPage() {
               {/* License */}
               {selected.licenseUrl && (
                 <div>
-                  <p className="text-xs text-gray-400 mb-1">{tc.qualificationCert || (isZh ? "资质证明" : "Qualification")}</p>
+                  <p className="text-xs text-gray-400 mb-1">{tc.qualificationCert}</p>
                   <a
                     href={selected.licenseUrl}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex items-center gap-1 px-4 py-2 bg-purple-50 border border-purple-200 text-purple-700 rounded-lg text-sm hover:bg-purple-100 transition"
                   >
-                    🔗 {tc.viewQualification || (isZh ? "查看资质证明" : "View Qualification")}
+                    🔗 {tc.viewQualification}
                   </a>
                 </div>
               )}
@@ -466,7 +441,7 @@ export default function AdminLawyersPage() {
               {/* Rejection reason */}
               {selected.rejectionReason && (
                 <div>
-                  <p className="text-xs text-gray-400 mb-1">{tc.rejectReason || (isZh ? "拒绝原因" : "Rejection Reason")}</p>
+                  <p className="text-xs text-gray-400 mb-1">{tc.rejectReason}</p>
                   <p className="text-sm text-red-600 bg-red-50 rounded-xl p-4 whitespace-pre-wrap">
                     {selected.rejectionReason}
                   </p>
@@ -476,15 +451,15 @@ export default function AdminLawyersPage() {
               {/* Reviewer info */}
               {selected.reviewerId && (
                 <div className="text-xs text-gray-400 space-y-1">
-                  <p>{tc.reviewerId || (isZh ? "审核人ID" : "Reviewer ID")}：{selected.reviewerId}</p>
-                  <p>{tc.reviewTime || (isZh ? "审核时间" : "Review Time")}：{selected.reviewedAt ? formatDate(selected.reviewedAt) : "—"}</p>
+                  <p>{tc.reviewerId}：{selected.reviewerId}</p>
+                  <p>{tc.reviewTime}：{selected.reviewedAt ? formatDate(selected.reviewedAt) : "—"}</p>
                 </div>
               )}
 
               {/* Timestamps */}
               <div className="text-xs text-gray-400 space-y-1 pt-2 border-t border-gray-100">
-                <p>{tc.applyTime || (isZh ? "申请时间" : "Applied")}：{formatDate(selected.createdAt)}</p>
-                <p>{tc.updateTime || (isZh ? "更新时间" : "Updated")}：{formatDate(selected.updatedAt)}</p>
+                <p>{tc.applyTime}：{formatDate(selected.createdAt)}</p>
+                <p>{tc.updateTime}：{formatDate(selected.updatedAt)}</p>
               </div>
 
               {/* Action buttons — only for PENDING / REVIEWING */}
@@ -496,17 +471,17 @@ export default function AdminLawyersPage() {
                       disabled={actionLoading}
                       className="px-6 py-2.5 bg-green-600 text-white rounded-xl text-sm font-medium hover:bg-green-700 disabled:opacity-60 transition"
                     >
-                      {actionLoading ? (tc.processing || (isZh ? "处理中..." : "Processing...")) : `✅ ${tc.approve || (isZh ? "通过" : "Approve")}`}
+                      {actionLoading ? tc.processing : `✅ ${tc.approve}`}
                     </button>
                     <button
                       onClick={() => {
-                        const reason = prompt(isZh ? REJECT_REASON_PROMPT_ZH : REJECT_REASON_PROMPT_EN);
+                        const reason = prompt(tc.pleaseEnterRejectReason);
                         if (reason) handleReject(selected.id, reason);
                       }}
                       disabled={actionLoading}
                       className="px-6 py-2.5 border border-red-300 text-red-600 rounded-xl text-sm font-medium hover:bg-red-50 disabled:opacity-60 transition"
                     >
-                      ❌ {tc.reject || (isZh ? "拒绝" : "Reject")}
+                      ❌ {tc.reject}
                     </button>
                   </div>
                 </div>
@@ -516,12 +491,12 @@ export default function AdminLawyersPage() {
               {isActionable(selected) && (
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                    {tc.rejectReasonOptional || (isZh ? "拒绝原因（备选）" : "Rejection Reason (Optional)")}
+                    {tc.rejectReasonOptional}
                   </label>
                   <textarea
                     value={rejectReason}
                     onChange={(e) => setRejectReason(e.target.value)}
-                    placeholder={tc.rejectReasonPlaceholder || (isZh ? "填写拒绝原因后点击拒绝按钮..." : "Fill rejection reason then click reject...")}
+                    placeholder={tc.rejectReasonPlaceholder}
                     rows={3}
                     className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 resize-none"
                   />
@@ -531,7 +506,7 @@ export default function AdminLawyersPage() {
                       disabled={actionLoading}
                       className="mt-2 px-5 py-2 border border-red-300 text-red-600 rounded-xl text-xs font-medium hover:bg-red-50 disabled:opacity-60 transition"
                     >
-                      {tc.submitReject || (isZh ? "提交拒绝" : "Submit Rejection")}
+                      {tc.submitReject}
                     </button>
                   )}
                 </div>
