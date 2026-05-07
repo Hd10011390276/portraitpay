@@ -34,7 +34,7 @@ interface ContactSubmission {
   updatedAt: string;
 }
 
-const STATUS_MAP_EN: Record<string, { label: string; color: string; bg: string }> = {
+const STATUS_MAP: Record<string, { label: string; color: string; bg: string }> = {
   NEW: { label: "New", color: "text-red-600", bg: "bg-red-50 border-red-200" },
   READ: { label: "Read", color: "text-blue-600", bg: "bg-blue-50 border-blue-200" },
   PROCESSING: { label: "Processing", color: "text-yellow-600", bg: "bg-yellow-50 border-yellow-200" },
@@ -43,34 +43,16 @@ const STATUS_MAP_EN: Record<string, { label: string; color: string; bg: string }
   CLOSED: { label: "Closed", color: "text-gray-500", bg: "bg-gray-50 border-gray-200" },
 };
 
-const STATUS_MAP_ZH: Record<string, { label: string; color: string; bg: string }> = {
-  NEW: { label: "新提交", color: "text-red-600", bg: "bg-red-50 border-red-200" },
-  READ: { label: "已读", color: "text-blue-600", bg: "bg-blue-50 border-blue-200" },
-  PROCESSING: { label: "处理中", color: "text-yellow-600", bg: "bg-yellow-50 border-yellow-200" },
-  REPLIED: { label: "已回复", color: "text-purple-600", bg: "bg-purple-50 border-purple-200" },
-  RESOLVED: { label: "已解决", color: "text-green-600", bg: "bg-green-50 border-green-200" },
-  CLOSED: { label: "已关闭", color: "text-gray-500", bg: "bg-gray-50 border-gray-200" },
-};
-
-const TYPE_MAP_EN: Record<string, string> = {
+const TYPE_MAP: Record<string, string> = {
   GENERAL: "General",
   ENTERPRISE: "Enterprise",
-};
-
-const TYPE_MAP_ZH: Record<string, string> = {
-  GENERAL: "普通联系",
-  ENTERPRISE: "企业入驻",
 };
 
 export default function AdminContactsPage() {
   const router = useRouter();
   const { t, locale } = useLanguage();
-  const isZh = locale === "zh-CN" || locale === "zh-Hant";
 
-  const STATUS_MAP = isZh ? STATUS_MAP_ZH : STATUS_MAP_EN;
-  const TYPE_MAP = isZh ? TYPE_MAP_ZH : TYPE_MAP_EN;
-
-  const tc = t.adminContacts || {};
+  const tc = t.adminContacts || {} as Record<string, string>;
 
   const [contacts, setContacts] = useState<ContactSubmission[]>([]);
   const [loading, setLoading] = useState(true);
@@ -167,7 +149,7 @@ export default function AdminContactsPage() {
   }
 
   function formatDate(d: string) {
-    return new Date(d).toLocaleString(isZh ? "zh-CN" : "en-US", {
+    return new Date(d).toLocaleString(locale === "zh-CN" || locale === "zh-Hant" ? "zh-CN" : "en-US", {
       year: "numeric", month: "2-digit", day: "2-digit",
       hour: "2-digit", minute: "2-digit",
     });
@@ -179,14 +161,14 @@ export default function AdminContactsPage() {
       <header className="bg-white border-b border-gray-100 sticky top-0 z-20">
         <div className="max-w-7xl mx-auto px-4 h-16 flex items-center gap-4">
           <button onClick={() => router.push("/dashboard")} className="text-gray-500 hover:text-gray-700 text-sm">
-            ← {tc.backToConsole || (isZh ? "控制台" : "Dashboard")}
+            ← {tc.backToConsole}
           </button>
           <div className="w-px h-5 bg-gray-200" />
           <h1 className="text-lg font-bold text-gray-900">
-            {tc.pageTitle || (isZh ? "联系表单管理" : "Contact Form Management")}
+            {tc.pageTitle}
           </h1>
           <span className="ml-auto text-xs text-gray-400">
-            {tc.totalRecords || (isZh ? "共" : "Total")} {meta?.total ?? 0} {tc.records || (isZh ? "条记录" : "records")}
+            {tc.totalRecords} {meta?.total ?? 0} {tc.records}
           </span>
           <div className="flex items-center gap-2 ml-4">
             <LanguageToggle />
@@ -200,10 +182,10 @@ export default function AdminContactsPage() {
         {stats && (
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
             {[
-              { key: "", label: tc.all || (isZh ? "全部" : "All"), icon: null },
-              { key: "NEW", label: tc.newSubmissions || (isZh ? "新提交" : "New"), icon: "🔴", count: stats.newCount },
-              { key: "PROCESSING", label: tc.processing || (isZh ? "处理中" : "Processing"), icon: "🟡", count: stats.processingCount },
-              { key: "RESOLVED", label: tc.resolved || (isZh ? "已解决" : "Resolved"), icon: "✅" },
+              { key: "", label: tc.all, icon: null },
+              { key: "NEW", label: tc.newSubmissions, icon: "🔴", count: stats.newCount },
+              { key: "PROCESSING", label: tc.processing, icon: "🟡", count: stats.processingCount },
+              { key: "RESOLVED", label: tc.resolved, icon: "✅" },
             ].map((s) => (
               <button
                 key={s.key}
@@ -230,13 +212,13 @@ export default function AdminContactsPage() {
 
         {/* Filters */}
         <div className="bg-white rounded-xl p-4 flex flex-wrap gap-3 items-center">
-          <span className="text-sm font-medium text-gray-700">{tc.filter || (isZh ? "筛选" : "Filter")}</span>
+          <span className="text-sm font-medium text-gray-700">{tc.filter}</span>
           <select
             className="border border-gray-200 rounded-lg px-3 py-2 text-sm"
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value)}
           >
-            <option value="">{tc.allStatuses || (isZh ? "全部状态" : "All Statuses")}</option>
+            <option value="">{tc.allStatuses}</option>
             {Object.entries(STATUS_MAP).map(([k, v]) => (
               <option key={k} value={k}>{v.label}</option>
             ))}
@@ -246,7 +228,7 @@ export default function AdminContactsPage() {
             value={filterType}
             onChange={(e) => setFilterType(e.target.value)}
           >
-            <option value="">{tc.allTypes || (isZh ? "全部类型" : "All Types")}</option>
+            <option value="">{tc.allTypes}</option>
             <option value="GENERAL">{TYPE_MAP.GENERAL}</option>
             <option value="ENTERPRISE">{TYPE_MAP.ENTERPRISE}</option>
           </select>
@@ -254,7 +236,7 @@ export default function AdminContactsPage() {
             className="ml-auto px-4 py-2 bg-gray-100 rounded-lg text-sm hover:bg-gray-200 transition"
             onClick={() => load(meta?.page ?? 1)}
           >
-            🔄 {tc.refresh || (isZh ? "刷新" : "Refresh")}
+            🔄 {tc.refresh}
           </button>
         </div>
 
@@ -265,14 +247,14 @@ export default function AdminContactsPage() {
               <thead className="bg-gray-50 border-b">
                 <tr>
                   {[
-                    tc.colType || (isZh ? "类型" : "Type"),
-                    tc.colNameEmail || (isZh ? "姓名/邮箱" : "Name/Email"),
-                    tc.colCompany || (isZh ? "公司/企业" : "Company"),
-                    tc.colSubjectUse || (isZh ? "主题/用途" : "Subject/Use"),
-                    tc.colStatus || (isZh ? "状态" : "Status"),
-                    tc.colEmailNotify || (isZh ? "邮件通知" : "Email"),
-                    tc.colSubmitTime || (isZh ? "提交时间" : "Submitted"),
-                    tc.colAction || (isZh ? "操作" : "Action"),
+                    tc.colType,
+                    tc.colNameEmail,
+                    tc.colCompany,
+                    tc.colSubjectUse,
+                    tc.colStatus,
+                    tc.colEmailNotify,
+                    tc.colSubmitTime,
+                    tc.colAction,
                   ].map((h) => (
                     <th key={h} className="text-left px-4 py-3 font-medium text-gray-600 whitespace-nowrap">{h}</th>
                   ))}
@@ -281,11 +263,11 @@ export default function AdminContactsPage() {
               <tbody className="divide-y divide-gray-50">
                 {loading ? (
                   <tr>
-                    <td colSpan={8} className="text-center py-12 text-gray-400">{tc.loading || (isZh ? "加载中..." : "Loading...")}</td>
+                    <td colSpan={8} className="text-center py-12 text-gray-400">{tc.loading}</td>
                   </tr>
                 ) : contacts.length === 0 ? (
                   <tr>
-                    <td colSpan={8} className="text-center py-12 text-gray-400">{tc.noData || (isZh ? "暂无数据" : "No data")}</td>
+                    <td colSpan={8} className="text-center py-12 text-gray-400">{tc.noData}</td>
                   </tr>
                 ) : (
                   contacts.map((c) => {
@@ -352,7 +334,7 @@ export default function AdminContactsPage() {
                             className="px-3 py-1.5 text-xs bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition"
                             onClick={(e) => { e.stopPropagation(); openDetail(c); }}
                           >
-                            {tc.handle || (isZh ? "处理" : "Handle")}
+                            {tc.handle}
                           </button>
                         </td>
                       </tr>
@@ -366,21 +348,21 @@ export default function AdminContactsPage() {
           {/* Pagination */}
           {meta && meta.totalPages > 1 && (
             <div className="px-4 py-3 border-t flex items-center justify-between text-sm text-gray-500">
-              <span>{tc.pageInfo || (isZh ? "共" : "Total")} {meta.total} {tc.records || (isZh ? "条" : "")}，{tc.page || (isZh ? "第" : "Page")} {meta.page} / {meta.totalPages} {tc.pages || (isZh ? "页" : "")}</span>
+              <span>{tc.pageInfo} {meta.total} {tc.records}，{tc.page} {meta.page} / {meta.totalPages} {tc.pages}</span>
               <div className="flex gap-2">
                 <button
                   disabled={meta.page <= 1}
                   className="px-3 py-1.5 border rounded-lg disabled:opacity-40 hover:bg-gray-50"
                   onClick={() => load(meta.page - 1)}
                 >
-                  {tc.prevPage || (isZh ? "上一页" : "Previous")}
+                  {tc.prevPage}
                 </button>
                 <button
                   disabled={meta.page >= meta.totalPages}
                   className="px-3 py-1.5 border rounded-lg disabled:opacity-40 hover:bg-gray-50"
                   onClick={() => load(meta.page + 1)}
                 >
-                  {tc.nextPage || (isZh ? "下一页" : "Next")}
+                  {tc.nextPage}
                 </button>
               </div>
             </div>
@@ -422,12 +404,12 @@ export default function AdminContactsPage() {
               {/* Contact info */}
               <div className="grid grid-cols-2 gap-4">
                 {[
-                  [tc.name || (isZh ? "姓名" : "Name"), selected.name],
-                  [tc.email || (isZh ? "邮箱" : "Email"), selected.email],
-                  [tc.company || (isZh ? "公司" : "Company"), selected.company ?? "—"],
-                  [tc.enterpriseName || (isZh ? "企业名称" : "Enterprise Name"), selected.enterpriseName ?? "—"],
-                  [tc.phone || (isZh ? "联系电话" : "Phone"), selected.contactPhone ?? "—"],
-                  [tc.expectedScale || (isZh ? "预期规模" : "Expected Scale"), selected.expectedScale ?? "—"],
+                  [tc.name, selected.name],
+                  [tc.email, selected.email],
+                  [tc.company, selected.company ?? "—"],
+                  [tc.enterpriseName, selected.enterpriseName ?? "—"],
+                  [tc.phone, selected.contactPhone ?? "—"],
+                  [tc.expectedScale, selected.expectedScale ?? "—"],
                 ].map(([label, value]) => (
                   <div key={label as string}>
                     <p className="text-xs text-gray-400 mb-0.5">{label}</p>
@@ -439,7 +421,7 @@ export default function AdminContactsPage() {
               {/* Subject */}
               {selected.subject && (
                 <div>
-                  <p className="text-xs text-gray-400 mb-0.5">{tc.subject || (isZh ? "主题" : "Subject")}</p>
+                  <p className="text-xs text-gray-400 mb-0.5">{tc.subject}</p>
                   <p className="text-sm font-medium text-gray-800">{selected.subject}</p>
                 </div>
               )}
@@ -447,7 +429,7 @@ export default function AdminContactsPage() {
               {/* Intended use */}
               {selected.intendedUse && (
                 <div>
-                  <p className="text-xs text-gray-400 mb-0.5">{tc.intendedUse || (isZh ? "用途说明" : "Intended Use")}</p>
+                  <p className="text-xs text-gray-400 mb-0.5">{tc.intendedUse}</p>
                   <p className="text-sm text-gray-700 bg-gray-50 rounded-xl p-4 whitespace-pre-wrap">{selected.intendedUse}</p>
                 </div>
               )}
@@ -455,7 +437,7 @@ export default function AdminContactsPage() {
               {/* Message */}
               <div>
                 <p className="text-xs text-gray-400 mb-0.5">
-                  {selected.type === "ENTERPRISE" ? (tc.supplementInfo || (isZh ? "补充说明" : "Additional Info")) : (tc.message || (isZh ? "留言内容" : "Message"))}
+                  {selected.type === "ENTERPRISE" ? tc.supplementInfo : tc.message}
                 </p>
                 <p className="text-sm text-gray-700 bg-gray-50 rounded-xl p-4 whitespace-pre-wrap">
                   {selected.message || "（无）"}
@@ -464,11 +446,11 @@ export default function AdminContactsPage() {
 
               {/* Admin notes */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">{tc.adminNotes || (isZh ? "管理员备注" : "Admin Notes")}</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">{tc.adminNotes}</label>
                 <textarea
                   value={adminNotes}
                   onChange={(e) => setAdminNotes(e.target.value)}
-                  placeholder={tc.adminNotesPlaceholder || (isZh ? "记录处理进度、跟进计划等..." : "Record progress, follow-up plans...")}
+                  placeholder={tc.adminNotesPlaceholder}
                   rows={3}
                   className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 resize-none"
                 />
@@ -476,11 +458,11 @@ export default function AdminContactsPage() {
 
               {/* Reply */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">{tc.replyContent || (isZh ? "回复内容" : "Reply")}</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">{tc.replyContent}</label>
                 <textarea
                   value={replyText}
                   onChange={(e) => setReplyText(e.target.value)}
-                  placeholder={tc.replyPlaceholder || (isZh ? "填写回复内容..." : "Enter reply content...")}
+                  placeholder={tc.replyPlaceholder}
                   rows={3}
                   className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 resize-none"
                 />
@@ -488,7 +470,7 @@ export default function AdminContactsPage() {
 
               {/* Status actions */}
               <div>
-                <p className="text-sm font-medium text-gray-700 mb-2">{tc.updateStatus || (isZh ? "更新状态" : "Update Status")}</p>
+                <p className="text-sm font-medium text-gray-700 mb-2">{tc.updateStatus}</p>
                 <div className="flex flex-wrap gap-2">
                   {Object.entries(STATUS_MAP).map(([k, v]) => (
                     <button
@@ -514,27 +496,27 @@ export default function AdminContactsPage() {
                   disabled={updateLoading}
                   className="px-6 py-2.5 bg-purple-600 text-white rounded-xl text-sm font-medium hover:bg-purple-700 disabled:opacity-60 transition"
                 >
-                  {updateLoading ? (tc.saving || (isZh ? "保存中..." : "Saving...")) : `💾 ${tc.saveNotes || (isZh ? "保存备注" : "Save Notes")}`}
+                  {updateLoading ? tc.saving : `💾 ${tc.saveNotes}`}
                 </button>
                 {selected.repliedAt && (
                   <span className="text-xs text-gray-400 self-center">
-                    {tc.repliedAt || (isZh ? "已回复于" : "Replied at")} {formatDate(selected.repliedAt)}
+                    {tc.repliedAt} {formatDate(selected.repliedAt)}
                   </span>
                 )}
               </div>
 
               {/* Meta info */}
               <div className="text-xs text-gray-400 space-y-1 pt-2 border-t border-gray-100">
-                <p>{tc.submitTime || (isZh ? "提交时间" : "Submitted")}：{formatDate(selected.createdAt)}</p>
-                <p>{tc.updateTime || (isZh ? "更新时间" : "Updated")}：{formatDate(selected.updatedAt)}</p>
+                <p>{tc.submitTime}：{formatDate(selected.createdAt)}</p>
+                <p>{tc.updateTime}：{formatDate(selected.updatedAt)}</p>
                 <p>
-                  {tc.emailNotify || (isZh ? "邮件通知" : "Email Notification")}：
+                  {tc.emailNotify}：
                   {selected.emailSent
-                    ? <span className="text-green-600">✅ {tc.sent || (isZh ? "已发送" : "Sent")} {selected.emailSentAt ? formatDate(selected.emailSentAt) : ""}</span>
-                    : <span className="text-red-500">❌ {tc.notSent || (isZh ? "未发送" : "Not Sent")} {selected.emailError ? `- ${selected.emailError}` : ""}</span>
+                    ? <span className="text-green-600">✅ {tc.sent} {selected.emailSentAt ? formatDate(selected.emailSentAt) : ""}</span>
+                    : <span className="text-red-500">❌ {tc.notSent} {selected.emailError ? `- ${selected.emailError}` : ""}</span>
                   }
                 </p>
-                {selected.handledAt && <p>{tc.lastHandle || (isZh ? "最后处理" : "Last handled")}：{formatDate(selected.handledAt)}</p>}
+                {selected.handledAt && <p>{tc.lastHandle}：{formatDate(selected.handledAt)}</p>}
               </div>
             </div>
           </div>
