@@ -1,39 +1,10 @@
 /**
- * Generate PNG certificate using template
- * Uses sharp to overlay text on template image
+ * Generate PNG certificate completely with sharp
+ * No external template needed - creates stylized certificate directly
  */
 
 import sharp from "sharp";
 import { format } from "date-fns";
-import { zhCN } from "date-fns/locale";
-
-// Read template from disk (cached in lambda)
-let templateBuffer: Buffer | null = null;
-
-async function getTemplate(): Promise<Buffer> {
-  if (!templateBuffer) {
-    try {
-      const fs = require('fs');
-      templateBuffer = fs.readFileSync('./public/images/certificate-template.png');
-    } catch {
-      // Fallback - create a simple certificate if template not found
-      templateBuffer = await createFallbackTemplate();
-    }
-  }
-  return templateBuffer;
-}
-
-async function createFallbackTemplate(): Promise<Buffer> {
-  // Create a simple certificate template if file not found
-  return await sharp({
-    create: {
-      width: 800,
-      height: 600,
-      channels: 4,
-      background: { r: 10, g: 20, b: 40, alpha: 1 }
-    }
-  }).png().toBuffer();
-}
 
 export interface CertificateData {
   portraitTitle: string;
@@ -47,87 +18,96 @@ export interface CertificateData {
 }
 
 export async function buildCertificateImage(data: CertificateData): Promise<Buffer> {
-  const template = await getTemplate();
-  
   const networkLabel = data.network === "base" ? "Base Mainnet" : "Ethereum Sepolia";
-  const certDateStr = format(data.certifiedAt, "yyyy-MM-dd HH:mm:ss", { locale: zhCN });
+  const certDateStr = format(data.certifiedAt, "yyyy-MM-dd HH:mm:ss");
   
-  // Truncate hashes for display
-  const shortTx = data.blockchainTxHash.slice(0, 18) + "...";
-  const shortHash = data.portraitHash.slice(0, 18) + "...";
-  
-  // Create SVG overlay with text
-  const svgOverlay = `
-    <svg width="800" height="600">
-      <style>
-        .title { font-family: Arial, sans-serif; font-size: 28px; fill: white; font-weight: bold; }
-        .subtitle { font-family: Arial, sans-serif; font-size: 16px; fill: #a855f7; }
-        .label { font-family: Arial, sans-serif; font-size: 12px; fill: #94a3b8; }
-        .value { font-family: monospace; font-size: 11px; fill: #ffffff; }
-        .verified { font-family: Arial, sans-serif; font-size: 14px; fill: #fbbf24; font-weight: bold; }
-        .time { font-family: Arial, sans-serif; font-size: 11px; fill: #94a3b8; }
-      </style>
-      
-      <!-- Certificate Title -->
-      <text x="400" y="80" text-anchor="middle" class="title">BLOCKCHAIN CERTIFICATE</text>
-      <text x="400" y="105" text-anchor="middle" class="subtitle">PORTRAITPAY AI</text>
-      
-      <!-- User Info Box -->
-      <rect x="50" y="140" width="700" height="320" rx="10" fill="rgba(30, 41, 59, 0.8)" stroke="#a855f7" stroke-width="1"/>
-      
-      <!-- Field: Portrait Title -->
-      <text x="70" y="175" class="label">PORTRAIT TITLE</text>
-      <text x="70" y="195" class="value" fill="#f8fafc" font-size="14">${data.portraitTitle}</text>
-      
-      <!-- Field: User Name -->
-      <text x="70" y="230" class="label">OWNER NAME</text>
-      <text x="70" y="250" class="value" fill="#f8fafc" font-size="14">${data.idCardName}</text>
-      
-      <!-- Field: ID Type -->
-      <text x="380" y="230" class="label">ID TYPE</text>
-      <text x="380" y="250" class="value" fill="#f8fafc" font-size="14">${data.idCardType}</text>
-      
-      <!-- Dividers -->
-      <line x1="70" y1="270" x2="730" y2="270" stroke="#374151" stroke-width="1"/>
-      <line x1="70" y1="340" x2="730" y2="340" stroke="#374151" stroke-width="1"/>
-      <line x1="70" y1="410" x2="730" y2="410" stroke="#374151" stroke-width="1"/>
-      
-      <!-- Field: Network -->
-      <text x="70" y="295" class="label">NETWORK</text>
-      <text x="70" y="315" class="value" fill="#a855f7" font-size="13">${networkLabel}</text>
-      
-      <!-- Field: Certified Time -->
-      <text x="380" y="295" class="label">CERTIFIED TIME</text>
-      <text x="380" y="315" class="value" fill="#f8fafc" font-size="13">${certDateStr}</text>
-      
-      <!-- Field: Transaction Hash -->
-      <text x="70" y="365" class="label">TRANSACTION HASH</text>
-      <text x="70" y="385" class="value" fill="#a855f7" font-size="10">${data.blockchainTxHash}</text>
-      
-      <!-- Field: Image Hash (SHA-256) -->
-      <text x="70" y="435" class="label">IMAGE HASH (SHA-256)</text>
-      <text x="70" y="455" class="value" fill="#a855f7" font-size="10">${data.portraitHash}</text>
-      
-      <!-- Verification Box -->
-      <rect x="580" y="150" width="150" height="120" rx="8" fill="none" stroke="#fbbf24" stroke-width="2"/>
-      <text x="655" y="205" text-anchor="middle" class="verified">✓ VERIFIED</text>
-      <text x="655" y="255" text-anchor="middle" font-family="Arial" font-size="10" fill="#94a3b8">portraitpayai.com</text>
-      
-      <!-- Footer -->
-      <text x="400" y="550" text-anchor="middle" class="time">This certificate is permanently stored on the blockchain</text>
-      <text x="400" y="570" text-anchor="middle" class="time">portraitpayai.com · Powered by Ethereum</text>
-    </svg>
-  `;
+  // Format values
+  const txt = (s: string, maxLen = 40) => {
+    const escaped = (s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    return escaped.length > maxLen ? escaped.slice(0, maxLen) + '...' : escaped;
+  };
 
-  // Composite template + overlay
-  const result = await sharp(template)
-    .composite([{
-      input: Buffer.from(svgOverlay),
-      top: 0,
-      left: 0
-    }])
+  // Create SVG directly with all elements
+  const svg = `
+<svg width="800" height="600" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1e293b"/>
+      <stop offset="100%" style="stop-color:#0f172a"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#fbbf24"/>
+      <stop offset="100%" style="stop-color:#d97706"/>
+    </linearGradient>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="800" height="600" fill="url(#bg)"/>
+  
+  <!-- Gold Border -->
+  <rect x="10" y="10" width="780" height="580" fill="none" stroke="url(#gold)" stroke-width="3"/>
+  <rect x="20" y="20" width="760" height="560" fill="none" stroke="url(#gold)" stroke-width="1"/>
+  
+  <!-- Header -->
+  <rect x="50" y="50" width="700" height="80" rx="8" fill="#7c3aed" opacity="0.9"/>
+  <text x="400" y="85" text-anchor="middle" font-family="Arial" font-size="28" font-weight="bold" fill="white">BLOCKCHAIN CERTIFICATE</text>
+  <text x="400" y="110" text-anchor="middle" font-family="Arial" font-size="14" fill="#e9d5ff">PORTRAITPAY AI</text>
+  
+  <!-- Main Content Box -->
+  <rect x="50" y="150" width="700" height="350" rx="12" fill="rgba(30,41,59,0.8)" stroke="#a855f7" stroke-width="1"/>
+  
+  <!-- Portrait Title -->
+  <text x="70" y="180" font-family="Arial" font-size="11" fill="#94a3b8">PORTRAIT TITLE</text>
+  <text x="70" y="205" font-family="Arial" font-size="15" fill="white">${txt(data.portraitTitle, 35)}</text>
+  
+  <!-- Owner Name -->
+  <text x="70" y="240" font-family="Arial" font-size="11" fill="#94a3b8">OWNER NAME</text>
+  <text x="70" y="265" font-family="Arial" font-size="15" fill="white">${txt(data.idCardName, 30)}</text>
+  
+  <!-- ID Type -->
+  <text x="400" y="240" font-family="Arial" font-size="11" fill="#94a3b8">ID TYPE</text>
+  <text x="400" y="265" font-family="Arial" font-size="15" fill="white">${txt(data.idCardType, 20)}</text>
+  
+  <!-- Divider -->
+  <line x1="70" y1="290" x2="730" y2="290" stroke="#374151" stroke-width="1"/>
+  
+  <!-- Network -->
+  <text x="70" y="315" font-family="Arial" font-size="11" fill="#94a3b8">BLOCKCHAIN NETWORK</text>
+  <text x="70" y="340" font-family="Arial" font-size="14" fill="#a855f7">${networkLabel}</text>
+  
+  <!-- Certified Time -->
+  <text x="400" y="315" font-family="Arial" font-size="11" fill="#94a3b8">CERTIFIED TIME</text>
+  <text x="400" y="340" font-family="Arial" font-size="14" fill="white">${certDateStr}</text>
+  
+  <!-- Divider 2 -->
+  <line x1="70" y1="375" x2="730" y2="375" stroke="#374151" stroke-width="1"/>
+  
+  <!-- Transaction Hash -->
+  <text x="70" y="400" font-family="Arial" font-size="11" fill="#94a3b8">TRANSACTION HASH</text>
+  <text x="70" y="425" font-family="monospace" font-size="10" fill="#a855f7">${txt(data.blockchainTxHash, 50)}</text>
+  
+  <!-- Image Hash -->
+  <text x="70" y="455" font-family="Arial" font-size="11" fill="#94a3b8">IMAGE HASH (SHA-256)</text>
+  <text x="70" y="480" font-family="monospace" font-size="10" fill="#a855f7">${txt(data.portraitHash, 50)}</text>
+  
+  <!-- Verification Box -->
+  <rect x="580" y="170" width="150" height="130" rx="8" fill="none" stroke="#fbbf24" stroke-width="2"/>
+  <path d="M620 220 L645 245 L680 205" stroke="#fbbf24" stroke-width="4" fill="none"/>
+  <text x="655" y="280" text-anchor="middle" font-family="Arial" font-size="16" font-weight="bold" fill="#fbbf24">VERIFIED</text>
+  <text x="655" y="295" text-anchor="middle" font-family="Arial" font-size="10" fill="#94a3b8">portraitpayai.com</text>
+  
+  <!-- Footer -->
+  <text x="400" y="545" text-anchor="middle" font-family="Arial" font-size="11" fill="#64748b">This certificate is permanently stored on the blockchain</text>
+  <text x="400" y="565" text-anchor="middle" font-family="Arial" font-size="10" fill="#475569">portraitpayai.com  Powered by Ethereum</text>
+</svg>
+`;
+
+  const buffer = Buffer.from(svg);
+  
+  const result = await sharp(buffer, { density: 300 })
+    .resize(800, 600)
     .png()
     .toBuffer();
-
+  
   return result;
 }
