@@ -73,7 +73,7 @@ export default function EnterpriseAuthorizationPage() {
   async function submitApplication() {
     if (!selectedPortrait) return;
     if (!purpose.trim() || usageScope.length === 0) {
-      setError(t.authApply?.fillPurposeAndScope || (isZh ? "请填写用途并至少选择一项使用范围" : "Please fill in purpose and select at least one usage scope"));
+      setError(tc.fillPurposeAndScope);
       return;
     }
     setLoading(true);
@@ -88,7 +88,7 @@ export default function EnterpriseAuthorizationPage() {
       if (!json.success) throw new Error(json.error);
       setStep("done");
     } catch (err) {
-      setError(err instanceof Error ? err.message : (isZh ? "申请失败" : "Application failed"));
+      setError(err instanceof Error ? err.message : tc.applicationFailed);
     } finally {
       setLoading(false);
     }
@@ -101,16 +101,16 @@ export default function EnterpriseAuthorizationPage() {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
         <div className="bg-white rounded-2xl shadow-lg p-8 max-w-md text-center">
           <div className="text-5xl mb-4">✅</div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">{tc.applicationSubmitted || (isZh ? "授权申请已提交" : "Application Submitted")}</h2>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">{tc.applicationSubmitted}</h2>
           <p className="text-gray-600 mb-6">
-            {tc.applicationSubmittedDesc || (isZh ? "请等待肖像所有者确认，平台审核通过后授权正式生效。您可在「我的授权」中查看进度。" : "Please wait for the portrait owner to confirm. The platform will review and the authorization will take effect after approval. You can check progress in 'My Authorizations'.")}
+            {tc.applicationSubmittedDesc}
           </p>
           <div className="flex gap-3 justify-center">
             <button onClick={() => router.push("/enterprise/authorization/list")} className="px-5 py-2 bg-purple-600 text-white rounded-lg font-medium hover:bg-purple-700">
-              {tc.viewApplications || (isZh ? "查看申请列表" : "View Applications")}
+              {tc.viewApplications}
             </button>
             <button onClick={() => { setStep("select"); setSelectedPortrait(null); }} className="px-5 py-2 border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50">
-              {tc.continueApplying || (isZh ? "继续申请" : "Continue Applying")}
+              {tc.continueApplying}
             </button>
           </div>
         </div>
@@ -136,8 +136,8 @@ export default function EnterpriseAuthorizationPage() {
 
       <div className="max-w-5xl mx-auto">
         <div className="bg-white rounded-2xl shadow-lg p-8">
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">{tc.pageTitle || (isZh ? "企业授权申请" : "Enterprise Authorization Application")}</h1>
-          <p className="text-gray-500 mb-6">{tc.pageSubtitle || (isZh ? "选择目标肖像，填写授权需求，发起正式申请" : "Select target portrait, fill in authorization requirements, and submit a formal application")}</p>
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">{tc.pageTitle}</h1>
+          <p className="text-gray-500 mb-6">{tc.pageSubtitle}</p>
 
           {error && (
             <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4">{error}</div>
@@ -146,7 +146,7 @@ export default function EnterpriseAuthorizationPage() {
           {/* Step 1: Select portrait */}
           {step === "select" && (
             <div>
-              <h2 className="text-lg font-semibold mb-4">{tc.selectTargetPortrait || (isZh ? "选择目标肖像" : "Select Target Portrait")}</h2>
+              <h2 className="text-lg font-semibold mb-4">{tc.selectTargetPortrait}</h2>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 {portraits.map(portrait => (
                   <button
@@ -160,18 +160,18 @@ export default function EnterpriseAuthorizationPage() {
                       {portrait.thumbnailUrl ? (
                         <img src={portrait.thumbnailUrl} alt={portrait.title} className="w-full h-full object-cover" />
                       ) : (
-                        <div className="w-full h-full flex items-center justify-center text-gray-400">{tc.noThumbnail || (isZh ? "无缩略图" : "No Thumbnail")}</div>
+                        <div className="w-full h-full flex items-center justify-center text-gray-400">{tc.noThumbnail}</div>
                       )}
                     </div>
                     <div className="p-3">
                       <p className="font-medium text-gray-800 text-sm truncate">{portrait.title}</p>
-                      <p className="text-xs text-gray-500 mt-1">{portrait.owner?.displayName ?? (isZh ? "未知" : "Unknown")}</p>
+                      <p className="text-xs text-gray-500 mt-1">{portrait.owner?.displayName ?? tc.unknownOwner}</p>
                     </div>
                   </button>
                 ))}
               </div>
               {portraits.length === 0 && (
-                <div className="text-center py-12 text-gray-500">{tc.noPortraitsAvailable || (isZh ? "暂无可授权肖像" : "No portraits available for authorization")}</div>
+                <div className="text-center py-12 text-gray-500">{tc.noPortraitsAvailable}</div>
               )}
             </div>
           )}
@@ -180,7 +180,7 @@ export default function EnterpriseAuthorizationPage() {
           {step === "apply" && selectedPortrait && (
             <div>
               <button onClick={() => setStep("select")} className="text-purple-600 font-medium mb-4 hover:underline">
-                ← {tc.reselectPortrait || (isZh ? "重新选择肖像" : "Reselect Portrait")}
+                ← {tc.reselectPortrait}
               </button>
 
               <div className="flex gap-6 mb-6">
@@ -188,12 +188,12 @@ export default function EnterpriseAuthorizationPage() {
                   {selectedPortrait.thumbnailUrl ? (
                     <img src={selectedPortrait.thumbnailUrl} alt="" className="w-full h-full object-cover" />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center text-gray-400 text-xs">{tc.noImage || t.enterpriseAuthApply?.noImages || (isZh ? "无图" : "No Image")}</div>
+                    <div className="w-full h-full flex items-center justify-center text-gray-400 text-xs">{tc.noImage || t.enterpriseAuthApply?.noImages}</div>
                   )}
                 </div>
                 <div>
                   <h3 className="font-bold text-lg">{selectedPortrait.title}</h3>
-                  <p className="text-gray-500 text-sm mt-1">{tc.owner || (isZh ? "所有者" : "Owner")}：{selectedPortrait.owner?.displayName ?? (isZh ? "未知" : "Unknown")}</p>
+                  <p className="text-gray-500 text-sm mt-1">{tc.owner}：{selectedPortrait.owner?.displayName ?? tc.unknownOwner}</p>
                   <p className="text-gray-400 text-xs mt-1">ID: {selectedPortrait.id}</p>
                 </div>
               </div>
@@ -201,19 +201,19 @@ export default function EnterpriseAuthorizationPage() {
               <div className="space-y-5">
                 {/* Purpose */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">{tc.purposeLabel || (isZh ? "授权用途说明 *" : "Authorization Purpose *")}</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">{tc.purposeLabel}</label>
                   <textarea
                     value={purpose}
                     onChange={e => setPurpose(e.target.value)}
                     rows={4}
                     className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-purple-500"
-                    placeholder={tc.purposePlaceholder || (isZh ? "请详细描述使用场景，例如：用于公司 AI 数字人产品宣传，在官方 App 首页 banner 使用" : "Describe the usage scenario in detail, e.g.: used for company AI digital person product promotion, on the official App homepage banner")}
+                    placeholder={tc.purposePlaceholder}
                   />
                 </div>
 
                 {/* Usage scope */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">{tc.usageScopeLabel || (isZh ? "使用范围 *（可多选）" : "Usage Scope * (multiple choice)")}</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">{tc.usageScopeLabel}</label>
                   <div className="flex flex-wrap gap-2">
                     {USAGE_SCOPES.map(scope => (
                       <button
@@ -241,13 +241,13 @@ export default function EnterpriseAuthorizationPage() {
                     className="w-5 h-5 text-purple-600 rounded"
                   />
                   <label htmlFor="exclusivity" className="text-sm font-medium text-gray-700">
-                    {tc.applyExclusiveLicense || (isZh ? "申请独占授权（独占授权费用更高）" : "Apply for Exclusive License (exclusive licenses cost more)")}
+                    {tc.applyExclusiveLicense}
                   </label>
                 </div>
 
                 {/* Territory */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">{tc.territoryLabel || (isZh ? "地域范围" : "Territorial Scope")}</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">{tc.territoryLabel}</label>
                   <div className="flex gap-3">
                     {TERRITORIES.map(t => (
                       <button
@@ -265,7 +265,7 @@ export default function EnterpriseAuthorizationPage() {
 
                 {/* Duration */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">{tc.durationLabel || (isZh ? "授权期限" : "Authorization Period")}</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">{tc.durationLabel}</label>
                   <div className="flex gap-3 flex-wrap">
                     {[30, 90, 180, 365].map(d => (
                       <button
@@ -275,7 +275,7 @@ export default function EnterpriseAuthorizationPage() {
                           usageDuration === d ? "bg-purple-600 text-white border-purple-600" : "bg-white text-gray-700 border-gray-300"
                         }`}
                       >
-                        {d < 365 ? `${d}${isZh ? "天" : " days"}` : (isZh ? "1年" : "1 year")}
+                        {d < 365 ? `${d}${locale === "zh-CN" || locale === "zh-Hant" ? tc.days : ` ${tc.days}`}` : tc.year}
                       </button>
                     ))}
                   </div>
@@ -283,17 +283,17 @@ export default function EnterpriseAuthorizationPage() {
 
                 {/* Fee */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">{tc.applicationFeeLabel || (isZh ? "申请费用（CNY）" : "Application Fee (CNY)")}</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">{tc.applicationFeeLabel}</label>
                   <input
                     type="number"
                     value={proposedFee}
                     onChange={e => setProposedFee(parseFloat(e.target.value) || 0)}
                     className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-purple-500"
-                    placeholder={tc.feePlaceholder || (isZh ? "输入您愿意支付的授权费用" : "Enter the authorization fee you are willing to pay")}
+                    placeholder={tc.feePlaceholder}
                     min="0"
                     step="0.01"
                   />
-                  <p className="text-xs text-gray-400 mt-1">{tc.feePlatformNote || (isZh ? "平台将参考此价格进行审核定价" : "The platform will review and price based on this fee")}</p>
+                  <p className="text-xs text-gray-400 mt-1">{tc.feePlatformNote}</p>
                 </div>
 
                 <button
@@ -301,7 +301,7 @@ export default function EnterpriseAuthorizationPage() {
                   disabled={loading}
                   className="w-full bg-purple-600 text-white font-semibold py-3 rounded-xl hover:bg-purple-700 disabled:opacity-50 transition-colors"
                 >
-                  {loading ? (tc.submittingApplication || (isZh ? "提交申请中..." : "Submitting...")) : (tc.submitApplication || (isZh ? "提交授权申请" : "Submit Authorization Application"))}
+                  {loading ? tc.submittingApplication : tc.submitApplication}
                 </button>
               </div>
             </div>

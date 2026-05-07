@@ -24,7 +24,7 @@ const PAYPAL_LINK = "https://www.paypal.me/PortraitPayAI/1";
 
 export default function PaymentPage() {
   return (
-    <Suspense fallback={<PaymentPageLoading isZh={false} />}>
+    <Suspense fallback={<PaymentPageLoading />}>
       <PaymentPageInner />
     </Suspense>
   );

@@ -71,10 +71,10 @@ export default function AuthorizationListPage() {
       if (json.success && json.data.pdfUrl) {
         window.open(json.data.pdfUrl, "_blank");
       } else {
-        alert(tc.certGenerating || (isZh ? "证书生成中，请稍后再试" : "Certificate is being generated, please try again later"));
+        alert(tc.certGenerating);
       }
     } catch {
-      alert(tc.downloadFailed || (isZh ? "下载失败" : "Download failed"));
+      alert(tc.downloadFailed);
     }
   }
 
@@ -91,7 +91,7 @@ export default function AuthorizationListPage() {
             </Link>
             <span style={{ color: "var(--border-default)", fontSize: "20px", fontWeight: 300 }}>|</span>
             <Link href="/dashboard" className="text-sm text-gray-500 hover:text-gray-900" style={{ textDecoration: "none" }}>
-              ‹ {tc.backToDashboard || (isZh ? "返回控制台" : "Back to Dashboard")}
+              ‹ {tc.backToDashboard}
             </Link>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
@@ -103,14 +103,14 @@ export default function AuthorizationListPage() {
 
       <div className="max-w-5xl mx-auto px-4 py-8">
         <h1 className="text-2xl font-bold text-gray-900 mb-6">
-          {tc.pageTitle || (isZh ? "我的授权" : "My Authorizations")}
+          {tc.pageTitle}
         </h1>
 
         {/* Tab 切换 */}
         <div className="flex gap-1 bg-gray-100 p-1 rounded-xl w-fit mb-6">
           {[
-            { key: "applications", label: tc.tabApplications || (isZh ? "授权申请" : "Applications") },
-            { key: "active", label: tc.tabActive || (isZh ? "活跃授权" : "Active Authorizations") },
+            { key: "applications", label: tc.tabApplications },
+            { key: "active", label: tc.tabActive },
           ].map(t => (
             <button
               key={t.key}
@@ -132,7 +132,7 @@ export default function AuthorizationListPage() {
               onChange={e => setFilterStatus(e.target.value)}
               className="border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:ring-2 focus:ring-purple-500"
             >
-              <option value="">{tc.allStatuses || (isZh ? "全部状态" : "All Statuses")}</option>
+              <option value="">{tc.allStatuses}</option>
               {Object.entries(STATUS_LABELS).map(([k, v]) => (
                 <option key={k} value={k}>{v.label}</option>
               ))}
@@ -144,9 +144,9 @@ export default function AuthorizationListPage() {
         {tab === "applications" && (
           <div className="space-y-4">
             {loading ? (
-              <div className="text-center py-12 text-gray-400">{tc.loading || (isZh ? "加载中..." : "Loading...")}</div>
+              <div className="text-center py-12 text-gray-400">{tc.loading}</div>
             ) : applications.length === 0 ? (
-              <div className="text-center py-12 text-gray-400">{tc.noApplications || (isZh ? "暂无授权申请" : "No authorization applications")}</div>
+              <div className="text-center py-12 text-gray-400">{tc.noApplications}</div>
             ) : (
               applications.map(app => {
                 const status = STATUS_LABELS[app.status] ?? { label: app.status, color: "bg-gray-100" };
@@ -157,21 +157,21 @@ export default function AuthorizationListPage() {
                         {app.portrait?.thumbnailUrl ? (
                           <img src={app.portrait.thumbnailUrl} alt="" className="w-full h-full object-cover" />
                         ) : (
-                          <div className="w-full h-full flex items-center justify-center text-gray-400 text-xs">{tc.noImage || (isZh ? "无图" : "No Image")}</div>
+                          <div className="w-full h-full flex items-center justify-center text-gray-400 text-xs">{tc.noImage}</div>
                         )}
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-start justify-between gap-3">
                           <div>
-                            <h3 className="font-semibold text-gray-900">{app.portrait?.title ?? (isZh ? "未知肖像" : "Unknown Portrait")}</h3>
+                            <h3 className="font-semibold text-gray-900">{app.portrait?.title ?? tc.unknownPortrait}</h3>
                             <p className="text-sm text-gray-500 mt-0.5">
-                              {tc.usageScope || (isZh ? "使用范围" : "Usage Scope")}：{app.usageScope?.join("、")}
+                              {tc.usageScope}：{app.usageScope?.join("、")}
                             </p>
                             <p className="text-sm text-gray-500">
-                              {tc.applicationFee || (isZh ? "申请费用" : "Application Fee")}：${app.proposedFee} {app.currency}
+                              {tc.applicationFee}：${app.proposedFee} {app.currency}
                             </p>
                             <p className="text-xs text-gray-400 mt-1">
-                              {tc.submitTime || (isZh ? "提交时间" : "Submitted")}：{new Date(app.createdAt).toLocaleDateString(isZh ? "zh-CN" : "en-US")}
+                              {tc.submitTime}：{new Date(app.createdAt).toLocaleDateString(locale)}
                             </p>
                           </div>
                           <div className="flex flex-col items-end gap-2">
@@ -183,13 +183,13 @@ export default function AuthorizationListPage() {
                                 onClick={() => downloadCert(app.id)}
                                 className="text-xs text-purple-600 font-medium hover:underline"
                               >
-                                📄 {tc.downloadCert || (isZh ? "下载证书" : "Download Certificate")}
+                                📄 {tc.downloadCert}
                               </button>
                             )}
                           </div>
                         </div>
                         <div className="mt-2 text-sm text-gray-600 bg-gray-50 rounded-lg p-3">
-                          <span className="font-medium">{tc.purposeLabel || (isZh ? "用途说明" : "Purpose")}：</span>{app.purpose}
+                          <span className="font-medium">{tc.purposeLabel}：</span>{app.purpose}
                         </div>
                       </div>
                     </div>
@@ -204,9 +204,9 @@ export default function AuthorizationListPage() {
         {tab === "active" && (
           <div className="space-y-4">
             {loading ? (
-              <div className="text-center py-12 text-gray-400">{tc.loading || (isZh ? "加载中..." : "Loading...")}</div>
+              <div className="text-center py-12 text-gray-400">{tc.loading}</div>
             ) : activeAuths.length === 0 ? (
-              <div className="text-center py-12 text-gray-400">{tc.noActiveAuths || (isZh ? "暂无活跃授权" : "No active authorizations")}</div>
+              <div className="text-center py-12 text-gray-400">{tc.noActiveAuths}</div>
             ) : (
               activeAuths.map(auth => (
                 <div key={auth.id} className="bg-white rounded-xl shadow-sm border border-green-100 p-5">
@@ -215,24 +215,24 @@ export default function AuthorizationListPage() {
                       {auth.portrait?.thumbnailUrl ? (
                         <img src={auth.portrait.thumbnailUrl} alt="" className="w-full h-full object-cover" />
                       ) : (
-                        <div className="w-full h-full flex items-center justify-center text-gray-400 text-xs">{tc.noImage || (isZh ? "无图" : "No Image")}</div>
+                        <div className="w-full h-full flex items-center justify-center text-gray-400 text-xs">{tc.noImage}</div>
                       )}
                     </div>
                     <div className="flex-1">
                       <div className="flex justify-between items-start">
                         <div>
                           <h3 className="font-semibold text-gray-900">{auth.portrait?.title}</h3>
-                          <p className="text-sm text-gray-500">{tc.owner || (isZh ? "所有者" : "Owner")}：{auth.portrait?.owner?.displayName}</p>
+                          <p className="text-sm text-gray-500">{tc.owner}：{auth.portrait?.owner?.displayName}</p>
                           <p className="text-sm text-gray-500">
-                            {tc.authDuration || (isZh ? "授权期限" : "Duration")}：{auth.usageDuration}{isZh ? "天" : " days"} | {tc.fee || (isZh ? "费用" : "Fee")}：${auth.proposedFee}
+                            {tc.authDuration}：{auth.usageDuration}{locale === "zh-CN" || locale === "zh-Hant" ? tc.days : ` ${tc.days}`} | {tc.fee}：${auth.proposedFee}
                           </p>
-                          <p className="text-xs text-green-600 mt-1">{tc.certNo || (isZh ? "证书编号" : "Certificate #")}：{auth.certificateNo}</p>
+                          <p className="text-xs text-green-600 mt-1">{tc.certNo}：{auth.certificateNo}</p>
                         </div>
                         <button
                           onClick={() => downloadCert(auth.id)}
                           className="px-4 py-2 bg-green-600 text-white text-sm rounded-lg font-medium hover:bg-green-700"
                         >
-                          {tc.downloadCert || (isZh ? "下载授权证书" : "Download Certificate")}
+                          {tc.downloadCertFull}
                         </button>
                       </div>
                     </div>
