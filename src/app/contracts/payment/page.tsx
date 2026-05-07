@@ -138,9 +138,9 @@ function PaymentPageInner() {
             {t.contracts.unlockWord}
           </h1>
           <p className="text-gray-500 dark:text-gray-400">
-            {isZh ? "合同：" : "Contract: "}
+            {t.contracts.contractLabel}
             <span className="font-medium text-gray-900 dark:text-white">
-              {contract ? (isZh ? contract.labelZh : contract.label) : contractName}
+              {contract ? getContractLabel(contract, locale) : contractName}
             </span>
           </p>
           <div className="mt-3 inline-flex items-center gap-2 px-3 py-1 bg-[#244169]/10 rounded-full text-[#244169] dark:bg-[#244169]/20 dark:text-blue-400 text-sm font-medium">

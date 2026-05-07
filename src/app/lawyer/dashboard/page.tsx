@@ -83,7 +83,7 @@ export default function LawyerDashboard() {
           setError(json.error || td.loadFailed || "Failed to load cases");
         }
       } catch {
-        setError(td.loadFailed || (isZh ? "加载失败，请稍后重试" : "Failed to load cases"));
+        setError(td.loadFailed);
       } finally {
         setLoading(false);
       }
