@@ -64,7 +64,7 @@ export default function AdminInfringementsPage() {
         setSelectedId(null);
         fetchReports();
       } else {
-        alert(json.error ?? tc.reviewFailed ?? "Review failed");
+        alert(json.error ?? (tc.reviewFailed || "Review failed"));
       }
     } finally {
       setSubmitting(false);
@@ -193,7 +193,7 @@ function ReportDetailPanel({
 
       <dl className="grid grid-cols-2 gap-3 text-sm">
         <div><dt className="text-gray-500">{tc.reporter || "Reporter"}</dt><dd className="font-medium">{report.reporter?.displayName}</dd></div>
-        <div><dt className="text-gray-500">{tc.infringementType || "Type"}</dt><dd className="font-medium">{tc[report.type] || TYPE_CONFIG[report.type] ?? report.type}</dd></div>
+        <div><dt className="text-gray-500">{tc.infringementType || "Type"}</dt><dd className="font-medium">{(tc[report.type] || TYPE_CONFIG[report.type]) ?? report.type}</dd></div>
         <div className="col-span-2"><dt className="text-gray-500">{tc.detectedUrl || "Detected URL"}</dt>
           <dd>{report.detectedUrl
             ? <a href={report.detectedUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline text-xs">{report.detectedUrl}</a>
