@@ -160,24 +160,23 @@ export default function MintPage() {
 
           <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-4 mb-6 space-y-2 text-sm">
             <div className="flex justify-between">
-              <span className="text-gray-500">Portrait</span>
+              <span className="text-gray-500">{tc.portrait}</span>
               <span className="font-medium">{portrait.title}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-gray-500">Network</span>
+              <span className="text-gray-500">{tc.network}</span>
               <span className="font-medium">Ethereum Sepolia (Testnet)</span>
             </div>
             {portrait.imageHash && (
               <div className="flex justify-between">
-                <span className="text-gray-500">Portrait Hash</span>
+                <span className="text-gray-500">{tc.portraitHash}</span>
                 <span className="font-mono text-xs break-all">{portrait.imageHash}</span>
               </div>
             )}
           </div>
 
           <p className="text-xs text-gray-400 mb-6">
-            This action will send a transaction to the Sepolia testnet.
-            No real funds will be spent. A burner wallet is used for signing.
+            {tc.mintConfirm}
           </p>
 
           <div className="flex gap-3">
@@ -185,7 +184,7 @@ export default function MintPage() {
               onClick={() => setMintStep("idle")}
               className="flex-1 py-2.5 px-4 rounded-xl border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
             >
-              Cancel
+              {tc.cancel}
             </button>
             <button
               onClick={handleMint}
@@ -207,7 +206,7 @@ export default function MintPage() {
         <div className="max-w-lg mx-auto mt-8 p-8 bg-white dark:bg-gray-900 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-800 text-center">
           <div className="text-6xl mb-4">🎉</div>
           <h2 className="text-2xl font-bold mb-2">{tc.certifySuccess}</h2>
-          <p className="text-gray-500 mb-6">{(t.upload as Record<string, string>).certifySuccessDesc ?? "Your portrait is now permanently certified on the blockchain."}</p>
+          <p className="text-gray-500 mb-6">{tc.mintSuccessDesc}</p>
 
           <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-4 mb-6 text-left space-y-3">
             <MintField label={tc.network} value={getNetworkLabel(mintResult.network)} />
@@ -258,20 +257,20 @@ export default function MintPage() {
           <h2 className="text-2xl font-bold mb-2">{tc.certifyFailed}</h2>
           <p className="text-red-500 mb-2">{errorMsg}</p>
           <p className="text-xs text-gray-400 mb-6">
-            Please try again. If the problem persists, contact support.
+            {tc.supportContact}
           </p>
           <div className="flex gap-3">
             <button
               onClick={() => setMintStep("idle")}
               className="flex-1 py-2.5 px-4 rounded-xl border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
             >
-              ← Back
+              ← {tc.back}
             </button>
             <button
               onClick={handleMint}
               className="flex-1 py-2.5 px-4 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-medium transition-colors"
             >
-              Retry
+              {tc.retry}
             </button>
           </div>
         </div>
@@ -343,14 +342,13 @@ export default function MintPage() {
           </div>
           <div className="space-y-2 text-sm text-blue-700 dark:text-blue-400">
             <p>
-              Your portrait will be permanently recorded on the <strong>Ethereum Sepolia testnet</strong>.
-              This creates an immutable proof-of-existence with:
+              {tc.mintTestnetDesc}
             </p>
             <ul className="list-disc list-inside space-y-1 ml-2">
-              <li>Portrait SHA-256 hash (fingerprint)</li>
-              <li>ID card SHA-256 hash (identity verification)</li>
-              <li>Blockchain timestamp (Sepolia block)</li>
-              <li>Transaction hash (verifiable on Etherscan)</li>
+              <li>{tc.mintListItem1}</li>
+              <li>{tc.mintListItem2}</li>
+              <li>{tc.mintListItem3}</li>
+              <li>{tc.mintListItem4}</li>
             </ul>
           </div>
         </div>

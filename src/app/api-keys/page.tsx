@@ -25,12 +25,14 @@ interface AiPlatformApiKey {
   displayKey: string;
 }
 
-const STATUS_MAP: Record<string, { label: string; color: string; bg: string }> = {
-  ACTIVE: { label: "Active", color: "text-green-600", bg: "bg-green-50 border-green-200" },
-  SUSPENDED: { label: "Suspended", color: "text-yellow-600", bg: "bg-yellow-50 border-yellow-200" },
-  REVOKED: { label: "Revoked", color: "text-red-600", bg: "bg-red-50 border-red-200" },
-  EXPIRED: { label: "Expired", color: "text-gray-600", bg: "bg-gray-50 border-gray-200" },
-};
+function buildStatusMap(tk: Record<string, string>) {
+  return {
+    ACTIVE: { label: tk.active || "Active", color: "text-green-600", bg: "bg-green-50 border-green-200" },
+    SUSPENDED: { label: tk.suspended || "Suspended", color: "text-yellow-600", bg: "bg-yellow-50 border-yellow-200" },
+    REVOKED: { label: tk.revoked || "Revoked", color: "text-red-600", bg: "bg-red-50 border-red-200" },
+    EXPIRED: { label: tk.expired || "Expired", color: "text-gray-600", bg: "bg-gray-50 border-gray-200" },
+  };
+}
 
 const SCOPE_LABELS: Record<string, string> = {
   "portrait:read": "Read Portraits",
@@ -54,7 +56,9 @@ const PLATFORM_SUGGESTIONS = [
 ];
 
 export default function AdminApiKeysPage() {
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
+  const tk = t.apiKeys || {};
+  const STATUS_MAP = buildStatusMap(tk);
   const router = useRouter();
   const [keys, setKeys] = useState<AiPlatformApiKey[]>([]);
   const [loading, setLoading] = useState(true);
@@ -147,7 +151,7 @@ export default function AdminApiKeysPage() {
   }
 
   async function handleRevoke(id: string) {
-    if (!confirm("Are you sure you want to revoke this API key? This action cannot be undone.")) return;
+    if (!confirm(tk.confirmRevoke || "Are you sure you want to revoke this API key? This action cannot be undone.")) return;
     setActionLoading(id);
     try {
       const token = localStorage.getItem("pp_access_token");
@@ -217,7 +221,7 @@ export default function AdminApiKeysPage() {
 
   function formatDate(d: string | null) {
     if (!d) return "—";
-    return new Date(d).toLocaleString("en-US", {
+    return new Date(d).toLocaleString(locale, {
       year: "numeric", month: "short", day: "numeric",
       hour: "2-digit", minute: "2-digit",
     });
@@ -247,7 +251,7 @@ export default function AdminApiKeysPage() {
   }
 
   return (
-    <DashboardShell title="AI Platform API Keys" subtitle="Manage third-party AI platform access">
+    <DashboardShell title={tk.pageTitle || "AI Platform API Keys"} subtitle={tk.pageSubtitle || "Manage third-party AI platform access"}>
       <div className="space-y-5">
         {/* Header + Create */}
         <div className="flex flex-wrap gap-3 items-center justify-between">
@@ -257,14 +261,14 @@ export default function AdminApiKeysPage() {
               value={filterStatus}
               onChange={(e) => setFilterStatus(e.target.value)}
             >
-              <option value="">All Status</option>
-              <option value="ACTIVE">Active</option>
-              <option value="SUSPENDED">Suspended</option>
-              <option value="REVOKED">Revoked</option>
+              <option value="">{tk.allStatus || "All Status"}</option>
+              <option value="ACTIVE">{tk.active || "Active"}</option>
+              <option value="SUSPENDED">{tk.suspended || "Suspended"}</option>
+              <option value="REVOKED">{tk.revoked || "Revoked"}</option>
             </select>
             <input
               type="text"
-              placeholder="Search platform..."
+              placeholder={tk.platform || "Platform..."}
               className="border border-gray-200 rounded-lg px-3 py-2 text-sm dark:bg-gray-900 dark:border-gray-700"
               value={filterPlatform}
               onChange={(e) => setFilterPlatform(e.target.value)}
@@ -280,7 +284,7 @@ export default function AdminApiKeysPage() {
             onClick={() => setShowCreate(true)}
             className="px-5 py-2.5 bg-purple-600 text-white rounded-xl text-sm font-medium hover:bg-purple-700 transition"
           >
-            + Create API Key
+            + {tk.createApiKey || "Create API Key"}
           </button>
         </div>
 
@@ -290,7 +294,15 @@ export default function AdminApiKeysPage() {
             <table className="w-full text-sm">
               <thead className="bg-gray-50 dark:bg-gray-800/50 border-b">
                 <tr>
-                  {["Platform", "Key Preview", "Status", "Scopes", "Rate Limit", "Created", "Actions"].map((h) => (
+                  {[
+                    tk.platform || "Platform",
+                    tk.keyPreview || "Key Preview",
+                    tk.status || "Status",
+                    tk.scopes || "Scopes",
+                    tk.rateLimit || "Rate Limit",
+                    tk.created || "Created",
+                    tk.actions || "Actions",
+                  ].map((h) => (
                     <th key={h} className="text-left px-4 py-3 font-medium text-gray-500 dark:text-gray-400 whitespace-nowrap">{h}</th>
                   ))}
                 </tr>
@@ -298,11 +310,11 @@ export default function AdminApiKeysPage() {
               <tbody className="divide-y divide-gray-50 dark:divide-gray-800">
                 {loading ? (
                   <tr>
-                    <td colSpan={7} className="text-center py-12 text-gray-400">Loading...</td>
+                    <td colSpan={7} className="text-center py-12 text-gray-400">{tk.loading || "Loading..."}</td>
                   </tr>
                 ) : keys.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="text-center py-12 text-gray-400">No API keys found</td>
+                    <td colSpan={7} className="text-center py-12 text-gray-400">{tk.noApiKeys || "No API keys found"}</td>
                   </tr>
                 ) : (
                   keys.map((key) => {
@@ -332,7 +344,7 @@ export default function AdminApiKeysPage() {
                             ))}
                           </div>
                         </td>
-                        <td className="px-4 py-3 text-gray-500 text-xs">{key.rateLimitPerMinute}/min</td>
+                        <td className="px-4 py-3 text-gray-500 text-xs">{key.rateLimitPerMinute}{tk.rateLimitReqMin || "/min"}</td>
                         <td className="px-4 py-3 text-gray-400 text-xs whitespace-nowrap">{formatDate(key.createdAt)}</td>
                         <td className="px-4 py-3">
                           <div className="flex gap-1">
@@ -340,7 +352,7 @@ export default function AdminApiKeysPage() {
                               onClick={() => setShowDetail(key)}
                               className="px-3 py-1.5 text-xs bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition"
                             >
-                              View
+                              {tk.view || "View"}
                             </button>
                             {key.status === "ACTIVE" && (
                               <button
@@ -348,7 +360,7 @@ export default function AdminApiKeysPage() {
                                 disabled={actionLoading === key.id}
                                 className="px-3 py-1.5 text-xs bg-yellow-50 text-yellow-700 rounded-lg hover:bg-yellow-100 transition disabled:opacity-50"
                               >
-                                Suspend
+                                {tk.suspend || "Suspend"}
                               </button>
                             )}
                             {key.status === "SUSPENDED" && (
@@ -357,7 +369,7 @@ export default function AdminApiKeysPage() {
                                 disabled={actionLoading === key.id}
                                 className="px-3 py-1.5 text-xs bg-green-50 text-green-700 rounded-lg hover:bg-green-100 transition disabled:opacity-50"
                               >
-                                Reactivate
+                                {tk.reactivate || "Reactivate"}
                               </button>
                             )}
                             {key.status !== "REVOKED" && (
@@ -366,7 +378,7 @@ export default function AdminApiKeysPage() {
                                 disabled={actionLoading === key.id}
                                 className="px-3 py-1.5 text-xs bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition disabled:opacity-50"
                               >
-                                Revoke
+                                {tk.revoke || "Revoke"}
                               </button>
                             )}
                           </div>
@@ -382,22 +394,22 @@ export default function AdminApiKeysPage() {
           {/* Pagination */}
           {meta && meta.totalPages > 1 && (
             <div className="px-4 py-3 border-t flex items-center justify-between text-sm text-gray-500">
-              <span>Total {meta.total} keys</span>
+              <span>{tk.total || "Total"} {meta.total} {tk.keys || "keys"}</span>
               <div className="flex gap-2">
                 <button
                   disabled={meta.page <= 1}
                   className="px-3 py-1.5 border rounded-lg disabled:opacity-40 hover:bg-gray-50"
                   onClick={() => load(meta.page - 1)}
                 >
-                  Previous
+                  {tk.previous || "Previous"}
                 </button>
-                <span className="px-3 py-1.5">Page {meta.page} / {meta.totalPages}</span>
+                <span className="px-3 py-1.5">{tk.page || "Page"} {meta.page} {tk.of || "of"} {meta.totalPages}</span>
                 <button
                   disabled={meta.page >= meta.totalPages}
                   className="px-3 py-1.5 border rounded-lg disabled:opacity-40 hover:bg-gray-50"
                   onClick={() => load(meta.page + 1)}
                 >
-                  Next
+                  {tk.next || "Next"}
                 </button>
               </div>
             </div>
@@ -410,19 +422,19 @@ export default function AdminApiKeysPage() {
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4" onClick={() => setShowCreate(false)}>
           <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-xl max-w-lg w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
             <div className="sticky top-0 bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800 px-6 py-4 flex items-center justify-between rounded-t-2xl">
-              <h2 className="text-lg font-bold text-gray-900 dark:text-white">Create AI Platform API Key</h2>
+              <h2 className="text-lg font-bold text-gray-900 dark:text-white">{tk.createAiPlatformKey || "Create AI Platform API Key"}</h2>
               <button onClick={() => setShowCreate(false)} className="text-gray-400 hover:text-gray-600 text-2xl leading-none">×</button>
             </div>
             <form onSubmit={handleCreate} className="p-6 space-y-5">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Platform Name *</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">{tk.platformName || "Platform Name *"}</label>
                 <input
                   type="text"
                   list="platform-suggestions"
                   required
                   value={formPlatform}
                   onChange={(e) => setFormPlatform(e.target.value)}
-                  placeholder="e.g., Midjourney, Runway, Stable Diffusion"
+                  placeholder={tk.platformPlaceholder || "e.g., Midjourney, Runway, Stable Diffusion"}
                   className="w-full px-4 py-3 border border-gray-200 dark:border-gray-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-800"
                 />
                 <datalist id="platform-suggestions">
@@ -431,7 +443,7 @@ export default function AdminApiKeysPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Permissions (Scopes)</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">{tk.permissions || "Permissions (Scopes)"}</label>
                 <div className="grid grid-cols-2 gap-2">
                   {Object.entries(SCOPE_LABELS).map(([scope, label]) => (
                     <label key={scope} className="flex items-center gap-2 p-3 border border-gray-100 dark:border-gray-700 rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800">
@@ -451,18 +463,18 @@ export default function AdminApiKeysPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Note (optional)</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">{tk.noteOptional || "Note (optional)"}</label>
                 <input
                   type="text"
                   value={formNote}
                   onChange={(e) => setFormNote(e.target.value)}
-                  placeholder="e.g., Production key for Midjourney v6"
+                  placeholder={tk.notePlaceholder || "e.g., Production key for Midjourney v6"}
                   className="w-full px-4 py-3 border border-gray-200 dark:border-gray-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-800"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Expires At (optional)</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">{tk.expiresAt || "Expires At (optional)"}</label>
                 <input
                   type="datetime-local"
                   value={formExpires}
@@ -477,14 +489,14 @@ export default function AdminApiKeysPage() {
                   disabled={creating}
                   className="flex-1 px-4 py-2.5 bg-purple-600 text-white rounded-xl text-sm font-medium hover:bg-purple-700 disabled:opacity-60 transition"
                 >
-                  {creating ? "Creating..." : "Create API Key"}
+                  {creating ? (tk.creating || "Creating...") : (tk.createApiKeyBtn || "Create API Key")}
                 </button>
                 <button
                   type="button"
                   onClick={() => setShowCreate(false)}
                   className="px-4 py-2.5 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-xl text-sm font-medium hover:bg-gray-200 dark:hover:bg-gray-700 transition"
                 >
-                  Cancel
+                  {tk.cancel || "Cancel"}
                 </button>
               </div>
             </form>
@@ -500,8 +512,8 @@ export default function AdminApiKeysPage() {
               <div className="flex items-center gap-3 mb-4">
                 <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center text-xl">🔑</div>
                 <div>
-                  <h2 className="text-lg font-bold text-gray-900 dark:text-white">API Key Created</h2>
-                  <p className="text-sm text-gray-500">Copy and store it securely — it will not be shown again.</p>
+                  <h2 className="text-lg font-bold text-gray-900 dark:text-white">{tk.apiKeyCreated || "API Key Created"}</h2>
+                  <p className="text-sm text-gray-500">{tk.copySecureNote || "Copy and store it securely — it will not be shown again."}</p>
                 </div>
               </div>
               <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-4 mb-4">
@@ -510,17 +522,17 @@ export default function AdminApiKeysPage() {
               <button
                 onClick={() => {
                   navigator.clipboard.writeText(showNewKey);
-                  alert("Copied to clipboard!");
+                  alert(tk.copiedToClipboard || "Copied to clipboard!");
                 }}
                 className="w-full px-4 py-2.5 bg-purple-600 text-white rounded-xl text-sm font-medium hover:bg-purple-700 transition"
               >
-                📋 Copy to Clipboard
+                📋 {tk.copiedToClipboard ? tk.copiedToClipboard.replace("!", "") : "Copy to Clipboard"}
               </button>
               <button
                 onClick={() => setShowNewKey(null)}
                 className="w-full mt-2 px-4 py-2.5 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-xl text-sm font-medium hover:bg-gray-200 dark:hover:bg-gray-700 transition"
               >
-                Done
+                {tk.done || "Done"}
               </button>
             </div>
           </div>
@@ -538,41 +550,41 @@ export default function AdminApiKeysPage() {
             <div className="p-6 space-y-4">
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
-                  <p className="text-xs text-gray-400 mb-1">Status</p>
+                  <p className="text-xs text-gray-400 mb-1">{tk.status || "Status"}</p>
                   {(() => {
                     const st = STATUS_MAP[showDetail.status] ?? STATUS_MAP["ACTIVE"];
                     return <span className={`text-xs px-2.5 py-1 rounded-full border font-medium ${st.bg} ${st.color}`}>{st.label}</span>;
                   })()}
                 </div>
                 <div>
-                  <p className="text-xs text-gray-400 mb-1">Rate Limit</p>
-                  <p className="font-medium text-gray-800 dark:text-gray-200">{showDetail.rateLimitPerMinute} req/min</p>
+                  <p className="text-xs text-gray-400 mb-1">{tk.rateLimit || "Rate Limit"}</p>
+                  <p className="font-medium text-gray-800 dark:text-gray-200">{showDetail.rateLimitPerMinute} {tk.rateLimitReqMin || "req/min"}</p>
                 </div>
                 <div>
-                  <p className="text-xs text-gray-400 mb-1">Created</p>
+                  <p className="text-xs text-gray-400 mb-1">{tk.created || "Created"}</p>
                   <p className="font-medium text-gray-800 dark:text-gray-200">{formatDate(showDetail.createdAt)}</p>
                 </div>
                 <div>
-                  <p className="text-xs text-gray-400 mb-1">Last Used</p>
+                  <p className="text-xs text-gray-400 mb-1">{tk.lastUsed || "Last Used"}</p>
                   <p className="font-medium text-gray-800 dark:text-gray-200">{formatDate(showDetail.lastUsedAt)}</p>
                 </div>
                 <div>
-                  <p className="text-xs text-gray-400 mb-1">Expires</p>
+                  <p className="text-xs text-gray-400 mb-1">{tk.expires || "Expires"}</p>
                   <p className="font-medium text-gray-800 dark:text-gray-200">{formatDate(showDetail.expiresAt)}</p>
                 </div>
                 <div>
-                  <p className="text-xs text-gray-400 mb-1">Requests</p>
+                  <p className="text-xs text-gray-400 mb-1">{tk.requests || "Requests"}</p>
                   <p className="font-medium text-gray-800 dark:text-gray-200">{Number(showDetail.requestCount).toLocaleString()}</p>
                 </div>
               </div>
 
               <div>
-                <p className="text-xs text-gray-400 mb-1">Key Preview</p>
+                <p className="text-xs text-gray-400 mb-1">{tk.keyPreview || "Key Preview"}</p>
                 <code className="text-xs font-mono bg-gray-50 dark:bg-gray-800 px-3 py-2 rounded-lg block text-gray-700 dark:text-gray-300">{showDetail.displayKey}</code>
               </div>
 
               <div>
-                <p className="text-xs text-gray-400 mb-1">Scopes</p>
+                <p className="text-xs text-gray-400 mb-1">{tk.scopesTitle || "Scopes"}</p>
                 <div className="flex flex-wrap gap-1">
                   {showDetail.scopes.map((s) => (
                     <span key={s} className="text-xs px-2 py-0.5 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-full">
@@ -584,7 +596,7 @@ export default function AdminApiKeysPage() {
 
               {showDetail.note && (
                 <div>
-                  <p className="text-xs text-gray-400 mb-1">Note</p>
+                  <p className="text-xs text-gray-400 mb-1">{tk.note || "Note"}</p>
                   <p className="text-sm text-gray-700 dark:text-gray-300">{showDetail.note}</p>
                 </div>
               )}
@@ -596,7 +608,7 @@ export default function AdminApiKeysPage() {
                     disabled={actionLoading === showDetail.id}
                     className="flex-1 px-4 py-2 bg-yellow-50 text-yellow-700 rounded-xl text-sm font-medium hover:bg-yellow-100 disabled:opacity-50 transition"
                   >
-                    Suspend
+                    {tk.suspend || "Suspend"}
                   </button>
                 )}
                 {showDetail.status === "SUSPENDED" && (
@@ -605,7 +617,7 @@ export default function AdminApiKeysPage() {
                     disabled={actionLoading === showDetail.id}
                     className="flex-1 px-4 py-2 bg-green-50 text-green-700 rounded-xl text-sm font-medium hover:bg-green-100 disabled:opacity-50 transition"
                   >
-                    Reactivate
+                    {tk.reactivate || "Reactivate"}
                   </button>
                 )}
                 {showDetail.status !== "REVOKED" && (
@@ -614,7 +626,7 @@ export default function AdminApiKeysPage() {
                     disabled={actionLoading === showDetail.id}
                     className="flex-1 px-4 py-2 bg-red-50 text-red-600 rounded-xl text-sm font-medium hover:bg-red-100 disabled:opacity-50 transition"
                   >
-                    Revoke
+                    {tk.revoke || "Revoke"}
                   </button>
                 )}
               </div>

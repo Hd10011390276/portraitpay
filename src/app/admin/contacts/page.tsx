@@ -34,16 +34,16 @@ interface ContactSubmission {
   updatedAt: string;
 }
 
-const STATUS_MAP: Record<string, { label: string; color: string; bg: string }> = {
-  NEW: { label: "New", color: "text-red-600", bg: "bg-red-50 border-red-200" },
-  READ: { label: "Read", color: "text-blue-600", bg: "bg-blue-50 border-blue-200" },
-  PROCESSING: { label: "Processing", color: "text-yellow-600", bg: "bg-yellow-50 border-yellow-200" },
-  REPLIED: { label: "Replied", color: "text-purple-600", bg: "bg-purple-50 border-purple-200" },
-  RESOLVED: { label: "Resolved", color: "text-green-600", bg: "bg-green-50 border-green-200" },
-  CLOSED: { label: "Closed", color: "text-gray-500", bg: "bg-gray-50 border-gray-200" },
+const BASE_STATUS_MAP: Record<string, { color: string; bg: string }> = {
+  NEW: { color: "text-red-600", bg: "bg-red-50 border-red-200" },
+  READ: { color: "text-blue-600", bg: "bg-blue-50 border-blue-200" },
+  PROCESSING: { color: "text-yellow-600", bg: "bg-yellow-50 border-yellow-200" },
+  REPLIED: { color: "text-purple-600", bg: "bg-purple-50 border-purple-200" },
+  RESOLVED: { color: "text-green-600", bg: "bg-green-50 border-green-200" },
+  CLOSED: { color: "text-gray-500", bg: "bg-gray-50 border-gray-200" },
 };
 
-const TYPE_MAP: Record<string, string> = {
+const BASE_TYPE_MAP: Record<string, string> = {
   GENERAL: "General",
   ENTERPRISE: "Enterprise",
 };
@@ -53,6 +53,18 @@ export default function AdminContactsPage() {
   const { t, locale } = useLanguage();
 
   const tc = t.adminContacts || {} as Record<string, string>;
+  const STATUS_MAP: Record<string, { label: string; color: string; bg: string }> = {
+    NEW: { label: tc.new || "New", color: BASE_STATUS_MAP.NEW.color, bg: BASE_STATUS_MAP.NEW.bg },
+    READ: { label: tc.read || "Read", color: BASE_STATUS_MAP.READ.color, bg: BASE_STATUS_MAP.READ.bg },
+    PROCESSING: { label: tc.processing || "Processing", color: BASE_STATUS_MAP.PROCESSING.color, bg: BASE_STATUS_MAP.PROCESSING.bg },
+    REPLIED: { label: tc.replied || "Replied", color: BASE_STATUS_MAP.REPLIED.color, bg: BASE_STATUS_MAP.REPLIED.bg },
+    RESOLVED: { label: tc.resolved || "Resolved", color: BASE_STATUS_MAP.RESOLVED.color, bg: BASE_STATUS_MAP.RESOLVED.bg },
+    CLOSED: { label: tc.closed || "Closed", color: BASE_STATUS_MAP.CLOSED.color, bg: BASE_STATUS_MAP.CLOSED.bg },
+  };
+  const TYPE_MAP: Record<string, string> = {
+    GENERAL: tc.general || "General",
+    ENTERPRISE: tc.enterprise || "Enterprise",
+  };
 
   const [contacts, setContacts] = useState<ContactSubmission[]>([]);
   const [loading, setLoading] = useState(true);

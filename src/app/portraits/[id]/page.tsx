@@ -39,7 +39,7 @@ interface PortraitDetail {
 }
 
 export default function PortraitDetailPage() {
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
   const params = useParams();
   const router = useRouter();
   const id = params.id as string;
@@ -86,6 +86,15 @@ export default function PortraitDetailPage() {
       .catch(() => router.push("/portraits"))
       .finally(() => setLoading(false));
   }, [id, router]);
+
+  const tc = t.portraits.detail;
+
+  function getNetworkLabel(network: string | null | undefined): string {
+    if (!network) return tc.networkEthereumSepolia;
+    if (network.toLowerCase().includes('sepolia')) return tc.networkEthereumSepolia;
+    if (network.toLowerCase().includes('base')) return tc.networkBase;
+    return network.toUpperCase();
+  }
 
   // Load AI licensing settings
   useEffect(() => {
@@ -365,7 +374,7 @@ export default function PortraitDetailPage() {
               <div className="space-y-2 text-sm">
                 <div className="flex gap-2">
                   <span className="text-gray-500 dark:text-gray-400 w-24 shrink-0">{tc.network}</span>
-                  <span className="text-gray-900 dark:text-white font-medium">{portrait.blockchainNetwork ? (portrait.blockchainNetwork.toLowerCase().includes('sepolia') ? 'Ethereum Sepolia' : portrait.blockchainNetwork.toUpperCase()) : 'Ethereum Sepolia'}</span>
+                  <span className="text-gray-900 dark:text-white font-medium">{getNetworkLabel(portrait.blockchainNetwork)}</span>
                 </div>
                 <div className="flex gap-2">
                   <span className="text-gray-500 dark:text-gray-400 w-24 shrink-0">{tc.txHash}</span>
@@ -386,7 +395,7 @@ export default function PortraitDetailPage() {
                 {portrait.certifiedAt && (
                   <div className="flex gap-2">
                     <span className="text-gray-500 dark:text-gray-400 w-24 shrink-0">{tc.certifiedAt}</span>
-                    <span className="text-gray-900 dark:text-white text-xs">{new Date(portrait.certifiedAt).toLocaleString("zh-CN", { timeZone: "Asia/Shanghai" })}</span>
+                    <span className="text-gray-900 dark:text-white text-xs">{new Date(portrait.certifiedAt).toLocaleString(locale)}</span>
                   </div>
                 )}
               </div>
@@ -404,7 +413,7 @@ export default function PortraitDetailPage() {
                   className="w-full px-4 py-2.5 bg-purple-600 text-white font-medium rounded-lg hover:bg-purple-700 transition-colors flex items-center justify-center gap-2"
                 >
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
-                  {tc.downloadCertificate ?? "Download Blockchain Certificate"}
+                  {tc.downloadCertificate}
                 </button>
               </div>
             </div>

@@ -34,22 +34,22 @@ interface Stats {
   rejected: number;
 }
 
-const STATUS_CONFIG: Record<
+const BASE_STATUS_CONFIG: Record<
   LawyerRegistration["status"],
-  { label: string; color: string; bg: string }
+  { color: string; bg: string }
 > = {
-  PENDING: { label: "Pending", color: "text-red-600", bg: "bg-red-50 border-red-200" },
-  REVIEWING: { label: "Reviewing", color: "text-yellow-600", bg: "bg-yellow-50 border-yellow-200" },
-  APPROVED: { label: "Approved", color: "text-green-600", bg: "bg-green-50 border-green-200" },
-  REJECTED: { label: "Rejected", color: "text-gray-500", bg: "bg-gray-50 border-gray-200" },
+  PENDING: { color: "text-red-600", bg: "bg-red-50 border-red-200" },
+  REVIEWING: { color: "text-yellow-600", bg: "bg-yellow-50 border-yellow-200" },
+  APPROVED: { color: "text-green-600", bg: "bg-green-50 border-green-200" },
+  REJECTED: { color: "text-gray-500", bg: "bg-gray-50 border-gray-200" },
 };
 
-const FILTER_TABS: { key: LawyerRegistration["status"] | "ALL"; label: string }[] = [
-  { key: "ALL", label: "All" },
-  { key: "PENDING", label: "Pending" },
-  { key: "REVIEWING", label: "Reviewing" },
-  { key: "APPROVED", label: "Approved" },
-  { key: "REJECTED", label: "Rejected" },
+const BASE_FILTER_TABS: { key: LawyerRegistration["status"] | "ALL" }[] = [
+  { key: "ALL" },
+  { key: "PENDING" },
+  { key: "REVIEWING" },
+  { key: "APPROVED" },
+  { key: "REJECTED" },
 ];
 
 export default function AdminLawyersPage() {
@@ -57,6 +57,16 @@ export default function AdminLawyersPage() {
   const { t, locale } = useLanguage();
 
   const tc = t.adminLawyers || {} as Record<string, string>;
+  const STATUS_CONFIG: Record<LawyerRegistration["status"], { label: string; color: string; bg: string }> = {
+    PENDING: { label: tc.pending || "Pending", color: BASE_STATUS_CONFIG.PENDING.color, bg: BASE_STATUS_CONFIG.PENDING.bg },
+    REVIEWING: { label: tc.reviewing || "Reviewing", color: BASE_STATUS_CONFIG.REVIEWING.color, bg: BASE_STATUS_CONFIG.REVIEWING.bg },
+    APPROVED: { label: tc.approved || "Approved", color: BASE_STATUS_CONFIG.APPROVED.color, bg: BASE_STATUS_CONFIG.APPROVED.bg },
+    REJECTED: { label: tc.rejected || "Rejected", color: BASE_STATUS_CONFIG.REJECTED.color, bg: BASE_STATUS_CONFIG.REJECTED.bg },
+  };
+  const FILTER_TABS = BASE_FILTER_TABS.map((t) => ({
+    key: t.key,
+    label: t.key === "ALL" ? (tc.all || "All") : STATUS_CONFIG[t.key as LawyerRegistration["status"]]?.label || t.key,
+  }));
 
   const [registrations, setRegistrations] = useState<LawyerRegistration[]>([]);
   const [loading, setLoading] = useState(true);

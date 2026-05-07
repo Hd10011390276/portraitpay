@@ -10,25 +10,40 @@ import { LanguageToggle } from "@/components/layout/LanguageToggle";
 import ThemeToggle from "@/components/ThemeToggle";
 import Link from "next/link";
 
-const STATUS_CONFIG: Record<string, { label: string; color: string }> = {
-  PENDING_REVIEW: { label: "Pending Review", color: "bg-yellow-100 text-yellow-800" },
-  VALIDATED: { label: "Confirmed", color: "bg-red-100 text-red-800" },
-  REJECTED: { label: "Rejected", color: "bg-gray-100 text-gray-600" },
-  SETTLED: { label: "Settled", color: "bg-blue-100 text-blue-800" },
-  LEGAL_ACTION: { label: "Legal Action", color: "bg-purple-100 text-purple-800" },
+const BASE_STATUS_CONFIG: Record<string, { color: string }> = {
+  PENDING_REVIEW: { color: "bg-yellow-100 text-yellow-800" },
+  VALIDATED: { color: "bg-red-100 text-red-800" },
+  REJECTED: { color: "bg-gray-100 text-gray-600" },
+  SETTLED: { color: "bg-blue-100 text-blue-800" },
+  LEGAL_ACTION: { color: "bg-purple-100 text-purple-800" },
 };
 
-const TYPE_CONFIG: Record<string, string> = {
-  UNAUTHORIZED_USE: "Unauthorized Use",
-  EXPIRED_LICENSE: "License Expired",
-  SCOPE_VIOLATION: "Scope Violation",
-  RESALE: "Resale",
-  DEEPFAKE: "AI Deepfake",
-};
+function buildStatusConfig(ti: Record<string, string>) {
+  return {
+    PENDING_REVIEW: { label: ti.PENDING_REVIEW || "Pending Review", color: BASE_STATUS_CONFIG.PENDING_REVIEW.color },
+    VALIDATED: { label: ti.VALIDATED || "Confirmed", color: BASE_STATUS_CONFIG.VALIDATED.color },
+    REJECTED: { label: ti.REJECTED || "Rejected", color: BASE_STATUS_CONFIG.REJECTED.color },
+    SETTLED: { label: ti.SETTLED || "Settled", color: BASE_STATUS_CONFIG.SETTLED.color },
+    LEGAL_ACTION: { label: ti.LEGAL_ACTION || "Legal Action", color: BASE_STATUS_CONFIG.LEGAL_ACTION.color },
+  };
+}
+
+function buildTypeConfig(ti: Record<string, string>) {
+  return {
+    UNAUTHORIZED_USE: ti.UNAUTHORIZED_USE || "Unauthorized Use",
+    EXPIRED_LICENSE: ti.EXPIRED_LICENSE || "License Expired",
+    SCOPE_VIOLATION: ti.SCOPE_VIOLATION || "Scope Violation",
+    RESALE: ti.RESALE || "Resale",
+    DEEPFAKE: ti.DEEPFAKE || "AI Deepfake",
+  };
+}
 
 export default function AdminInfringementsPage() {
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
+  const ti = t.infringements || {};
   const tc = t.infringements?.detail || {};
+  const STATUS_CONFIG = buildStatusConfig(ti);
+  const TYPE_CONFIG = buildTypeConfig(ti);
 
   const [reports, setReports] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -187,7 +202,7 @@ function ReportDetailPanel({
           <p className="text-sm text-gray-500">{tc.reportId || "Report ID"}：{report.id}</p>
         </div>
         <span className="text-xs text-gray-400">
-          {new Date(report.createdAt).toLocaleString()}
+          {new Date(report.createdAt).toLocaleString(locale)}
         </span>
       </div>
 

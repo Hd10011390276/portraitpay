@@ -141,7 +141,7 @@ export default function PortraitsPage() {
       action={
         <div className="flex items-center gap-2">
           {atPortraitLimit && (
-            <span className="text-xs text-orange-500 dark:text-orange-400 mr-1">已达上限({portraits.length}/{MAX_PORTRAITS})</span>
+            <span className="text-xs text-orange-500 dark:text-orange-400 mr-1">{t.portraits.atPortraitLimit.replace('{count}', String(portraits.length)).replace('{max}', String(MAX_PORTRAITS))}</span>
           )}
           <Link href="/portraits/upload"
             className={`inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg shadow-sm transition-colors ${

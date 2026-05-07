@@ -166,10 +166,10 @@ export default function EarningsPage() {
   };
 
   const formatCurrency = (amount: number, currency = "USD") =>
-    new Intl.NumberFormat("en-US", { style: "currency", currency, minimumFractionDigits: 2 }).format(amount);
+    new Intl.NumberFormat(locale, { style: "currency", currency, minimumFractionDigits: 2 }).format(amount);
 
   const formatDate = (dateStr: string) =>
-    new Date(dateStr).toLocaleDateString("zh-CN", { year: "numeric", month: "2-digit", day: "2-digit" });
+    new Date(dateStr).toLocaleDateString(locale, { year: "numeric", month: "2-digit", day: "2-digit" });
 
   const txTypeLabel: Record<string, { label: string; color: string }> = {
     ROYALTY_PAYOUT:  { label: t.earnings.royaltyShare, color: "text-purple-600 bg-purple-50 dark:bg-purple-900/30" },
@@ -180,7 +180,7 @@ export default function EarningsPage() {
   // 6-month chart mock data (months use locale-appropriate abbreviations)
   const getMonthLabel = (month: number) => {
     const d = new Date(2024, month - 1, 1);
-    return d.toLocaleDateString(locale === "en-US" ? "en-US" : "zh-CN", { month: "short" });
+    return d.toLocaleDateString(locale, { month: "short" });
   };
   const chartData = [
     { label: getMonthLabel(10), value: 2800 },

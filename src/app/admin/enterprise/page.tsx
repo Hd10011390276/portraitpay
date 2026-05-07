@@ -183,7 +183,7 @@ export default function AdminEnterprisePage() {
                     </div>
                   </div>
                   <p className="text-xs text-gray-400 mt-3">
-                    {tc.submitTime}：{new Date(ent.createdAt).toLocaleString(locale === "zh-CN" || locale === "zh-Hant" ? "zh-CN" : "en-US")}
+                    {tc.submitTime}：{new Date(ent.createdAt).toLocaleString(locale)}
                   </p>
                 </div>
               ))
