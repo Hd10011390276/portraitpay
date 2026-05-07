@@ -1,6 +1,5 @@
 /**
  * GET /api/portraits/[id]/certificate
- * 
  * Download PNG certificate
  */
 
@@ -35,14 +34,13 @@ export async function GET(request: NextRequest, context: RouteContext) {
     }
 
     if (!portrait.blockchainTxHash) {
-      return NextResponse.json({ success: false, error: "Portrait not certified on blockchain" }, { status: 400 });
+      return NextResponse.json({ success: false, error: "Portrait not certified" }, { status: 400 });
     }
 
-    // Generate PNG certificate
     const pngBuffer = await buildCertificateImage({
       portraitTitle: portrait.title || 'Untitled',
-      portraitHash: portrait.portraitImageHash || portrait.imageHash || 'N/A',
-      idCardHash: portrait.idCardFrontHash || 'N/A',
+      portraitHash: portrait.portraitImageHash || portrait.imageHash || '',
+      idCardHash: portrait.idCardFrontHash || '',
       blockchainTxHash: portrait.blockchainTxHash,
       network: portrait.blockchainNetwork || 'sepolia',
       certifiedAt: portrait.certifiedAt ? new Date(portrait.certifiedAt) : new Date(),
