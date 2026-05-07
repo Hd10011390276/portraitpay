@@ -23,6 +23,18 @@ const TERRITORIES_ES = [
   { value: "asia", label: "Asia" },
 ];
 
+const USAGE_SCOPES_EN = [
+  { value: "commercial", label: "Commercial Use" },
+  { value: "advertising", label: "Advertising" },
+  { value: "merchandise", label: "Merchandise" },
+  { value: "ai_training", label: "AI Training" },
+  { value: "editorial", label: "Editorial Use" },
+];
+const TERRITORIES_EN = [
+  { value: "global", label: "Global" },
+  { value: "asia", label: "Asia" },
+];
+
 const USAGE_SCOPES_ZH = [
   { value: "commercial", label: "商业用途" },
   { value: "advertising", label: "广告宣传" },
