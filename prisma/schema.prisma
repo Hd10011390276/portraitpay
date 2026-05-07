@@ -317,6 +317,49 @@ model InfringementReport {
 }
 
 // ============================================================
+// PublicReport — anonymous public infringement submission
+// ============================================================
+
+model PublicReport {
+  id String @id @default(cuid())
+
+  // Contact info (optional for anonymous reporter)
+  reporterEmail String?
+  reporterName  String?
+
+  // Target portrait (can be empty if user doesn't know the ID)
+  portraitId    String?
+  portraitTitle String?
+
+  // Infringement details
+  type           String   // UNAUTHORIZED_USE, EXPIRED_LICENSE, SCOPE_VIOLATION, RESALE, DEEPFAKE
+  description    String   @db.Text
+  detectedUrl    String?
+  evidenceUrls   String[] @default([])
+  originalImageUrl String?
+
+  // Status: PENDING_REVIEW, VALIDATED, REJECTED, CONVERTED
+  status String @default("PENDING_REVIEW")
+
+  // If converted to a formal InfringementReport
+  convertedToId String? @unique
+
+  // Extensibility: stored raw metadata + webhook delivery record
+  metadata   Json?   // free-form: { source, userAgent, landingPage, ... }
+  webhookLog Json?   // { attemptedAt, status, response, retries }
+
+  // Hash for deduplication
+  reportHash String? @unique
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([portraitId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+// ============================================================
 // InfringementAlert
 // ============================================================
 

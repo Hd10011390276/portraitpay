@@ -1054,6 +1054,33 @@ export const translations = {
       submit: "提交报告",
       submitting: "提交中...",
     },
+    // PublicReport — anonymous public form
+    publicReport: {
+      title: "公开侵权举报",
+      subtitle: "无需登录即可举报肖像侵权行为",
+      banner: "无需注册 | 保护隐私 | 公开可查",
+      reporterEmail: "联系邮箱",
+      reporterEmailRequired: "邮箱（用于接收处理结果，必填）",
+      reporterEmailHint: "请填写真实邮箱，我们将通过邮件通知处理进展",
+      reporterEmailPlaceholder: "your@email.com",
+      reporterName: "您的姓名（选填）",
+      reporterNameHint: "可选，方便我们与您联系",
+      reporterNamePlaceholder: "张三",
+      portraitTitle: "肖像/名人姓名",
+      portraitTitlePlaceholder: "例如：张三",
+      successTitle: "举报已提交！",
+      successDesc: "我们已收到您的举报，将在工作日 24 小时内审核。请留意邮箱通知。",
+      error: "提交失败，请稍后重试",
+      networkError: "网络错误，请检查网络连接",
+      duplicate: "您已提交过相同内容的举报，请勿重复提交。",
+    },
+    // Celebrity
+    celebrity: {
+      successDesc: "我们已收到您的举报，将在工作日 24 小时内审核。请留意邮箱通知。",
+      error: "提交失败，请稍后重试",
+      networkError: "网络错误，请检查网络连接",
+      duplicate: "您已提交过相同内容的举报，请勿重复提交。",
+    },
     // Celebrity
     celebrity: {
       title: "名人认证",
@@ -2760,6 +2787,26 @@ export const translations = {
       submit: "Submit Report",
       submitting: "Submitting...",
     },
+    // PublicReport — anonymous public form
+    publicReport: {
+      title: "Public Infringement Report",
+      subtitle: "Report portrait infringement without an account",
+      banner: "No registration required | Privacy protected | Publicly verifiable",
+      reporterEmail: "Contact Email",
+      reporterEmailRequired: "Email (required — we will notify you of progress)",
+      reporterEmailHint: "A valid email is required to receive updates on your report",
+      reporterEmailPlaceholder: "your@email.com",
+      reporterName: "Your Name (optional)",
+      reporterNameHint: "Optional — helps us follow up if needed",
+      reporterNamePlaceholder: "John Doe",
+      portraitTitle: "Portrait / Celebrity Name",
+      portraitTitlePlaceholder: "e.g., Taylor Swift",
+      successTitle: "Report Submitted!",
+      successDesc: "We have received your report and will review it within 24 business hours. Please check your email for updates.",
+      error: "Submission failed. Please try again later.",
+      networkError: "Network error. Please check your connection.",
+      duplicate: "You have already submitted an identical report. Please do not submit duplicates.",
+    },
     // Celebrity
     celebrity: {
       title: "Celebrity Certification",
@@ -4132,6 +4179,26 @@ export const translations = {
       infringementRules: "Reglas de Infracción",
       submit: "Enviar Reporte",
       submitting: "Enviando...",
+    },
+    // PublicReport — anonymous public form
+    publicReport: {
+      title: "Reporte Público de Infracción",
+      subtitle: "Reporta infracción de retrato sin cuenta",
+      banner: "Sin registro | Privacidad protegida | Verificable públicamente",
+      reporterEmail: "Correo de Contacto",
+      reporterEmailRequired: "Correo electrónico (requerido — le notificaremos)",
+      reporterEmailHint: "Se requiere un correo válido para recibir actualizaciones",
+      reporterEmailPlaceholder: "tu@email.com",
+      reporterName: "Tu Nombre (opcional)",
+      reporterNameHint: "Opcional — nos ayuda a hacer seguimiento",
+      reporterNamePlaceholder: "Juan Pérez",
+      portraitTitle: "Nombre del Retrato / Celebridad",
+      portraitTitlePlaceholder: "ej., Taylor Swift",
+      successTitle: "¡Reporte Enviado!",
+      successDesc: "Hemos recibido su reporte y lo revisaremos en 24 horas hábiles. Revise su correo para actualizaciones.",
+      error: "Envío fallido. Por favor intente de nuevo.",
+      networkError: "Error de red. Por favor verifique su conexión.",
+      duplicate: "Ya ha enviado un reporte idéntico. No envíe duplicados.",
     },
     // Search
     search: {
