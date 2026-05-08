@@ -4,34 +4,33 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useLanguage } from "@/context/LanguageContext";
 import ThemeToggle from "@/components/ThemeToggle";
-import { LanguageToggle } from "@/components/layout/LanguageToggle";
 
 const COUNTRIES = [
-  { code: "US", name: "🇺🇸 United States", available: true },
-  { code: "GB", name: "🇬🇧 United Kingdom", available: true },
-  { code: "CA", name: "🇨🇦 Canada", available: true },
-  { code: "AU", name: "🇦🇺 Australia", available: true },
-  { code: "JP", name: "🇯🇵 Japan", available: true },
-  { code: "KR", name: "🇰🇷 South Korea", available: true },
-  { code: "SG", name: "🇸🇬 Singapore", available: true },
-  { code: "HK", name: "🇭🇰 Hong Kong", available: true },
-  { code: "TW", name: "🇹🇼 Taiwan", available: true },
-  { code: "DE", name: "🇩🇪 Germany", available: true },
-  { code: "FR", name: "🇫🇷 France", available: true },
-  { code: "IT", name: "🇮🇹 Italy", available: true },
-  { code: "ES", name: "🇪🇸 Spain", available: true },
-  { code: "NL", name: "🇳🇱 Netherlands", available: true },
-  { code: "CH", name: "🇨🇭 Switzerland", available: true },
-  { code: "SE", name: "🇸🇪 Sweden", available: true },
-  { code: "NO", name: "🇳🇴 Norway", available: true },
-  { code: "DK", name: "🇩🇰 Denmark", available: true },
-  { code: "FI", name: "🇫🇮 Finland", available: true },
-  { code: "NZ", name: "🇳🇿 New Zealand", available: true },
-  { code: "AE", name: "🇦🇪 UAE", available: true },
-  { code: "SA", name: "🇸🇦 Saudi Arabia", available: true },
-  { code: "IN", name: "🇮🇳 India", available: true },
-  { code: "BR", name: "🇧🇷 Brazil", available: true },
-  { code: "MX", name: "🇲🇽 Mexico", available: true },
+  { code: "US", name: "United States", available: true },
+  { code: "GB", name: "United Kingdom", available: true },
+  { code: "CA", name: "Canada", available: true },
+  { code: "AU", name: "Australia", available: true },
+  { code: "JP", name: "Japan", available: true },
+  { code: "KR", name: "South Korea", available: true },
+  { code: "SG", name: "Singapore", available: true },
+  { code: "HK", name: "Hong Kong", available: true },
+  { code: "TW", name: "Taiwan", available: true },
+  { code: "DE", name: "Germany", available: true },
+  { code: "FR", name: "France", available: true },
+  { code: "IT", name: "Italy", available: true },
+  { code: "ES", name: "Spain", available: true },
+  { code: "NL", name: "Netherlands", available: true },
+  { code: "CH", name: "Switzerland", available: true },
+  { code: "SE", name: "Sweden", available: true },
+  { code: "NO", name: "Norway", available: true },
+  { code: "DK", name: "Denmark", available: true },
+  { code: "FI", name: "Finland", available: true },
+  { code: "NZ", name: "New Zealand", available: true },
+  { code: "AE", name: "UAE", available: true },
+  { code: "SA", name: "Saudi Arabia", available: true },
+  { code: "IN", name: "India", available: true },
+  { code: "BR", name: "Brazil", available: true },
+  { code: "MX", name: "Mexico", available: true },
   { code: "OTHER", name: "🌍 Other (Contact us)", available: true },
 ];
 
@@ -40,7 +39,7 @@ export default function LawyerRegistrationPage() {
 
   const [theme, setTheme] = useState<"light" | "dark">("light");
   const [form, setForm] = useState({
-    lawyerType: "firm", // "firm" = 律师楼, "personal" = 个人律师
+    lawyerType: "firm", // "firm" = law firm, "personal" = solo lawyer
     companyName: "",
     country: "",
     contactName: "",
@@ -125,7 +124,6 @@ export default function LawyerRegistrationPage() {
               <span style={{ fontSize: "17px", fontWeight: 700, color: "var(--text-primary)", letterSpacing: "-0.02em" }}>PortraitPay AI</span>
             </Link>
             <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-              <LanguageToggle />
               <ThemeToggle />
             </div>
           </div>
@@ -163,7 +161,6 @@ export default function LawyerRegistrationPage() {
             <span style={{ fontSize: "17px", fontWeight: 700, color: "var(--text-primary)", letterSpacing: "-0.02em" }}>PortraitPay AI</span>
           </Link>
           <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-            <LanguageToggle />
             <ThemeToggle />
           </div>
         </div>

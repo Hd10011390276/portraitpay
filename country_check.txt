@@ -1,0 +1,12 @@
+Found at char 269
+
+Line 0: const COUNTRIES = [
+Line 1:   { code: "US", name: "🇺🇸 United States", available: true },
+Line 2:   { code: "GB", name: "🇬🇧 United Kingdom", available: true },
+Line 3:   { code: "CA", name: "🇨🇦 Canada", available: true },
+Line 4:   { code: "AU", name: "🇦🇺 Australia", available: true },
+Line 5:   { code: "JP", name: "🇯🇵 Japan", available: true },
+Line 6:   { code: "KR", name: "🇰🇷 South Korea", available: true },
+Line 7:   { code: "SG", name: "🇸🇬 Singapore", available: true },
+Line 8:   { code: "HK", name: "🇭🇰 Hong Kong", available: true },
+Line 9:   { code: "TW", name: "🇹🇼 Taiwan", available: true },

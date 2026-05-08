@@ -1,0 +1,18 @@
+COUNTRIES section:
+const COUNTRIES = [
+  { code: "US", name: "United States", available: true },
+  { code: "GB", name: "United Kingdom", available: true },
+  { code: "CA", name: "Canada", available: true },
+  { code: "AU", name: "Australia", available: true },
+
+lawyerType comment:
+lawyerType: "firm", // "firm" = law firm, "personal" = solo lawyer
+    companyName: "",
+    country:
+
+Total Chinese chars in file: 0
+
+es-ES has lawyerRegistration: False
+en-US has lawyerRegistration: True
+
+First navbar reference: ''

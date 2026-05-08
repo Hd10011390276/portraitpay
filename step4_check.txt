@@ -1,0 +1,11 @@
+Total content length: 25736
+
+COUNTRIES section:
+  0: 'const COUNTRIES = ['
+  1: '  { code: "US", name: "🇺🇸 United States", available: true },'
+  2: '  { code: "GB", name: "🇬🇧 United Kingdom", available: true },'
+  3: '  { code: "CA", name: "🇨🇦 Canada", available: true },'
+  4: '  { code: "AU", name: "🇦🇺 Australia", available: true },'
+
+lawyerType context:
+'lawyerType: "firm", // "firm" = 律师楼, "personal" = 个人律师\n    companyName: "",\n    country: "",\n    contactName: "",\n    contactEmail: "",\n    contactPhone: "",\n    licenseUrl: "",\n  });\n  const [errors,'
