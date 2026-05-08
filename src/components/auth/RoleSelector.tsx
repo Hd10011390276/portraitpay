@@ -13,15 +13,15 @@ export function RoleSelector({ value, onChange, error }: RoleSelectorProps) {
 
   const roles = [
     {
-      value: "USER",
-      label: t.register.roleUser,
-      description: t.register.roleUserDesc,
+      value: "ACTOR",
+      label: t.register.roleActor,
+      description: t.register.roleActorDesc,
       icon: "👤",
     },
     {
-      value: "ARTIST",
-      label: t.register.roleArtist,
-      description: t.register.roleArtistDesc,
+      value: "CREATOR",
+      label: t.register.roleCreator,
+      description: t.register.roleCreatorDesc,
       icon: "🎨",
     },
     {
@@ -31,10 +31,10 @@ export function RoleSelector({ value, onChange, error }: RoleSelectorProps) {
       icon: "🏢",
     },
     {
-      value: "ENTERPRISE",
-      label: t.register.roleEnterprise,
-      description: t.register.roleEnterpriseDesc,
-      icon: "🏭",
+      value: "LAWYER",
+      label: t.register.roleLawyer,
+      description: t.register.roleLawyerDesc,
+      icon: "⚖️",
     },
   ];
 

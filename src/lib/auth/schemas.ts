@@ -1,10 +1,10 @@
 import { z } from "zod";
 
 export const UserRole = {
-  USER: "USER",
-  ARTIST: "ARTIST",
+  ACTOR: "ACTOR",
+  CREATOR: "CREATOR",
   AGENCY: "AGENCY",
-  ENTERPRISE: "ENTERPRISE",
+  LAWYER: "LAWYER",
 } as const;
 export type UserRole = (typeof UserRole)[keyof typeof UserRole];
 
@@ -21,7 +21,7 @@ export const RegisterSchema = z.object({
     .regex(/[0-9]/, "密码需包含至少一个数字"),
   confirmPassword: z.string().min(1, "请确认密码"),
   name: z.string().min(1, "姓名不能为空").max(50, "姓名最多50字符"),
-  role: z.enum(["user", "artist", "agency", "enterprise"], {
+  role: z.enum(["actor", "creator", "agency", "lawyer"], {
     error: "请选择角色",
   }),
   phone: z.string().optional(),
