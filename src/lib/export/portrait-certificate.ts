@@ -111,3 +111,6 @@ export async function buildCertificateImage(data: CertificateData): Promise<Buff
   
   return result;
 }
+
+// Alias for backward compatibility
+export const buildPortraitCertificate = buildCertificateImage;
