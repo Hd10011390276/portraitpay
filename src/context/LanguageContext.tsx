@@ -1,7 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useEffect, useState } from "react";
-import { Locale, defaultLocale, translations, TranslationKeys } from "@/lib/i18n/translations";
+import { Locale, translations } from "@/lib/i18n/translations";
 
 interface LanguageContextValue {
   locale: Locale;
@@ -10,30 +10,13 @@ interface LanguageContextValue {
   t: any;
 }
 
+const EN_ONLY = "en-US";
+
 const LanguageContext = createContext<LanguageContextValue>({
-  locale: defaultLocale,
+  locale: EN_ONLY,
   setLocale: () => {},
-  t: translations[defaultLocale],
+  t: translations[EN_ONLY],
 });
-
-// Normalize zh-CN → zh-Hant so the correct translations block is found
-function normalizeLocale(loc: Locale): Locale {
-  if (loc === "zh-CN") return "zh-Hant";
-  return loc;
-}
-
-// Deep get with fallback to en-US
-function getWithFallback<T>(obj: T, path: string): any {
-  const keys = path.split(".");
-  let current: any = obj;
-  for (const key of keys) {
-    if (current == null || typeof current !== "object" || !(key in current)) {
-      return undefined;
-    }
-    current = current[key];
-  }
-  return current;
-}
 
 // Deep merge fallback: current locale overrides, en-US fills in gaps
 function deepFallback<T extends object>(current: T, fallback: T): T {
@@ -49,34 +32,21 @@ function deepFallback<T extends object>(current: T, fallback: T): T {
 }
 
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
-  const [locale, setLocaleState] = useState<Locale>(defaultLocale);
+  const [locale] = useState<Locale>(EN_ONLY);
 
-  // Read initial locale from cookie on mount
+  // Force en-US always — language switch is disabled
   useEffect(() => {
-    const cookie = document.cookie
-      .split("; ")
-      .find((row) => row.startsWith("pp_locale="));
-    if (cookie) {
-      const val = cookie.split("=")[1] as Locale;
-      if (val === "en-US" || val === "es-ES" || val === "zh-Hant" || val === "zh-CN") {
-        setLocaleState(val);
-      }
-    }
+    document.cookie = `pp_locale=${EN_ONLY}; path=/; expires=${new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toUTCString()}; SameSite=Lax`;
+    document.documentElement.lang = EN_ONLY;
   }, []);
 
-  // Sync locale → cookie + document lang + document title/meta
-  useEffect(() => {
-    const expires = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toUTCString();
-    document.cookie = `pp_locale=${locale}; path=/; expires=${expires}; SameSite=Lax`;
-    document.documentElement.lang = normalizeLocale(locale);
-  }, [locale]);
-
-  const setLocale = (newLocale: Locale) => {
-    setLocaleState(newLocale);
+  // Block all locale changes — English only
+  const setLocale = (_newLocale: Locale) => {
+    // no-op: language switching is disabled
   };
 
-  // Build merged translation with en-US fallback (zh-CN normalizes to zh-Hant for translations lookup)
-  const t = deepFallback(translations[normalizeLocale(locale)] || {}, translations["en-US"]);
+  // Always use en-US translations (with en-US fallback for any missing keys)
+  const t = deepFallback(translations[EN_ONLY] || {}, translations[EN_ONLY]);
 
   return (
     <LanguageContext.Provider value={{ locale, setLocale, t }}>

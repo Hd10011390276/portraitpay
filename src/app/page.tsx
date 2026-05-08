@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { LanguageToggle } from "@/components/layout/LanguageToggle";
+
 import ThemeToggle from "@/components/ThemeToggle";
 import { useLanguage } from "@/context/LanguageContext";
 import { useState } from "react";
@@ -274,7 +274,6 @@ export default function HomePage() {
 
           {/* Right side */}
           <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-            <LanguageToggle />
             <ThemeToggle />
             <Link href="/login" className="btn btn-secondary btn-sm hidden-mobile">{t.nav.signIn}</Link>
           </div>
