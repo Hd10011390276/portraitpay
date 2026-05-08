@@ -407,7 +407,7 @@ export default function HomePage() {
               <h2 style={{ fontSize: "var(--text-h2)", fontWeight: 700, color: "var(--text-primary)", letterSpacing: "-0.02em", marginBottom: "16px" }}>
                 {t.howItWorks.title}
               </h2>
-              <p style={{ fontSize: "17px", color: "var(--text-secondary)", maxWidth: "520px", margin: "0 auto" }}>
+              <p style={{ fontSize: "17px", color: "var(--text-secondary)", maxWidth: "520px", margin: "0 auto", whiteSpace: "pre-line" }}>
                 {t.howItWorks.sub}
               </p>
             </div>
