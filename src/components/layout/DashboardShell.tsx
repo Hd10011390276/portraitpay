@@ -4,7 +4,6 @@ import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Sidebar } from "./Sidebar";
 import { Header } from "./Header";
-import { LanguageToggle } from "./LanguageToggle";
 import ThemeToggle from "@/components/ThemeToggle";
 
 interface User {
@@ -108,7 +107,6 @@ export function DashboardShell({ children, title, subtitle, action, forceLight }
           </svg>
         </button>
         <div className="flex-1" />
-        <LanguageToggle />
         <ThemeToggle />
       </div>
 

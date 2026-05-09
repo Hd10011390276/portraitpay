@@ -5,7 +5,6 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/components/ui/Toast";
 import ThemeToggle from "@/components/ThemeToggle";
-import { LanguageToggle } from "@/components/layout/LanguageToggle";
 import { useLanguage } from "@/context/LanguageContext";
 
 interface User {
@@ -80,9 +79,6 @@ export function Header({ user, title, subtitle, action }: HeaderProps) {
 
           {/* Theme toggle */}
           <ThemeToggle />
-
-          {/* Language toggle */}
-          <LanguageToggle />
 
           {/* User avatar + dropdown */}
           <div className="relative">
