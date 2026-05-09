@@ -28,10 +28,9 @@ const nextConfig = {
   experimental: {
     // Optimize package imports
     optimizePackageImports: ['date-fns', 'react-hook-form'],
+    // Keep heavy native deps out of serverless bundles
+    serverComponentsExternalPackages: ['@prisma/client', '@prisma/engines', '@vladmandic/face-api', 'canvas', 'ali-oss', 'sharp'],
   },
-
-  // Keep native/optional deps out of the browser bundle
-  serverExternalPackages: ['@vladmandic/face-api', 'canvas', 'ali-oss', 'sharp'],
 
   // Stub canvas for server-side builds so webpack doesn't fail resolution
   webpack: (config, { isServer }) => {
