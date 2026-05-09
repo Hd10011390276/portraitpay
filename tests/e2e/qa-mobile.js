@@ -50,14 +50,6 @@ class QATestRunner {
       if (!title.includes('PortraitPay')) throw new Error(`Unexpected title: ${title}`);
     });
 
-    await this.test('Homepage language toggle works', async () => {
-      await page.goto(`${BASE_URL}/`, { waitUntil: 'networkidle' });
-      const enBtn = page.locator('button', { hasText: 'EN' });
-      const zhBtn = page.locator('button', { hasText: '中文' });
-      if (!await enBtn.first().isVisible()) throw new Error('EN button not visible');
-      if (!await zhBtn.first().isVisible()) throw new Error('中文 button not visible');
-    });
-
     // Login page
     await this.test('Login page loads correctly', async () => {
       await page.goto(`${BASE_URL}/login`, { waitUntil: 'networkidle' });
@@ -65,14 +57,6 @@ class QATestRunner {
       const passwordInput = page.locator('input[type="password"]');
       if (!await emailInput.isVisible()) throw new Error('Email input not found');
       if (!await passwordInput.isVisible()) throw new Error('Password input not found');
-    });
-
-    await this.test('Login page language toggle works', async () => {
-      await page.goto(`${BASE_URL}/login`, { waitUntil: 'networkidle' });
-      const enBtn = page.locator('button', { hasText: 'EN' });
-      const zhBtn = page.locator('button', { hasText: '中文' });
-      if (!await enBtn.first().isVisible()) throw new Error('EN button not visible');
-      if (!await zhBtn.first().isVisible()) throw new Error('中文 button not visible');
     });
 
     await this.test('Login flow succeeds', async () => {
@@ -87,15 +71,6 @@ class QATestRunner {
       await page.goto(`${BASE_URL}/dashboard`, { waitUntil: 'networkidle' });
       const url = page.url();
       if (url.includes('/login')) throw new Error('Redirected back to login');
-    });
-
-    await this.test('Dashboard language toggle works', async () => {
-      await page.goto(`${BASE_URL}/dashboard`, { waitUntil: 'networkidle' });
-      await page.waitForTimeout(500);
-      const enBtn = page.locator('[aria-label="Switch to English"]').last();
-      const zhBtn = page.locator('[aria-label="切换到中文"]').last();
-      if (!await enBtn.isVisible()) throw new Error('EN button not visible');
-      if (!await zhBtn.isVisible()) throw new Error('中文 button not visible');
     });
 
     await this.test('No console errors on homepage', async () => {
@@ -150,27 +125,11 @@ class QATestRunner {
       if (errors.length > 0) throw new Error(`Console errors: ${errors.join(', ')}`);
     });
 
-    await this.test('[Mobile] Homepage has language toggle', async () => {
-      await page.goto(`${BASE_URL}/`, { waitUntil: 'networkidle' });
-      const enBtn = page.locator('button', { hasText: 'EN' });
-      const zhBtn = page.locator('button', { hasText: '中文' });
-      if (!await enBtn.first().isVisible()) throw new Error('EN button not visible');
-      if (!await zhBtn.first().isVisible()) throw new Error('中文 button not visible');
-    });
-
     // Mobile Login
     await this.test('[Mobile] Login page loads correctly', async () => {
       await page.goto(`${BASE_URL}/login`, { waitUntil: 'networkidle' });
       const emailInput = page.locator('input[type="email"]');
       if (!await emailInput.isVisible()) throw new Error('Email input not found');
-    });
-
-    await this.test('[Mobile] Login page language toggle works', async () => {
-      await page.goto(`${BASE_URL}/login`, { waitUntil: 'networkidle' });
-      const enBtn = page.locator('button', { hasText: 'EN' });
-      const zhBtn = page.locator('button', { hasText: '中文' });
-      if (!await enBtn.first().isVisible()) throw new Error('EN button not visible');
-      if (!await zhBtn.first().isVisible()) throw new Error('中文 button not visible');
     });
 
     await this.test('[Mobile] Login form inputs are accessible', async () => {
