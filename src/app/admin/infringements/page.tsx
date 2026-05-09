@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 /**
  * 管理员 - 侵权举报审核页面
  * /admin/infringements
@@ -6,7 +6,6 @@
  */
 import { useState, useEffect } from "react";
 import { useLanguage } from "@/context/LanguageContext";
-import { LanguageToggle } from "@/components/layout/LanguageToggle";
 import ThemeToggle from "@/components/ThemeToggle";
 import Link from "next/link";
 
@@ -100,7 +99,6 @@ export default function AdminInfringementsPage() {
           </p>
         </div>
         <div className="ml-auto flex items-center gap-2">
-          <LanguageToggle />
           <ThemeToggle />
         </div>
       </div>

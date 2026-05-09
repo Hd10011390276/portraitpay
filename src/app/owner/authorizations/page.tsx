@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 /**
  * Portrait Owner Authorization Approvals Page
  * /owner/authorizations
@@ -6,7 +6,6 @@
  */
 import { useState, useEffect } from "react";
 import { useLanguage } from "@/context/LanguageContext";
-import { LanguageToggle } from "@/components/layout/LanguageToggle";
 import ThemeToggle from "@/components/ThemeToggle";
 import Link from "next/link";
 
@@ -98,7 +97,6 @@ export default function OwnerAuthorizationsPage() {
             ‹ {tc.backToDashboard}
           </Link>
           <div className="flex items-center gap-2">
-            <LanguageToggle />
             <ThemeToggle />
           </div>
         </div>

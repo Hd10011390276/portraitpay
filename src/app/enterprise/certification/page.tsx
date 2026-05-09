@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 /**
  * 企业认证页面
  * /enterprise/certification
@@ -11,7 +11,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useLanguage } from "@/context/LanguageContext";
 import ThemeToggle from "@/components/ThemeToggle";
-import { LanguageToggle } from "@/components/layout/LanguageToggle";
 
 function createSchema(t: any) {
   return z.object({
@@ -214,7 +213,6 @@ export default function EnterpriseCertificationPage() {
             </Link>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-            <LanguageToggle />
             <ThemeToggle />
           </div>
         </div>

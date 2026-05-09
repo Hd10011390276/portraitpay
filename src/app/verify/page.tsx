@@ -1,9 +1,8 @@
-"use client";
+﻿"use client";
 
 import React, { useState } from "react";
 import { useLanguage } from "@/context/LanguageContext";
 import ThemeToggle from "@/components/ThemeToggle";
-import { LanguageToggle } from "@/components/layout/LanguageToggle";
 
 const ETHERSCAN_BASE = "https://sepolia.etherscan.io/tx/";
 const CONTRACT_ADDRESS = "0x2D5F2B7Ae9eBe1e9Aa1B8b8c6E7b6F3F5fBfF0fE";
@@ -90,7 +89,6 @@ export default function VerifyPage() {
               {t.nav?.getStarted || "免费开始"}
             </a>
             <ThemeToggle />
-            <LanguageToggle />
           </div>
         </div>
       </header>

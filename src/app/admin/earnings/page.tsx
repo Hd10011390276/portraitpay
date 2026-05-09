@@ -1,4 +1,4 @@
-/**
+﻿/**
  * /admin/earnings — Admin Revenue Management Dashboard
  * View all transactions, withdrawals, and platform analytics
  */
@@ -8,7 +8,6 @@
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useLanguage } from "@/context/LanguageContext";
-import { LanguageToggle } from "@/components/layout/LanguageToggle";
 import ThemeToggle from "@/components/ThemeToggle";
 
 interface Transaction {
@@ -162,7 +161,6 @@ export default function AdminEarningsPage() {
             </p>
           </div>
           <div className="ml-auto flex items-center gap-2">
-            <LanguageToggle />
             <ThemeToggle />
           </div>
         </div>

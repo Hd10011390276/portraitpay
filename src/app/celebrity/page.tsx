@@ -1,4 +1,4 @@
-/**
+﻿/**
  * /celebrity — Celebrity Artist Application Page
  */
 "use client";
@@ -6,7 +6,6 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useLanguage } from "@/context/LanguageContext";
-import { LanguageToggle } from "@/components/layout/LanguageToggle";
 import ThemeToggle from "@/components/ThemeToggle";
 
 interface FormData {
@@ -153,7 +152,6 @@ export default function CelebrityPage() {
               {t.celebrity.backHome}
             </Link>
             <ThemeToggle />
-            <LanguageToggle />
           </div>
         </div>
       </header>

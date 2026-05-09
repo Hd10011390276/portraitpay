@@ -1,4 +1,4 @@
-/**
+﻿/**
  * /contact — 联系表单页面
  * UI风格与主页一致，支持日间/夜间模式和中英文切换
  */
@@ -7,7 +7,6 @@
 import { useState } from "react";
 import Link from "next/link";
 import ThemeToggle from "@/components/ThemeToggle";
-import { LanguageToggle } from "@/components/layout/LanguageToggle";
 import { useLanguage } from "@/context/LanguageContext";
 
 interface FormData {
@@ -172,7 +171,6 @@ export default function ContactPage() {
 
           {/* Right side */}
           <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-            <LanguageToggle />
             <ThemeToggle />
             <Link href="/" style={{ fontSize: "14px", color: "var(--text-secondary)", textDecoration: "none" }}>
               ← {t.contact.home || "返回首页"}

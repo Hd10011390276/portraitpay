@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 /**
  * Infringement Report Detail Page
  * Route: /infringements/[id]
@@ -7,7 +7,6 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { useLanguage } from "@/context/LanguageContext";
-import { LanguageToggle } from "@/components/layout/LanguageToggle";
 import ThemeToggle from "@/components/ThemeToggle";
 
 const STATUS_COLORS: Record<string, string> = {
@@ -85,7 +84,6 @@ export default function InfringementDetailPage() {
             ‹ {tc.backToInfringements}
           </Link>
           <div className="flex items-center gap-2">
-            <LanguageToggle />
             <ThemeToggle />
           </div>
         </div>

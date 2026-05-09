@@ -1,11 +1,10 @@
-"use client";
+﻿"use client";
 import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Input } from "@/components/auth/Input";
 import { Button } from "@/components/auth/Button";
 import { RoleSelector } from "@/components/auth/RoleSelector";
-import { LanguageToggle } from "@/components/layout/LanguageToggle";
 import { UsagePreferences } from "@/components/auth/UsagePreferences";
 import ThemeToggle from "@/components/ThemeToggle";
 import { useLanguage } from "@/context/LanguageContext";
@@ -116,7 +115,6 @@ export default function RegisterPage() {
       {/* Top bar with theme and language toggles - mobile optimized */}
       <div className="fixed top-3 right-3 sm:top-4 sm:right-4 flex items-center gap-2 sm:gap-3 z-50">
         <ThemeToggle />
-        <LanguageToggle />
       </div>
 
       <div className="w-full max-w-lg space-y-6 sm:space-y-8">

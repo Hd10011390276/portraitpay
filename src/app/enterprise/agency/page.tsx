@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 /**
  * 经纪公司代理管理页面
  * /enterprise/agency
@@ -7,7 +7,6 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import ThemeToggle from "@/components/ThemeToggle";
-import { LanguageToggle } from "@/components/layout/LanguageToggle";
 import { useLanguage } from "@/context/LanguageContext";
 
 export default function AgencyPage() {
@@ -135,7 +134,6 @@ export default function AgencyPage() {
           </Link>
           <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
             <ThemeToggle />
-            <LanguageToggle />
           </div>
         </div>
       </header>

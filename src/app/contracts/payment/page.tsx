@@ -1,4 +1,4 @@
-/**
+﻿/**
  * /contracts/payment — Payment page to unlock Word download
  * Shows PayPal options, then unlocks Word download on confirmation.
  */
@@ -9,7 +9,6 @@ import Link from "next/link";
 import { useLanguage } from "@/context/LanguageContext";
 import { useSearchParams } from "next/navigation";
 import ThemeToggle from "@/components/ThemeToggle";
-import { LanguageToggle } from "@/components/layout/LanguageToggle";
 
 const CONTRACT_LABELS: Record<string, { label: string; labelZh: string }> = {
   "00-Overview-and-Signing-Guide": { label: "Overview & Signing Guide", labelZh: "概览与签署指南" },
@@ -126,7 +125,6 @@ function PaymentPageInner() {
           </span>
           <div className="flex items-center gap-2">
             <ThemeToggle />
-            <LanguageToggle />
           </div>
         </div>
       </header>

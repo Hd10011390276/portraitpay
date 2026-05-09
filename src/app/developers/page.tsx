@@ -1,9 +1,8 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import Link from "next/link";
 import ThemeToggle from "@/components/ThemeToggle";
-import { LanguageToggle } from "@/components/layout/LanguageToggle";
 import { useLanguage } from "@/context/LanguageContext";
 
 const IconCode = ({ className }: { className?: string }) => (
@@ -78,7 +77,6 @@ export default function DevelopersPage() {
           </Link>
           <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
             <ThemeToggle />
-            <LanguageToggle />
           </div>
         </div>
       </header>

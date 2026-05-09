@@ -1,9 +1,8 @@
-"use client";
+﻿"use client";
 
 import React, { useState } from "react";
 import { useLanguage } from "@/context/LanguageContext";
 import ThemeToggle from "@/components/ThemeToggle";
-import { LanguageToggle } from "@/components/layout/LanguageToggle";
 
 interface FormData {
   portraitId:    string;
@@ -127,7 +126,6 @@ export default function PublicReportPage() {
               {t.nav?.getStarted ?? "Get Started"}
             </a>
             <ThemeToggle />
-            <LanguageToggle />
           </div>
         </div>
       </header>

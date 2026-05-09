@@ -1,10 +1,9 @@
-"use client";
+﻿"use client";
 
 import type { Metadata } from "next";
 import Link from "next/link";
 import { useLanguage } from "@/context/LanguageContext";
 import ThemeToggle from "@/components/ThemeToggle";
-import { LanguageToggle } from "@/components/layout/LanguageToggle";
 
 export default function TermsPage() {
   const { t } = useLanguage();
@@ -27,7 +26,6 @@ export default function TermsPage() {
             PortraitPay AI
           </Link>
           <div className="flex items-center gap-3">
-            <LanguageToggle />
             <ThemeToggle />
             <Link
               href="/"

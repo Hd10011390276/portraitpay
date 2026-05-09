@@ -1,4 +1,4 @@
-/**
+﻿/**
  * /faq - FAQ page
  * Uses translations from LanguageContext
  */
@@ -7,7 +7,6 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { useLanguage } from "@/context/LanguageContext";
-import { LanguageToggle } from "@/components/layout/LanguageToggle";
 import ThemeToggle from "@/components/ThemeToggle";
 
 function AccordionItem({ question, answer, isOpen, onToggle }: { question: string; answer: string; isOpen: boolean; onToggle: () => void }) {
@@ -71,7 +70,6 @@ export default function FaqPage() {
             <Link href="/login" className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white text-sm">
               {t.nav?.signIn || "Sign In"}
             </Link>
-            <LanguageToggle />
             <ThemeToggle />
           </div>
         </div>

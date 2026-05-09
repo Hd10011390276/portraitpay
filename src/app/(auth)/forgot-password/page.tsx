@@ -1,9 +1,8 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import Link from "next/link";
 import { useLanguage } from "@/context/LanguageContext";
-import { LanguageToggle } from "@/components/layout/LanguageToggle";
 import ThemeToggle from "@/components/ThemeToggle";
 
 export default function ForgotPasswordPage() {
@@ -50,7 +49,6 @@ export default function ForgotPasswordPage() {
     <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
       {/* Header */}
       <div className="absolute top-4 right-4 flex items-center gap-2">
-        <LanguageToggle />
         <ThemeToggle />
       </div>
 

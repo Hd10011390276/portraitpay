@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 /**
  * /reset-password — Reset password page (after clicking reset link)
  * Receives token from URL ?token=xxx
@@ -8,7 +8,6 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useLanguage } from "@/context/LanguageContext";
 import ThemeToggle from "@/components/ThemeToggle";
-import { LanguageToggle } from "@/components/layout/LanguageToggle";
 
 function ResetPasswordContent() {
   const router = useRouter();
@@ -143,7 +142,6 @@ function ResetPasswordContent() {
           <span className="text-xl font-bold text-gray-900 dark:text-white">PortraitPay AI</span>
         </Link>
         <div className="flex items-center gap-3">
-          <LanguageToggle />
           <ThemeToggle />
         </div>
       </div>

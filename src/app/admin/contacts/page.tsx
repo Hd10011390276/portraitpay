@@ -1,4 +1,4 @@
-/**
+﻿/**
  * /admin/contacts — 管理员联系表单管理后台
  */
 "use client";
@@ -6,7 +6,6 @@
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useLanguage } from "@/context/LanguageContext";
-import { LanguageToggle } from "@/components/layout/LanguageToggle";
 import ThemeToggle from "@/components/ThemeToggle";
 
 interface ContactSubmission {
@@ -183,7 +182,6 @@ export default function AdminContactsPage() {
             {tc.totalRecords} {meta?.total ?? 0} {tc.records}
           </span>
           <div className="flex items-center gap-2 ml-4">
-            <LanguageToggle />
             <ThemeToggle />
           </div>
         </div>

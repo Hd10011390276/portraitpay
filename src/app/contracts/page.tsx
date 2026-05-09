@@ -1,4 +1,4 @@
-/**
+﻿/**
  * /contracts — Contract Templates Download Center
  * Dedicated page for downloading contract PDF (free) and Word (paid) files.
  */
@@ -8,7 +8,6 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { useLanguage } from "@/context/LanguageContext";
 import ThemeToggle from "@/components/ThemeToggle";
-import { LanguageToggle } from "@/components/layout/LanguageToggle";
 
 const CONTRACT_FILES = [
   {
@@ -117,7 +116,6 @@ export default function ContractsPage() {
           </Link>
           <div className="flex items-center gap-2">
             <ThemeToggle />
-            <LanguageToggle />
           </div>
         </div>
       </header>

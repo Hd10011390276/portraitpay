@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 /**
  * 企业授权申请页面
  * /enterprise/authorization
@@ -7,7 +7,6 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useLanguage } from "@/context/LanguageContext";
-import { LanguageToggle } from "@/components/layout/LanguageToggle";
 import ThemeToggle from "@/components/ThemeToggle";
 import Link from "next/link";
 
@@ -140,7 +139,6 @@ export default function EnterpriseAuthorizationPage() {
             <img src="/logo-dark.png" alt="Logo" className="logo-dark" style={{ width: "32px", height: "32px", objectFit: "contain", borderRadius: "6px" }} />
           </Link>
           <div className="flex items-center gap-2">
-            <LanguageToggle />
             <ThemeToggle />
           </div>
         </div>

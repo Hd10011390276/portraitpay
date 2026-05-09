@@ -1,9 +1,8 @@
-"use client";
+﻿"use client";
 
 import React, { useState } from "react";
 import Link from "next/link";
 import ThemeToggle from "@/components/ThemeToggle";
-import { LanguageToggle } from "@/components/layout/LanguageToggle";
 import { useLanguage } from "@/context/LanguageContext";
 
 interface FormData {
@@ -115,7 +114,6 @@ export default function EnterprisePage() {
             <span className="text-2xl font-bold text-blue-600 dark:text-blue-400">PortraitPay AI</span>
           </Link>
           <div className="flex items-center gap-4">
-            <LanguageToggle />
             <ThemeToggle />
             <Link href="/login" className="text-sm text-gray-600 dark:text-gray-300 hover:text-blue-600">
               {t.enterpriseContact.signIn}

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 /**
  * 管理员 - 律师楼入驻管理
  * /admin/lawyers
@@ -7,7 +7,6 @@
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useLanguage } from "@/context/LanguageContext";
-import { LanguageToggle } from "@/components/layout/LanguageToggle";
 import ThemeToggle from "@/components/ThemeToggle";
 
 interface LawyerRegistration {
@@ -216,7 +215,6 @@ export default function AdminLawyersPage() {
             {tc.totalRecords} {total} {tc.records}
           </span>
           <div className="flex items-center gap-2 ml-4">
-            <LanguageToggle />
             <ThemeToggle />
           </div>
         </div>

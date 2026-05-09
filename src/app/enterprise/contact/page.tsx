@@ -1,8 +1,7 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import Link from "next/link";
-import { LanguageToggle } from "@/components/layout/LanguageToggle";
 import ThemeToggle from "@/components/ThemeToggle";
 import { useLanguage } from "@/context/LanguageContext";
 
@@ -163,7 +162,6 @@ export default function EnterpriseContactPage() {
           </Link>
           <div className="flex items-center gap-2">
             <ThemeToggle />
-            <LanguageToggle />
           </div>
         </div>
       </header>

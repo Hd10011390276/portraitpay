@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 /**
  * /ip-register — AI IP Copyright Registration
  * Register AI-generated characters/content as IP assets with blockchain certification
@@ -8,7 +8,6 @@ import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useLanguage } from "@/context/LanguageContext";
-import { LanguageToggle } from "@/components/layout/LanguageToggle";
 import ThemeToggle from "@/components/ThemeToggle";
 
 // ── Types ──────────────────────────────────────────────────────────
@@ -561,7 +560,6 @@ export default function IPRegisterPage() {
               ← {ipRegT.backToPortraits}
             </Link>
             <ThemeToggle />
-            <LanguageToggle />
           </div>
         </div>
       </header>

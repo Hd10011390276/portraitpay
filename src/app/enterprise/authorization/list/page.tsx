@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 /**
  * 企业授权列表页
  * /enterprise/authorization/list
@@ -7,7 +7,6 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useLanguage } from "@/context/LanguageContext";
-import { LanguageToggle } from "@/components/layout/LanguageToggle";
 import ThemeToggle from "@/components/ThemeToggle";
 
 const STATUS_LABELS_EN: Record<string, { label: string; color: string }> = {
@@ -104,7 +103,6 @@ export default function AuthorizationListPage() {
             </Link>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-            <LanguageToggle />
             <ThemeToggle />
           </div>
         </div>

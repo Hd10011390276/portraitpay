@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import React, { useState, useEffect, useCallback, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -7,7 +7,6 @@ import PortraitCard from "@/components/portrait/PortraitCard";
 import { useLanguage } from "@/context/LanguageContext";
 import { SkeletonGrid } from "@/components/ui/Skeleton";
 import ThemeToggle from "@/components/ThemeToggle";
-import { LanguageToggle } from "@/components/layout/LanguageToggle";
 
 type PortraitStatus = "DRAFT" | "UNDER_REVIEW" | "ACTIVE" | "SUSPENDED" | "ARCHIVED";
 
@@ -155,7 +154,6 @@ function SearchContent() {
 
           {/* Right side */}
           <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-            <LanguageToggle />
             <ThemeToggle />
             <Link href="/login" className="btn btn-primary btn-sm">
               {t.common?.signIn || t.nav?.signIn || "Sign In"}

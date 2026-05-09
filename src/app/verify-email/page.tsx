@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 /**
  * /verify-email — Email verification page
  * Receives code + userId from URL ?code=XXXXXX&userId=xxx
@@ -8,7 +8,6 @@ import { useState, Suspense, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import ThemeToggle from "@/components/ThemeToggle";
-import { LanguageToggle } from "@/components/layout/LanguageToggle";
 
 function VerifyEmailContent() {
   const router = useRouter();
@@ -99,7 +98,6 @@ function VerifyEmailContent() {
             <span className="text-xl font-bold text-gray-900 dark:text-white">PortraitPay AI</span>
           </Link>
           <div className="flex items-center gap-3">
-            <LanguageToggle />
             <ThemeToggle />
           </div>
         </div>
@@ -136,7 +134,6 @@ function VerifyEmailContent() {
             <span className="text-xl font-bold text-gray-900 dark:text-white">PortraitPay AI</span>
           </Link>
           <div className="flex items-center gap-3">
-            <LanguageToggle />
             <ThemeToggle />
           </div>
         </div>
@@ -167,7 +164,6 @@ function VerifyEmailContent() {
           <span className="text-xl font-bold text-gray-900 dark:text-white">PortraitPay AI</span>
         </Link>
         <div className="flex items-center gap-3">
-          <LanguageToggle />
           <ThemeToggle />
         </div>
       </div>

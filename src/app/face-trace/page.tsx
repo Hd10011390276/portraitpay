@@ -1,11 +1,10 @@
-"use client";
+﻿"use client";
 
 import React, { useState } from "react";
 import FaceTraceUploader from "@/components/face-trace/FaceTraceUploader";
 import FaceTraceResults from "@/components/face-trace/FaceTraceResults";
 import type { TraceResult, TraceStage } from "@/components/face-trace/FaceTraceUploader";
 import { useLanguage } from "@/context/LanguageContext";
-import { LanguageToggle } from "@/components/layout/LanguageToggle";
 import ThemeToggle from "@/components/ThemeToggle";
 
 export default function FaceTracePage() {
@@ -40,7 +39,6 @@ export default function FaceTracePage() {
           <h1 className="font-semibold text-gray-800 text-sm">{t.faceTrace.title}</h1>
           <div className="flex items-center gap-2">
             <ThemeToggle />
-            <LanguageToggle />
           </div>
         </div>
       </header>
