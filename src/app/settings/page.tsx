@@ -9,12 +9,17 @@ import { useLanguage } from "@/context/LanguageContext";
 function SettingsContent() {
   const { t } = useLanguage();
   const { toast } = useToast();
-  const [user, setUser] = useState<{ id: string; email: string; name: string | null; role?: string } | null>(null);
+  const [user, setUser] = useState<{ id: string; email: string; name: string | null; role?: string; mediaKitUrl?: string | null; mediaKitShareConfirmed?: boolean; mediaKitReviewOnlyAcknowledged?: boolean; mediaKitVisibility?: string } | null>(null);
   const [checking, setChecking] = useState(true);
   const [saving, setSaving] = useState(false);
   const [emailNotifications, setEmailNotifications] = useState(true);
   const [infringementAlerts, setInfringementAlerts] = useState(true);
   const [marketingEmails, setMarketingEmails] = useState(false);
+  // Actor Media Kit state
+  const [mediaKitUrl, setMediaKitUrl] = useState("");
+  const [mediaKitShareConfirmed, setMediaKitShareConfirmed] = useState(false);
+  const [mediaKitReviewOnlyAcknowledged, setMediaKitReviewOnlyAcknowledged] = useState(false);
+  const [mediaKitVisibility, setMediaKitVisibility] = useState("PRIVATE");
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -23,7 +28,13 @@ function SettingsContent() {
         if (!res.ok) { window.location.href = "/login"; return; }
         const json = await res.json();
         const u = json.data?.user || json.user;
-        setUser(u ? { id: u.id, email: u.email, name: u.name, role: u.role } : null);
+        setUser(u ? { id: u.id, email: u.email, name: u.name, role: u.role, mediaKitUrl: u.mediaKitUrl, mediaKitShareConfirmed: u.mediaKitShareConfirmed, mediaKitReviewOnlyAcknowledged: u.mediaKitReviewOnlyAcknowledged, mediaKitVisibility: u.mediaKitVisibility } : null);
+        if (u) {
+          setMediaKitUrl(u.mediaKitUrl || "");
+          setMediaKitShareConfirmed(u.mediaKitShareConfirmed || false);
+          setMediaKitReviewOnlyAcknowledged(u.mediaKitReviewOnlyAcknowledged || false);
+          setMediaKitVisibility(u.mediaKitVisibility || "PRIVATE");
+        }
       } catch { window.location.href = "/login"; }
       finally { setChecking(false); }
     };
@@ -33,9 +44,31 @@ function SettingsContent() {
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
-    await new Promise((r) => setTimeout(r, 800));
-    toast({ type: "success", title: t.settings.settingsSaved });
-    setSaving(false);
+    try {
+      const payload: Record<string, unknown> = {};
+      if (user?.role === "ACTOR") {
+        payload.mediaKitUrl = mediaKitUrl;
+        payload.mediaKitShareConfirmed = mediaKitShareConfirmed;
+        payload.mediaKitReviewOnlyAcknowledged = mediaKitReviewOnlyAcknowledged;
+        payload.mediaKitVisibility = mediaKitVisibility;
+      }
+      const res = await fetch("/api/user", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify(payload),
+      });
+      const json = await res.json();
+      if (json.success) {
+        toast({ type: "success", title: t.settings.settingsSaved });
+      } else {
+        toast({ type: "error", title: json.error || t.settings.settingsSavedError });
+      }
+    } catch {
+      toast({ type: "error", title: t.settings.settingsSavedError });
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleDeleteAccount = () => {
@@ -137,6 +170,82 @@ function SettingsContent() {
               </div>
             </div>
           </div>
+
+          {/* Actor Media Kit — only for ACTOR role */}
+          {user?.role === "ACTOR" && (
+            <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-2xl p-6">
+              <h2 className="text-base font-semibold text-blue-900 dark:text-blue-200 mb-1">
+                {t.register.mediaKitTitle || "Media Kit / Casting Link"}
+              </h2>
+              <p className="text-xs text-blue-700 dark:text-blue-300 mb-5">
+                {t.register.mediaKitHelp || "Optional. Link to your headshots, demo reel, or casting profile for creator review."}
+              </p>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-blue-800 dark:text-blue-200 mb-1.5">
+                    {t.register.mediaKitUrlLabel || "Media Kit URL"}
+                  </label>
+                  <input
+                    type="url"
+                    inputMode="url"
+                    placeholder={t.register.mediaKitPlaceholder || "https://drive.google.com/..."}
+                    value={mediaKitUrl}
+                    onChange={(e) => setMediaKitUrl(e.target.value)}
+                    className="w-full px-4 py-2.5 border border-blue-200 dark:border-blue-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+                  />
+                </div>
+                <div className="space-y-3">
+                  <label className="flex items-start gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={mediaKitShareConfirmed}
+                      onChange={(e) => setMediaKitShareConfirmed(e.target.checked)}
+                      className="mt-0.5 w-4 h-4 rounded border-blue-300 text-blue-600 focus:ring-blue-500"
+                    />
+                    <span className="text-xs text-blue-800 dark:text-blue-200 leading-relaxed">
+                      {t.register.mediaKitShareConfirm || "I confirm this link is provided by me and I have the right to share it."}
+                    </span>
+                  </label>
+                  <label className="flex items-start gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={mediaKitReviewOnlyAcknowledged}
+                      onChange={(e) => setMediaKitReviewOnlyAcknowledged(e.target.checked)}
+                      className="mt-0.5 w-4 h-4 rounded border-blue-300 text-blue-600 focus:ring-blue-500"
+                    />
+                    <span className="text-xs text-blue-800 dark:text-blue-200 leading-relaxed">
+                      {t.register.mediaKitReviewOnly || "I understand this link is for review purposes only and does not grant AI likeness usage rights."}
+                    </span>
+                  </label>
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-blue-800 dark:text-blue-200 mb-2">
+                    {t.register.mediaKitVisibility || "Media Kit Visibility"}
+                  </label>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                    {[
+                      { value: "PRIVATE", label: t.register.mediaKitVisibilityPrivate || "Hidden, share by request only" },
+                      { value: "VERIFIED_CREATORS", label: t.register.mediaKitVisibilityVerified || "Visible to verified creators only" },
+                      { value: "PUBLIC", label: t.register.mediaKitVisibilityPublic || "Public" },
+                    ].map((opt) => (
+                      <button
+                        key={opt.value}
+                        type="button"
+                        onClick={() => setMediaKitVisibility(opt.value)}
+                        className={`px-3 py-2 rounded-lg border text-xs font-medium text-left transition-colors ${
+                          mediaKitVisibility === opt.value
+                            ? "border-blue-500 bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-200"
+                            : "border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/30"
+                        }`}
+                      >
+                        {opt.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Admin Settings - only for ADMIN role */}
           {user?.role === "ADMIN" && (

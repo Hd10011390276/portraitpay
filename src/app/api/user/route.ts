@@ -16,6 +16,10 @@ const UpdateUserSchema = z.object({
   name: z.string().min(1).max(100).optional(),
   image: z.string().url().optional(),
   walletAddress: z.string().regex(/^0x[a-fA-F0-9]{40}$/, "Invalid Ethereum address").optional(),
+  mediaKitUrl: z.string().url("Invalid URL").optional().or(z.literal("")),
+  mediaKitShareConfirmed: z.boolean().optional(),
+  mediaKitReviewOnlyAcknowledged: z.boolean().optional(),
+  mediaKitVisibility: z.enum(["PUBLIC", "VERIFIED_CREATORS", "PRIVATE"]).optional(),
 });
 
 const SENSITIVE_FIELDS = ["passwordHash", "otpCode", "otpExpires"];
@@ -35,6 +39,8 @@ const USER_PUBLIC_SELECT = {
   emailVerified: true,
   createdAt: true,
   updatedAt: true,
+  mediaKitUrl: true,
+  mediaKitVisibility: true,
 };
 
 export async function GET(request: NextRequest) {

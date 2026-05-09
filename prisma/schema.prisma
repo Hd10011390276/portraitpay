@@ -36,6 +36,13 @@ model User {
   displayName String?
   bio         String?
 
+  // Actor Media Kit — external URL for headshots, demo reel, casting profile
+  mediaKitUrl                   String?
+  mediaKitShareConfirmed         Boolean  @default(false)
+  mediaKitReviewOnlyAcknowledged Boolean  @default(false)
+  // Visibility: PUBLIC, VERIFIED_CREATORS, PRIVATE
+  mediaKitVisibility            String   @default("PRIVATE")
+
   // OTP fields
   otpCode    String?
   otpExpires DateTime?

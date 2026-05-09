@@ -140,7 +140,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const { email, password, name, role, phone, allowLicensing, allowedScopes, prohibitedContent } = parsed.data;
+    const { email, password, name, role, phone, allowLicensing, allowedScopes, prohibitedContent, mediaKitUrl, mediaKitShareConfirmed, mediaKitReviewOnlyAcknowledged, mediaKitVisibility } = parsed.data;
 
     // Check if user exists
     const existing = await prisma.user.findUnique({ where: { email } });
@@ -172,6 +172,10 @@ export async function POST(req: NextRequest) {
         passwordHash: hashedPassword,
         role: role as UserRole,
         walletAddress: null, // User binds their own wallet on-demand, not at registration
+        mediaKitUrl: (mediaKitUrl && mediaKitUrl.trim() !== "") ? mediaKitUrl.trim() : null,
+        mediaKitShareConfirmed: mediaKitShareConfirmed ?? false,
+        mediaKitReviewOnlyAcknowledged: mediaKitReviewOnlyAcknowledged ?? false,
+        mediaKitVisibility: mediaKitVisibility ?? "PRIVATE",
         portraitSettings: {
           create: {
             allowLicensing: allowLicensing ?? true,

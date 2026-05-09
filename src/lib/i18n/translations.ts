@@ -956,6 +956,19 @@ export const translations = {
       systemSettings: "系统设置",
       systemSettingsDesc: "配置站点名称、联系邮箱，维护模式",
       systemConfiguration: "系统配置",
+      // Actor Media Kit
+      actorMediaKit: "媒体资料包",
+      actorMediaKitDesc: "你的头像、视频片段或选角资料的链接，仅供创作者审核使用",
+      mediaKitUrl: "媒体资料包链接",
+      mediaKitUrlPlaceholder: "https://drive.google.com/...",
+      mediaKitShareConfirm: "我确认此链接由我提供并有权分享",
+      mediaKitReviewOnly: "我理解此链接仅供审核用途，不授予AI肖像使用权",
+      mediaKitVisibility: "可见性",
+      mediaKitVisibilityPrivate: "隐藏，仅按请求分享",
+      mediaKitVisibilityVerified: "仅对已验证创作者可见",
+      mediaKitVisibilityPublic: "公开",
+      mediaKitSaveSuccess: "媒体资料包保存成功",
+      mediaKitSaveError: "保存媒体资料包失败，请重试",
     },
     // Admin lawyers
     adminLawyers: {
@@ -3144,6 +3157,19 @@ export const translations = {
       systemSettings: "System Settings",
       systemSettingsDesc: "Configure site name, contact email, maintenance mode",
       systemConfiguration: "System Config",
+      // Actor Media Kit
+      actorMediaKit: "Media Kit",
+      actorMediaKitDesc: "Link to your headshots, demo reel, or casting profile for creator review",
+      mediaKitUrl: "Media Kit URL",
+      mediaKitUrlPlaceholder: "https://drive.google.com/...",
+      mediaKitShareConfirm: "I confirm this link is provided by me and I have the right to share it.",
+      mediaKitReviewOnly: "I understand this link is for review purposes only and does not grant AI likeness usage rights.",
+      mediaKitVisibility: "Visibility",
+      mediaKitVisibilityPrivate: "Hidden, share by request only",
+      mediaKitVisibilityVerified: "Visible to verified creators only",
+      mediaKitVisibilityPublic: "Public",
+      mediaKitSaveSuccess: "Media Kit saved successfully",
+      mediaKitSaveError: "Failed to save Media Kit, please try again",
     },
     // Admin lawyers
     adminLawyers: {

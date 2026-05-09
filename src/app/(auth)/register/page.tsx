@@ -26,6 +26,11 @@ export default function RegisterPage() {
   const [allowLicensing, setAllowLicensing] = useState(false);
   const [allowedScopes, setAllowedScopes] = useState<string[]>([]);
   const [prohibitedContent, setProhibitedContent] = useState<string[]>([]);
+  // Actor Media Kit state
+  const [mediaKitUrl, setMediaKitUrl] = useState("");
+  const [mediaKitShareConfirmed, setMediaKitShareConfirmed] = useState(false);
+  const [mediaKitReviewOnlyAcknowledged, setMediaKitReviewOnlyAcknowledged] = useState(false);
+  const [mediaKitVisibility, setMediaKitVisibility] = useState("PRIVATE");
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const set = (field: keyof typeof form) => (
@@ -56,6 +61,14 @@ export default function RegisterPage() {
     else if (currentForm.password !== currentForm.confirmPassword) errs.confirmPassword = t.register.errors.passwordsMismatch;
     if (!currentForm.role) errs.role = t.register.errors.selectRole;
 
+    // Media Kit validation for ACTOR role
+    if (currentForm.role === "ACTOR" && mediaKitUrl.trim() !== "") {
+      try { new URL(mediaKitUrl); }
+      catch { errs.mediaKitUrl = t.register.errors.invalidMediaKitUrl || "Invalid URL format"; }
+      if (!mediaKitShareConfirmed) errs.mediaKitShareConfirmed = t.register.errors.mediaKitConfirmRequired || "Please confirm your rights to share this link";
+      if (!mediaKitReviewOnlyAcknowledged) errs.mediaKitReviewOnlyAcknowledged = t.register.errors.mediaKitReviewOnlyRequired || "Please acknowledge the review-only purpose";
+    }
+
     // Always clear all errors first, then set only the new ones
     setErrors(errs);
     return Object.keys(errs).length === 0;
@@ -82,6 +95,10 @@ export default function RegisterPage() {
           allowLicensing,
           allowedScopes,
           prohibitedContent,
+          mediaKitUrl: form.role === "ACTOR" ? mediaKitUrl : undefined,
+          mediaKitShareConfirmed: form.role === "ACTOR" ? mediaKitShareConfirmed : false,
+          mediaKitReviewOnlyAcknowledged: form.role === "ACTOR" ? mediaKitReviewOnlyAcknowledged : false,
+          mediaKitVisibility: form.role === "ACTOR" ? mediaKitVisibility : "PRIVATE",
         }),
       });
 
@@ -198,6 +215,96 @@ export default function RegisterPage() {
               onChange={(val) => { setForm((prev) => ({ ...prev, role: val })); setErrors((prev) => ({ ...prev, role: "" })); }}
               error={errors.role}
             />
+
+            {/* Actor Media Kit — only shown for ACTOR role */}
+            {form.role === "ACTOR" && (
+              <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-5 space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-blue-900 dark:text-blue-200 mb-1">
+                    {t.register.mediaKitTitle || "Media Kit / Casting Photos Link"}
+                  </label>
+                  <input
+                    type="url"
+                    inputMode="url"
+                    placeholder={t.register.mediaKitPlaceholder || "https://drive.google.com/..."}
+                    value={mediaKitUrl}
+                    onChange={(e) => {
+                      setMediaKitUrl(e.target.value);
+                      setErrors((prev) => ({ ...prev, mediaKitUrl: "" }));
+                    }}
+                    className={`w-full px-3 py-2 border rounded-lg text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-300 dark:focus:ring-blue-700 ${
+                      errors.mediaKitUrl ? "border-red-400" : "border-blue-200 dark:border-blue-700"
+                    }`}
+                  />
+                  {errors.mediaKitUrl && <p className="mt-1 text-xs text-red-500">{errors.mediaKitUrl}</p>}
+                  <p className="mt-1.5 text-xs text-blue-700 dark:text-blue-300">
+                    {t.register.mediaKitHelp || "Optional. Add a link to your headshots, three-view photos, demo reel, or casting profile."}
+                  </p>
+                </div>
+
+                {/* Confirmation checkboxes */}
+                <div className="space-y-3 pl-1">
+                  <label className="flex items-start gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={mediaKitShareConfirmed}
+                      onChange={(e) => {
+                        setMediaKitShareConfirmed(e.target.checked);
+                        setErrors((prev) => ({ ...prev, mediaKitShareConfirmed: "" }));
+                      }}
+                      className="mt-0.5 w-4 h-4 rounded border-blue-300 text-blue-600 focus:ring-blue-500"
+                    />
+                    <span className="text-xs text-blue-800 dark:text-blue-200 leading-relaxed">
+                      {t.register.mediaKitShareConfirm || "I confirm this link is provided by me and I have the right to share it."}
+                    </span>
+                  </label>
+                  <label className="flex items-start gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={mediaKitReviewOnlyAcknowledged}
+                      onChange={(e) => {
+                        setMediaKitReviewOnlyAcknowledged(e.target.checked);
+                        setErrors((prev) => ({ ...prev, mediaKitReviewOnlyAcknowledged: "" }));
+                      }}
+                      className="mt-0.5 w-4 h-4 rounded border-blue-300 text-blue-600 focus:ring-blue-500"
+                    />
+                    <span className="text-xs text-blue-800 dark:text-blue-200 leading-relaxed">
+                      {t.register.mediaKitReviewOnly || "I understand this link is for review purposes only and does not grant AI likeness usage rights."}
+                    </span>
+                  </label>
+                  {errors.mediaKitShareConfirmed && (
+                    <p className="text-xs text-red-500">{errors.mediaKitShareConfirmed}</p>
+                  )}
+                </div>
+
+                {/* Visibility selector */}
+                <div>
+                  <label className="block text-xs font-medium text-blue-800 dark:text-blue-200 mb-2">
+                    {t.register.mediaKitVisibility || "Media Kit Visibility"}
+                  </label>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                    {[
+                      { value: "PRIVATE", label: t.register.mediaKitVisibilityPrivate || "Hidden, share by request only" },
+                      { value: "VERIFIED_CREATORS", label: t.register.mediaKitVisibilityVerified || "Visible to verified creators only" },
+                      { value: "PUBLIC", label: t.register.mediaKitVisibilityPublic || "Public" },
+                    ].map((opt) => (
+                      <button
+                        key={opt.value}
+                        type="button"
+                        onClick={() => setMediaKitVisibility(opt.value)}
+                        className={`px-3 py-2 rounded-lg border text-xs font-medium text-left transition-colors ${
+                          mediaKitVisibility === opt.value
+                            ? "border-blue-500 bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-200"
+                            : "border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/30"
+                        }`}
+                      >
+                        {opt.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
 
             <UsagePreferences
               allowLicensing={allowLicensing}
