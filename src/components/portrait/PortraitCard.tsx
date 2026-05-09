@@ -20,12 +20,12 @@ interface Portrait {
   isPublic: boolean;
 }
 
-const STATUS_CONFIG: Record<PortraitStatus, { label: string; labelZh: string; color: string; bg: string; darkBg: string }> = {
-  DRAFT:        { label: "Draft",        labelZh: "草稿",       color: "text-gray-600",   bg: "bg-gray-100",       darkBg: "dark:bg-gray-800 dark:text-gray-400" },
-  UNDER_REVIEW: { label: "Under Review", labelZh: "审核中",     color: "text-yellow-700", bg: "bg-yellow-50",      darkBg: "dark:bg-yellow-900/30 dark:text-yellow-400" },
-  ACTIVE:       { label: "Active",       labelZh: "已认证",     color: "text-green-700",  bg: "bg-green-50",       darkBg: "dark:bg-green-900/30 dark:text-green-400" },
-  SUSPENDED:    { label: "Suspended",     labelZh: "已暂停",     color: "text-red-700",    bg: "bg-red-50",         darkBg: "dark:bg-red-900/30 dark:text-red-400" },
-  ARCHIVED:     { label: "Archived",     labelZh: "已归档",     color: "text-gray-400",   bg: "bg-gray-50",        darkBg: "dark:bg-gray-800 dark:text-gray-500" },
+const STATUS_CONFIG: Record<PortraitStatus, { label: string; color: string; bg: string; darkBg: string }> = {
+  DRAFT:        { label: "Draft",        color: "text-gray-600",   bg: "bg-gray-100",       darkBg: "dark:bg-gray-800 dark:text-gray-400" },
+  UNDER_REVIEW: { label: "Under Review", color: "text-yellow-700", bg: "bg-yellow-50",      darkBg: "dark:bg-yellow-900/30 dark:text-yellow-400" },
+  ACTIVE:       { label: "Active",       color: "text-green-700",  bg: "bg-green-50",       darkBg: "dark:bg-green-900/30 dark:text-green-400" },
+  SUSPENDED:    { label: "Suspended",     color: "text-red-700",    bg: "bg-red-50",         darkBg: "dark:bg-red-900/30 dark:text-red-400" },
+  ARCHIVED:     { label: "Archived",     color: "text-gray-400",   bg: "bg-gray-50",        darkBg: "dark:bg-gray-800 dark:text-gray-500" },
 };
 
 interface PortraitCardProps {
@@ -62,7 +62,7 @@ export default function PortraitCard({ portrait, onView, onCertify, onDelete }: 
         {/* Status badge */}
         <div className="absolute top-2 right-2">
           <span className={`px-2 py-0.5 text-xs font-semibold rounded-full ${cfg.bg} ${cfg.color} ${cfg.darkBg}`}>
-            {cfg.labelZh}
+            {cfg.label}
           </span>
         </div>
 
@@ -70,7 +70,7 @@ export default function PortraitCard({ portrait, onView, onCertify, onDelete }: 
         {portrait.blockchainTxHash && (
           <div className="absolute top-2 left-2">
             <span className="px-2 py-0.5 text-xs font-semibold rounded-full bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800">
-              🔗 已上链
+              🔗 On-chain
             </span>
           </div>
         )}
@@ -81,7 +81,7 @@ export default function PortraitCard({ portrait, onView, onCertify, onDelete }: 
         <div>
           <h3 className="font-semibold text-gray-900 dark:text-white truncate">{portrait.title}</h3>
           <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
-            {new Date(portrait.createdAt).toLocaleDateString("zh-CN")}
+            {new Date(portrait.createdAt).toLocaleDateString("en-US")}
           </p>
         </div>
 
@@ -116,7 +116,7 @@ export default function PortraitCard({ portrait, onView, onCertify, onDelete }: 
             onClick={() => onView(portrait.id)}
             className="flex-1 px-3 py-1.5 text-xs font-medium bg-gray-900 dark:bg-gray-700 text-white dark:text-gray-200 rounded-lg hover:bg-gray-800 dark:hover:bg-gray-600 transition-colors"
           >
-            查看
+            View
           </button>
 
           {portrait.status === "DRAFT" && portrait.originalImageUrl && onCertify && (
@@ -124,16 +124,16 @@ export default function PortraitCard({ portrait, onView, onCertify, onDelete }: 
               onClick={() => onCertify(portrait.id)}
               className="flex-1 px-3 py-1.5 text-xs font-medium bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
             >
-              🔗 认证
+              🔗 Certify
             </button>
           )}
 
           {portrait.status !== "ARCHIVED" && onDelete && (
             <button
-              onClick={() => { if (confirm("归档此肖像?")) onDelete(portrait.id); }}
+              onClick={() => { if (confirm("Archive this portrait?")) onDelete(portrait.id); }}
               className="px-3 py-1.5 text-xs font-medium text-red-600 dark:text-red-400 border border-red-200 dark:border-red-800 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
             >
-              删除
+              Delete
             </button>
           )}
         </div>

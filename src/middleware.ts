@@ -56,7 +56,7 @@ export async function middleware(req: NextRequest) {
   if (!token || !(await verifyToken(token))) {
     // API routes require authentication - return 401
     if (pathname.startsWith("/api/")) {
-      return NextResponse.json({ success: false, message: "未授权，请先登录" }, { status: 401 });
+      return NextResponse.json({ success: false, message: "Unauthorized — please sign in first" }, { status: 401 });
     }
     const loginUrl = new URL("/login", req.url);
     loginUrl.searchParams.set("redirect", pathname);

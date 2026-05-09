@@ -388,7 +388,7 @@ function WithdrawPageContent() {
 
 function LoadingFallback() {
   return (
-    <DashboardShell title="提现" subtitle="PortraitPay AI · 收益提现申请">
+    <DashboardShell title="Withdraw" subtitle="PortraitPay AI · Withdraw Earnings">
       <div className="animate-pulse space-y-4">
         <div className="h-32 bg-gray-200 dark:bg-gray-800 rounded-2xl" />
         <div className="h-48 bg-gray-200 dark:bg-gray-800 rounded-xl" />

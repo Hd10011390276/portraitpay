@@ -39,11 +39,11 @@ export default function ContactPage() {
 
   function validate(): boolean {
     const e: FieldError = {};
-    if (!form.name.trim()) e.name = t.contact.validation.nameRequired || "请填写姓名";
-    if (!form.email.trim()) e.email = t.contact.validation.emailRequired || "请填写邮箱";
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) e.email = t.contact.validation.emailInvalid || "邮箱格式不正确";
-    if (!form.message.trim()) e.message = t.contact.validation.messageRequired || "请填写留言内容";
-    else if (form.message.trim().length < 10) e.message = t.contact.validation.messageTooShort || "留言至少10个字符";
+    if (!form.name.trim()) e.name = t.contact.validation.nameRequired;
+    if (!form.email.trim()) e.email = t.contact.validation.emailRequired;
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) e.email = t.contact.validation.emailInvalid;
+    if (!form.message.trim()) e.message = t.contact.validation.messageRequired;
+    else if (form.message.trim().length < 10) e.message = t.contact.validation.messageTooShort;
     setErrors(e);
     return Object.keys(e).length === 0;
   }

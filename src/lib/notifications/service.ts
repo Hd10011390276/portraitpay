@@ -14,63 +14,63 @@ import type {
 const TEMPLATES: Record<string, { title: string; body: string }> = {
   // Authorization
   AUTH_APPLIED: {
-    title: "新授权申请",
-    body: "有企业向您申请肖像授权，请在24小时内审核。",
+    title: "New Authorization Request",
+    body: "An enterprise has requested to license your portrait. Please review within 24 hours.",
   },
   AUTH_APPROVED: {
-    title: "授权已通过",
-    body: "您的肖像授权申请已通过，授权协议已生成。",
+    title: "Authorization Approved",
+    body: "Your portrait authorization has been approved. The licensing agreement has been generated.",
   },
   AUTH_REJECTED: {
-    title: "授权未通过",
-    body: "抱歉，您的授权申请未通过，请查看拒绝原因。",
+    title: "Authorization Rejected",
+    body: "Unfortunately, your authorization request was not approved. Please check the rejection reason.",
   },
   AUTH_REVOKED: {
-    title: "授权已撤回",
-    body: "肖像所有者撤回了授权许可。",
+    title: "Authorization Revoked",
+    body: "The portrait owner has revoked your licensing permission.",
   },
   // Earnings
   EARNING_RECEIVED: {
-    title: "收益到账",
-    body: "您有一笔新的收益到账，请前往收益中心查看。",
+    title: "Earnings Received",
+    body: "You have received a new payment. Check your earnings dashboard for details.",
   },
   SETTLEMENT_GENERATED: {
-    title: "月度结算单已生成",
-    body: "您{month}月的收益结算单已生成，请查看明细。",
+    title: "Monthly Settlement Generated",
+    body: "Your {month} earnings settlement has been generated. Check the statement for details.",
   },
   WITHDRAWAL_APPROVED: {
-    title: "提现申请已通过",
-    body: "您的提现申请已通过，款项将在1-3个工作日内到账。",
+    title: "Withdrawal Approved",
+    body: "Your withdrawal request has been approved. Funds will arrive in 1–3 business days.",
   },
   WITHDRAWAL_REJECTED: {
-    title: "提现申请被驳回",
-    body: "您的提现申请被驳回，原因：{reason}。",
+    title: "Withdrawal Rejected",
+    body: "Your withdrawal request was rejected. Reason: {reason}.",
   },
   // Infringement
   INFRINGEMENT_ALERT: {
-    title: "疑似侵权发现",
-    body: "系统监测到疑似侵犯您肖像权的内容，请尽快确认。",
+    title: "Potential Infringement Detected",
+    body: "System detected content that may infringe on your portrait rights. Please verify promptly.",
   },
   INFRINGEMENT_CONFIRMED: {
-    title: "侵权已确认",
-    body: "您确认的侵权内容，平台已开始固化证据并协助维权。",
+    title: "Infringement Confirmed",
+    body: "Your confirmed infringement case — the platform has begun evidence preservation and enforcement assistance.",
   },
   // KYC
   KYC_APPROVED: {
-    title: "KYC认证通过",
-    body: "恭喜！您的身份认证已通过，现在可以使用全部功能。",
+    title: "KYC Approved",
+    body: "Congratulations! Your identity verification has been approved. You now have full access to all features.",
   },
   KYC_REJECTED: {
-    title: "KYC认证失败",
-    body: "您的身份认证未通过，原因：{reason}。请重新提交。",
+    title: "KYC Failed",
+    body: "Your identity verification was not approved. Reason: {reason}. Please resubmit.",
   },
   KYC_EXPIRED: {
-    title: "KYC认证即将过期",
-    body: "您的身份认证即将过期，请及时重新认证以继续使用服务。",
+    title: "KYC Expiring Soon",
+    body: "Your identity verification is about to expire. Please re-verify to continue using the service.",
   },
   // System
   SYSTEM_ANNOUNCEMENT: {
-    title: "系统公告",
+    title: "System Announcement",
     body: "{message}",
   },
 };

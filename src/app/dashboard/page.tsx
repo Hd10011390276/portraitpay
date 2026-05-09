@@ -31,6 +31,8 @@ function DashboardContent({ user }: { user: User }) {
   const [recentPortraits, setRecentPortraits] = useState<any[]>([]);
   const [recentTransactions, setRecentTransactions] = useState<any[]>([]);
   const [lawyers, setLawyers] = useState<any[]>([]);
+  const [actors, setActors] = useState<any[]>([]);
+  const [showActors, setShowActors] = useState(false);
 
   const getRoleLabel = (role: string) => {
     const roleKey = role.toLowerCase() as keyof typeof t.dashboard.roleLabels;
@@ -92,6 +94,17 @@ function DashboardContent({ user }: { user: User }) {
           }
         } catch (e) {
           console.error('Failed to fetch lawyers:', e);
+        }
+
+        // Fetch actors for discovery
+        try {
+          const actorsRes = await fetch('/api/actors');
+          if (actorsRes.ok) {
+            const actorsData = await actorsRes.json();
+            setActors(actorsData.data || []);
+          }
+        } catch (e) {
+          console.error('Failed to fetch actors:', e);
         }
       } catch (error) {
         console.error("Failed to fetch dashboard data:", error);
@@ -310,7 +323,101 @@ function DashboardContent({ user }: { user: User }) {
               <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{action.desc}</p>
             </Link>
           ))}
+          <button
+            onClick={() => setShowActors(!showActors)}
+            className="group bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 p-5 hover:shadow-md hover:border-purple-300 dark:hover:border-purple-600 transition-all text-left"
+          >
+            <div className="text-3xl mb-3">🎭</div>
+            <p className="text-sm font-semibold text-gray-900 dark:text-white group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">
+              {t.dashboard.discoverActors || "Discover Actors"}
+            </p>
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+              {t.dashboard.discoverActorsDesc || "Browse actors and their media kits"}
+            </p>
+          </button>
         </div>
+
+        {/* Discover Actors Panel */}
+        {showActors && (
+          <div className="bg-white dark:bg-gray-900 rounded-xl border border-purple-200 dark:border-purple-800 overflow-hidden">
+            <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 dark:border-gray-800">
+              <div className="flex items-center gap-2">
+                <span className="text-xl">🎭</span>
+                <h2 className="font-semibold text-gray-900 dark:text-white">
+                  {t.dashboard.actorsDirectory || "Actors Directory"}
+                </h2>
+              </div>
+              <button
+                onClick={() => setShowActors(false)}
+                className="text-sm text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+              >
+                ✕
+              </button>
+            </div>
+            {actors.length === 0 ? (
+              <div className="p-8 text-center text-gray-500 dark:text-gray-400 text-sm">
+                {t.dashboard.noActors || "No actors found"}
+              </div>
+            ) : (
+              <div className="divide-y divide-gray-50 dark:divide-gray-800">
+                {actors.map((actor) => (
+                  <div
+                    key={actor.id}
+                    className="flex items-center gap-4 px-5 py-4 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
+                  >
+                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-100 to-pink-100 dark:from-purple-900/30 dark:to-pink-900/30 flex items-center justify-center text-xl flex-shrink-0 overflow-hidden">
+                      {actor.image ? (
+                        <img src={actor.image} alt="" className="w-full h-full object-cover" />
+                      ) : (
+                        <span>{(actor.name || actor.displayName || "?")[0]}</span>
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                        {actor.displayName || actor.name || "Unnamed Actor"}
+                      </p>
+                      {actor.bio && (
+                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 line-clamp-1">
+                          {actor.bio}
+                        </p>
+                      )}
+                      {actor.mediaKitUrl ? (
+                        <a
+                          href={actor.mediaKitUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1 text-xs text-blue-600 dark:text-blue-400 hover:underline mt-1"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          📎 {t.dashboard.viewMediaKit || "View Media Kit"}
+                        </a>
+                      ) : (
+                        <p className="text-xs text-gray-400 dark:text-gray-500 mt-1 italic">
+                          {actor.id === user?.id ? t.dashboard.setMediaKit || "Set your Media Kit in Settings" : t.dashboard.mediaKitHidden || "Media Kit not shared"}
+                        </p>
+                      )}
+                    </div>
+                    <div className="flex-shrink-0">
+                      <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
+                        actor.mediaKitVisibility === "PUBLIC"
+                          ? "bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300"
+                          : actor.mediaKitVisibility === "VERIFIED_CREATORS"
+                          ? "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-300"
+                          : "bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400"
+                      }`}>
+                        {actor.mediaKitVisibility === "PUBLIC"
+                          ? t.dashboard.visibilityPublic || "Public"
+                          : actor.mediaKitVisibility === "VERIFIED_CREATORS"
+                          ? t.dashboard.visibilityVerified || "Verified"
+                          : t.dashboard.visibilityPrivate || "Private"}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Lawyer Directory */}
         {lawyers.length > 0 && (

@@ -171,8 +171,8 @@ function SettingsContent() {
             </div>
           </div>
 
-          {/* TEMP: show for all roles for preview */}
-          {true && (
+          {/* Actor Media Kit — only for ACTOR role */}
+          {user?.role === "ACTOR" && (
             <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-2xl p-6">
               <h2 className="text-base font-semibold text-blue-900 dark:text-blue-200 mb-1">
                 {t.register.mediaKitTitle || "Media Kit / Casting Link"}

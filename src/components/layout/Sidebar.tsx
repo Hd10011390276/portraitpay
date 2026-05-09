@@ -19,8 +19,7 @@ interface SidebarProps {
 
 export function Sidebar({ onClose }: SidebarProps) {
   const pathname = usePathname();
-  const { t, locale } = useLanguage();
-  const isZh = locale === "zh-CN" || locale === "zh-Hant";
+  const { t } = useLanguage();
 
   const isActive = (href: string) =>
     pathname === href || pathname.startsWith(href + "/");
@@ -166,7 +165,7 @@ export function Sidebar({ onClose }: SidebarProps) {
             <div className="pt-4 pb-2">
               <div className="border-t border-gray-100 dark:border-gray-800 mb-2" />
               <p className="px-3 mb-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                {t.sidebar.lawyerTools ?? (isZh ? "律师工具" : "Lawyer Tools")}
+                {t.sidebar.lawyerTools ?? "Lawyer Tools"}
               </p>
             </div>
             {lawyerItems.map((item) => (

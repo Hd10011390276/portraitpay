@@ -83,10 +83,10 @@ export default function VerifyPage() {
           </a>
           <div className="flex items-center gap-3">
             <a href="/login" className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white">
-              {t.nav?.signIn || "登录"}
+              {t.nav?.signIn || "Sign In"}
             </a>
             <a href="/register" className="text-sm bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors">
-              {t.nav?.getStarted || "免费开始"}
+              {t.nav?.getStarted || "Get Started Free"}
             </a>
             <ThemeToggle />
           </div>
@@ -104,7 +104,7 @@ export default function VerifyPage() {
             {tv.title || "验证区块链存证"}
           </h1>
           <p className="text-gray-600 dark:text-gray-400 max-w-lg mx-auto">
-            {tv.subtitle || "输入肖像哈希或交易哈希，查询任意肖像是否已在以太坊 Sepolia 区块链上完成时间戳认证。无需登录，完全公开。"}
+            {tv.subtitle || "Enter a portrait hash or transaction hash to verify if any portrait has been timestamp-certified on the Ethereum Sepolia blockchain. No login required, fully public."}
           </p>
         </div>
 

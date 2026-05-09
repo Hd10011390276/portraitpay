@@ -14,22 +14,22 @@ interface SavedState {
 
 const STATUS_META = {
   claimed: {
-    label: "已登记",
+    label: "Registered",
     color: "bg-emerald-100 text-emerald-700 border-emerald-200",
     dot: "bg-emerald-500",
-    desc: "已在链上登记权属",
+    desc: "Ownership registered on-chain",
   },
   pending: {
-    label: "审核中",
+    label: "Pending",
     color: "bg-amber-100 text-amber-700 border-amber-200",
     dot: "bg-amber-500",
-    desc: "正在申请登记",
+    desc: "Registration in progress",
   },
   unclaimed: {
-    label: "未登记",
+    label: "Unregistered",
     color: "bg-gray-100 text-gray-600 border-gray-200",
     dot: "bg-gray-400",
-    desc: "暂未开放授权",
+    desc: "Not open for licensing",
   },
 };
 
@@ -50,7 +50,7 @@ function SimilarityBar({ score }: { score: number }) {
   return (
     <div className="flex flex-col gap-1">
       <div className="flex items-center justify-between text-xs text-gray-500">
-        <span>相似度</span>
+        <span>Similarity</span>
         <span className="font-mono font-semibold text-gray-700">
           {(score * 100).toFixed(1)}%
         </span>
@@ -134,17 +134,17 @@ function MatchCard({
             href="/enterprise/authorization/apply"
             className="ml-auto text-xs font-medium text-indigo-600 hover:text-indigo-800 underline underline-offset-2"
           >
-            申请授权 →
+            Apply for License →
           </a>
         )}
         {result.ownershipStatus === "claimed" && (
           <span className="ml-auto text-xs font-medium text-emerald-600">
-            ✓ 可授权
+            ✓ Available for license
           </span>
         )}
         {result.ownershipStatus === "pending" && (
           <span className="ml-auto text-xs font-medium text-amber-600">
-            ⏳ 审核中
+            ⏳ Under Review
           </span>
         )}
         {savedState === "idle" && (
@@ -152,18 +152,18 @@ function MatchCard({
             onClick={() => onSave(result)}
             className="ml-auto flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors"
           >
-            💾 保存到我的图库
+            💾 Save to Gallery
           </button>
         )}
         {savedState === "saving" && (
           <span className="ml-auto flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-indigo-600">
             <span className="animate-spin h-3 w-3 border-2 border-indigo-300 border-t-indigo-600 rounded-full" />
-            保存中…
+            Saving…
           </span>
         )}
         {savedState === "saved" && (
           <span className="ml-auto flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-lg">
-            ✓ 已保存
+            ✓ Saved
           </span>
         )}
       </div>
@@ -208,16 +208,16 @@ export default function FaceTraceResults({
       <div className="flex flex-col items-center gap-4 py-10 text-center">
         <div className="text-4xl">🔎</div>
         <div>
-          <p className="font-semibold text-gray-700">未匹配到名人</p>
+          <p className="font-semibold text-gray-700">No celebrity match found</p>
           <p className="text-sm text-gray-400 mt-1">
-            该人脸与数据库中已登记的名人相似度均低于阈值
+            The uploaded face has low similarity with all registered celebrities in our database
           </p>
         </div>
         <button
           onClick={onReset}
           className="px-4 py-2 text-sm font-medium text-indigo-600 border border-indigo-200 rounded-lg hover:bg-indigo-50 transition-colors"
         >
-          上传其他图片
+          Upload another image
         </button>
       </div>
     );
@@ -231,16 +231,16 @@ export default function FaceTraceResults({
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-lg font-bold text-gray-900">溯源结果</h2>
+          <h2 className="text-lg font-bold text-gray-900">Trace Results</h2>
           <p className="text-sm text-gray-500">
-            共匹配到 {results.length} 个结果
+            Found {results.length} match{results.length !== 1 ? "es" : ""}
           </p>
         </div>
         <button
           onClick={onReset}
           className="text-sm text-indigo-600 hover:text-indigo-800 font-medium underline underline-offset-2"
         >
-          ← 再测一张
+          ← Try another
         </button>
       </div>
 
@@ -278,9 +278,9 @@ export default function FaceTraceResults({
 
       {/* Disclaimer */}
       <p className="text-xs text-gray-400 leading-relaxed">
-        ⚠️ 溯源结果基于人脸向量相似度算法，仅供参考。如需正式权属认定，请通过正规渠道提交资料审核。
-        系统预留真实名人数据库接口（pgvector / Qdrant），上线时可直接替换{" "}
-        <code className="bg-gray-100 px-1 rounded">celebrityDb.ts</code>。
+        ⚠️ Results are based on face vector similarity algorithms and are for reference only. For official ownership recognition, please submit documents through official channels.
+        The system has a celebrity database interface reserved (pgvector / Qdrant) and can be replaced directly at launch.{" "}
+        <code className="bg-gray-100 px-1 rounded">celebrityDb.ts</code>.
       </p>
     </div>
   );

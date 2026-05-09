@@ -1,7 +1,5 @@
 "use client";
 
-import { useLanguage } from "@/context/LanguageContext";
-
 interface UsagePreferencesProps {
   allowLicensing: boolean;
   allowedScopes: string[];
@@ -12,25 +10,25 @@ interface UsagePreferencesProps {
 }
 
 const SCOPE_OPTIONS = [
-  { value: "FILM", labelZh: "影视/短视频", labelEn: "Film & Short Video" },
-  { value: "ANIMATION", labelZh: "动漫/卡通", labelEn: "Animation & Cartoon" },
-  { value: "ADVERTISING", labelZh: "广告宣传", labelEn: "Advertising & Marketing" },
-  { value: "GAMING", labelZh: "游戏/元宇宙", labelEn: "Gaming & Metaverse" },
-  { value: "PRINT", labelZh: "印刷/出版", labelEn: "Print & Publishing" },
-  { value: "MERCHANDISE", labelZh: "周边商品", labelEn: "Merchandise & Products" },
-  { value: "SOCIAL_MEDIA", labelZh: "社交媒体", labelEn: "Social Media" },
-  { value: "EDUCATION", labelZh: "教育/培训", labelEn: "Education & Training" },
-  { value: "NEWS", labelZh: "新闻/报道", labelEn: "News & Reporting" },
+  { value: "FILM", label: "Film & Short Video" },
+  { value: "ANIMATION", label: "Animation & Cartoon" },
+  { value: "ADVERTISING", label: "Advertising & Marketing" },
+  { value: "GAMING", label: "Gaming & Metaverse" },
+  { value: "PRINT", label: "Print & Publishing" },
+  { value: "MERCHANDISE", label: "Merchandise & Products" },
+  { value: "SOCIAL_MEDIA", label: "Social Media" },
+  { value: "EDUCATION", label: "Education & Training" },
+  { value: "NEWS", label: "News & Reporting" },
 ];
 
 const PROHIBITED_OPTIONS = [
-  { value: "ADULT", labelZh: "成人/色情内容", labelEn: "Adult/Pornographic Content" },
-  { value: "POLITICAL", labelZh: "政治/反动内容", labelEn: "Political/Subversive Content" },
-  { value: "VIOLENCE", labelZh: "暴力/血腥内容", labelEn: "Violent/Gory Content" },
-  { value: "HATE", labelZh: "仇恨/歧视内容", labelEn: "Hate Speech/Discrimination" },
-  { value: "FRAUD", labelZh: "欺诈/诈骗内容", labelEn: "Fraud/Scam Content" },
-  { value: "WEAPONS", labelZh: "武器/危险品", labelEn: "Weapons/Dangerous Items" },
-  { value: "ILLEGAL", labelZh: "违法行为", labelEn: "Illegal Activities" },
+  { value: "ADULT", label: "Adult/Pornographic Content" },
+  { value: "POLITICAL", label: "Political/Subversive Content" },
+  { value: "VIOLENCE", label: "Violent/Gory Content" },
+  { value: "HATE", label: "Hate Speech/Discrimination" },
+  { value: "FRAUD", label: "Fraud/Scam Content" },
+  { value: "WEAPONS", label: "Weapons/Dangerous Items" },
+  { value: "ILLEGAL", label: "Illegal Activities" },
 ];
 
 export function UsagePreferences({
@@ -41,9 +39,6 @@ export function UsagePreferences({
   onAllowedScopesChange,
   onProhibitedContentChange,
 }: UsagePreferencesProps) {
-  const { locale } = useLanguage();
-  const isZh = locale === "zh-CN" || locale === "zh-Hant";
-
   const toggleScope = (value: string) => {
     if (allowedScopes.includes(value)) {
       onAllowedScopesChange(allowedScopes.filter((s) => s !== value));
@@ -65,12 +60,10 @@ export function UsagePreferences({
       {/* Header */}
       <div className="border-b border-gray-200 dark:border-gray-700 pb-3">
         <h3 className="text-sm font-semibold text-gray-900 dark:text-white">
-          {isZh ? "肖像使用偏好" : "Portrait Usage Preferences"}
+          Portrait Usage Preferences
         </h3>
         <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-          {isZh
-            ? "设置您的肖像授权范围和禁止使用的内容类型"
-            : "Set your portrait licensing scope and prohibited content types"}
+          Set your portrait licensing scope and prohibited content types
         </p>
       </div>
 
@@ -78,14 +71,10 @@ export function UsagePreferences({
       <div className="flex items-center justify-between">
         <div>
           <p className="text-sm font-medium text-gray-700 dark:text-gray-200">
-            {isZh ? "允许肖像授权" : "Allow Portrait Licensing"}
+            Allow Portrait Licensing
           </p>
           <p className="text-xs text-gray-500 dark:text-gray-400">
-            {isZh
-              ? allowLicensing
-                ? "允许他人申请使用您的肖像"
-                : "保留所有权利，禁止授权"
-              : allowLicensing
+            {allowLicensing
               ? "Allow others to license your portrait"
               : "All rights reserved, licensing disabled"}
           </p>
@@ -107,12 +96,10 @@ export function UsagePreferences({
       {allowLicensing && (
         <div>
           <p className="text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-            {isZh ? "允许的使用范围" : "Allowed Usage Scope"}
+            Allowed Usage Scope
           </p>
           <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">
-            {isZh
-              ? "选择允许的使用场景（不选则全部允许）"
-              : "Select allowed use cases (leave empty to allow all)"}
+            Select allowed use cases (leave empty to allow all)
           </p>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
             {SCOPE_OPTIONS.map((option) => (
@@ -127,15 +114,13 @@ export function UsagePreferences({
                       : "border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:border-gray-300 dark:hover:border-gray-600"
                   }`}
               >
-                {isZh ? option.labelZh : option.labelEn}
+                {option.label}
               </button>
             ))}
           </div>
           {allowedScopes.length > 0 && (
             <p className="text-xs text-blue-600 dark:text-blue-400 mt-2">
-              {isZh
-                ? `已选择 ${allowedScopes.length} 个使用范围`
-                : `${allowedScopes.length} scopes selected`}
+              {allowedScopes.length} scopes selected
             </p>
           )}
         </div>
@@ -144,12 +129,10 @@ export function UsagePreferences({
       {/* Prohibited Content */}
       <div>
         <p className="text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-          {isZh ? "禁止使用于" : "Prohibited Content"}
+          Prohibited Content
         </p>
         <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">
-          {isZh
-            ? "即使已授权，也绝对禁止用于以下内容"
-            : "Never allow use for the following content, even if licensed"}
+          Never allow use for the following content, even if licensed
         </p>
         <div className="space-y-2">
           {PROHIBITED_OPTIONS.map((option) => (
@@ -175,7 +158,7 @@ export function UsagePreferences({
                     : "text-gray-700 dark:text-gray-300"
                 }`}
               >
-                {isZh ? option.labelZh : option.labelEn}
+                {option.label}
               </span>
             </label>
           ))}
