@@ -11,14 +11,11 @@ function deployWithCli() {
     console.log('Generating Prisma client...');
     execSync('npx prisma generate', { stdio: 'inherit' });
 
-    // Step 2: Build using next build
-    console.log('Running next build...');
-    execSync('npx next build', { stdio: 'inherit' });
-
-    // Step 3: Deploy prebuilt output
-    console.log('Deploying prebuilt output...');
+    // Step 2: Build and deploy in one step using vercel CLI
+    // The build runs locally in GitHub Actions, bypassing Vercel's clone step
+    console.log('Running vercel build and deploy...');
     const output = execSync(
-      `npx vercel --prod --yes --prebuilt --token ${VER_TOKEN}`,
+      `npx vercel --prod --yes --token ${VER_TOKEN}`,
       {
         encoding: 'utf8',
         stdio: 'inherit',
