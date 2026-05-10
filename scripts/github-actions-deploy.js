@@ -103,5 +103,5 @@ function pollDeployment(id) {
   check.end();
 }
 
-console.log('Starting deployment...');
-deployWithApi();
+console.log('Starting deployment via Vercel CLI...');
+deployWithCli();
