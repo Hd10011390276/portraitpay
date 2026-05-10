@@ -112,5 +112,5 @@ export async function buildCertificateImage(data: CertificateData): Promise<Buff
   return result;
 }
 
-// Alias for backward compatibility
-export const buildPortraitCertificate = buildCertificateImage;
+// Alias for backward compatibility — use proper ESM re-export
+export { buildCertificateImage as buildPortraitCertificate };
