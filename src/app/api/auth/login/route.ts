@@ -66,7 +66,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const tokens = signTokenPair({
+    const tokens = await signTokenPair({
       userId: user.id,
       email: user.email,
       role: user.role,

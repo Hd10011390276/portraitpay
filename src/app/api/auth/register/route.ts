@@ -227,7 +227,7 @@ export async function POST(req: NextRequest) {
       console.error("[REGISTER] Verification email failed:", emailError);
     }
 
-    const tokens = signTokenPair({
+    const tokens = await signTokenPair({
       userId: user.id,
       email: user.email,
       role: user.role,
