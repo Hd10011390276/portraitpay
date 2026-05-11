@@ -137,6 +137,11 @@ model Portrait {
   title       String
   description String?
   category    String   @default("general")
+
+  // Actor classification
+  gender          String?  // male, female, non_binary, not_specified
+  roleType        String?  // actor, model, influencer, celebrity, voice_actor, stunt_performer
+  productionType  String?  // live_action, animation, vfx, cgi, mixed_media
   tags        String[] @default([])
 
   originalImageUrl String?

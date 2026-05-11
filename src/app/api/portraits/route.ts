@@ -20,6 +20,9 @@ const CreatePortraitSchema = z.object({
   frontViewUrl: z.string().url().optional(),
   sideViewUrl: z.string().url().optional(),
   backViewUrl: z.string().url().optional(),
+  gender: z.enum(["male", "female", "non_binary", "not_specified"]).optional(),
+  roleType: z.enum(["actor", "model", "influencer", "celebrity", "voice_actor", "stunt_performer"]).optional(),
+  productionType: z.enum(["live_action", "animation", "vfx", "cgi", "mixed_media"]).optional(),
 });
 
 export async function GET(request: NextRequest) {
@@ -47,6 +50,7 @@ export async function GET(request: NextRequest) {
           tags: true, originalImageUrl: true, thumbnailUrl: true, imageHash: true,
           portraitImageHash: true, idCardFrontHash: true,
           frontViewUrl: true, sideViewUrl: true, backViewUrl: true, threeViewHash: true,
+          gender: true, roleType: true, productionType: true,
           idCardType: true, idCardName: true,
           blockchainTxHash: true, blockchainNetwork: true, certifiedAt: true,
           status: true, isPublic: true, createdAt: true,
@@ -79,7 +83,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ success: false, error: "Validation failed", details: parsed.error.flatten() }, { status: 400 });
   }
 
-  const { title, description, category, tags, isPublic, imageHash, portraitImageHash, idCardFrontHash, idCardType, idCardName, idCardNumber, frontViewUrl, sideViewUrl, backViewUrl } = parsed.data;
+  const { title, description, category, tags, isPublic, imageHash, portraitImageHash, idCardFrontHash, idCardType, idCardName, idCardNumber, frontViewUrl, sideViewUrl, backViewUrl, gender, roleType, productionType } = parsed.data;
 
   try {
     const portrait = await prisma.portrait.create({
@@ -98,6 +102,9 @@ export async function POST(request: NextRequest) {
         frontViewUrl: frontViewUrl ?? null,
         sideViewUrl: sideViewUrl ?? null,
         backViewUrl: backViewUrl ?? null,
+        gender: gender ?? null,
+        roleType: roleType ?? null,
+        productionType: productionType ?? null,
         ownerId: session.userId,
         status: "DRAFT",
       },

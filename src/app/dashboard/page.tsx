@@ -205,6 +205,13 @@ function DashboardContent({ user }: { user: User }) {
                           ? t.dashboard.status.underReview
                           : p.status}
                       </p>
+                      {(p.gender || p.roleType || p.productionType) && (
+                        <div className="flex gap-1 mt-1 flex-wrap">
+                          {p.gender && <span className="px-1.5 py-0.5 text-[10px] bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300 rounded capitalize">{p.gender.replace('_', ' ')}</span>}
+                          {p.roleType && <span className="px-1.5 py-0.5 text-[10px] bg-blue-100 text-blue-600 dark:bg-blue-900/40 dark:text-blue-300 rounded capitalize">{p.roleType.replace('_', ' ')}</span>}
+                          {p.productionType && <span className="px-1.5 py-0.5 text-[10px] bg-purple-100 text-purple-600 dark:bg-purple-900/40 dark:text-purple-300 rounded capitalize">{p.productionType.replace('_', ' ')}</span>}
+                        </div>
+                      )}
                     </div>
                     <Link
                       href={`/portraits/${p.id}`}
@@ -289,62 +296,63 @@ function DashboardContent({ user }: { user: User }) {
           </div>
         </div>
 
-        {/* Three-View Photos Gallery */}
-        {recentPortraits.some(p => p.frontViewUrl || p.sideViewUrl || p.backViewUrl) && (
-          <div className="bg-white dark:bg-gray-900 rounded-xl border border-purple-200 dark:border-purple-800 overflow-hidden">
-            <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 dark:border-gray-800">
-              <div className="flex items-center gap-2">
-                <span className="text-xl">📸</span>
-                <h2 className="font-semibold text-gray-900 dark:text-white">
-                  Three-View Photos
-                </h2>
-              </div>
-              <Link
-                href="/portraits"
-                className="text-sm text-blue-600 dark:text-blue-400 hover:underline"
-              >
-                View All
-              </Link>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 p-5">
-              {recentPortraits.filter(p => p.frontViewUrl || p.sideViewUrl || p.backViewUrl).map((portrait) => (
-                <div key={portrait.id} className="border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden">
-                  <div className="aspect-[4/3] bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
-                    {portrait.frontViewUrl ? (
-                      <img
-                        src={portrait.frontViewUrl}
-                        alt={`${portrait.title} - Front View`}
-                        className="w-full h-full object-cover"
-                      />
-                    ) : portrait.thumbnailUrl || portrait.originalImageUrl ? (
-                      <img
-                        src={portrait.thumbnailUrl || portrait.originalImageUrl}
-                        alt={portrait.title}
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <span className="text-4xl">👤</span>
-                    )}
-                  </div>
-                  <div className="p-3 bg-gray-50 dark:bg-gray-800/50">
-                    <p className="text-sm font-medium text-gray-900 dark:text-white truncate">{portrait.title}</p>
-                    <div className="flex gap-2 mt-2">
-                      {portrait.frontViewUrl && (
-                        <span className="px-2 py-0.5 text-xs bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300 rounded">Front</span>
-                      )}
-                      {portrait.sideViewUrl && (
-                        <span className="px-2 py-0.5 text-xs bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300 rounded">Side</span>
-                      )}
-                      {portrait.backViewUrl && (
-                        <span className="px-2 py-0.5 text-xs bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300 rounded">Back</span>
-                      )}
-                    </div>
-                  </div>
+        {/* Three-View Photos Gallery — shown only when portraits have three-view URLs */}
+        {(() => {
+          const portraitsWithViews = recentPortraits.filter(p => p.frontViewUrl || p.sideViewUrl || p.backViewUrl);
+          return (
+            <div className="bg-white dark:bg-gray-900 rounded-xl border border-purple-200 dark:border-purple-800 overflow-hidden">
+              <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 dark:border-gray-800">
+                <div className="flex items-center gap-2">
+                  <span className="text-xl">📸</span>
+                  <h2 className="font-semibold text-gray-900 dark:text-white">
+                    Three-View Photos
+                  </h2>
                 </div>
-              ))}
+                <Link
+                  href="/portraits"
+                  className="text-sm text-blue-600 dark:text-blue-400 hover:underline"
+                >
+                  View All
+                </Link>
+              </div>
+              {portraitsWithViews.length > 0 ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 p-5">
+                  {portraitsWithViews.map((portrait) => (
+                    <div key={portrait.id} className="border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden">
+                      <div className="aspect-[4/3] bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+                        {portrait.frontViewUrl ? (
+                          <img src={portrait.frontViewUrl} alt={`${portrait.title} - Front View`} className="w-full h-full object-cover" />
+                        ) : portrait.thumbnailUrl || portrait.originalImageUrl ? (
+                          <img src={portrait.thumbnailUrl || portrait.originalImageUrl} alt={portrait.title} className="w-full h-full object-cover" />
+                        ) : (
+                          <span className="text-4xl">👤</span>
+                        )}
+                      </div>
+                      <div className="p-3 bg-gray-50 dark:bg-gray-800/50">
+                        <p className="text-sm font-medium text-gray-900 dark:text-white truncate">{portrait.title}</p>
+                        <div className="flex gap-2 mt-2 flex-wrap">
+                          {portrait.frontViewUrl && <span className="px-2 py-0.5 text-xs bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300 rounded">Front</span>}
+                          {portrait.sideViewUrl && <span className="px-2 py-0.5 text-xs bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300 rounded">Side</span>}
+                          {portrait.backViewUrl && <span className="px-2 py-0.5 text-xs bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300 rounded">Back</span>}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="p-8 text-center">
+                  <div className="text-4xl mb-3">📋</div>
+                  <p className="text-sm font-medium text-gray-900 dark:text-white mb-1">
+                    Three-View Photos — Powered by External Storage
+                  </p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 max-w-md mx-auto leading-relaxed">
+                    Portrait images are stored on actor-trusted platforms (Google Drive, Dropbox, iCloud, etc.) and referenced via secure links. This approach eliminates platform storage costs while giving talent full control over their professional materials.
+                  </p>
+                </div>
+              )}
             </div>
-          </div>
-        )}
+          );
+        })()}
 
         {/* Quick Actions */}
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
