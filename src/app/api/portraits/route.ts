@@ -17,6 +17,9 @@ const CreatePortraitSchema = z.object({
   idCardType: z.enum(["driver_license", "us_id", "passport", "other"]).optional(),
   idCardName: z.string().max(100).optional(),
   idCardNumber: z.string().max(50).optional(),
+  frontViewUrl: z.string().url().optional(),
+  sideViewUrl: z.string().url().optional(),
+  backViewUrl: z.string().url().optional(),
 });
 
 export async function GET(request: NextRequest) {
@@ -43,6 +46,7 @@ export async function GET(request: NextRequest) {
           id: true, ownerId: true, title: true, description: true, category: true,
           tags: true, originalImageUrl: true, thumbnailUrl: true, imageHash: true,
           portraitImageHash: true, idCardFrontHash: true,
+          frontViewUrl: true, sideViewUrl: true, backViewUrl: true, threeViewHash: true,
           idCardType: true, idCardName: true,
           blockchainTxHash: true, blockchainNetwork: true, certifiedAt: true,
           status: true, isPublic: true, createdAt: true,
@@ -75,7 +79,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ success: false, error: "Validation failed", details: parsed.error.flatten() }, { status: 400 });
   }
 
-  const { title, description, category, tags, isPublic, imageHash, portraitImageHash, idCardFrontHash, idCardType, idCardName, idCardNumber } = parsed.data;
+  const { title, description, category, tags, isPublic, imageHash, portraitImageHash, idCardFrontHash, idCardType, idCardName, idCardNumber, frontViewUrl, sideViewUrl, backViewUrl } = parsed.data;
 
   try {
     const portrait = await prisma.portrait.create({
@@ -91,6 +95,9 @@ export async function POST(request: NextRequest) {
         idCardType: idCardType ?? null,
         idCardName: idCardName ?? null,
         idCardNumber: idCardNumber ?? null,
+        frontViewUrl: frontViewUrl ?? null,
+        sideViewUrl: sideViewUrl ?? null,
+        backViewUrl: backViewUrl ?? null,
         ownerId: session.userId,
         status: "DRAFT",
       },

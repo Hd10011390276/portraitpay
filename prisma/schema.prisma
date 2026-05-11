@@ -154,6 +154,12 @@ model Portrait {
   portraitImageHash String?
   idCardFrontHash   String?
 
+  // Three-view photos for celebrity/actor portraits (正面/侧面/后面)
+  frontViewUrl   String?  // 正面照
+  sideViewUrl    String?  // 侧面照
+  backViewUrl    String?  // 后面照
+  threeViewHash  String?  // Combined hash of all three views
+
   // ID card info — captured at mint time
   idCardType   String?  // driver_license | us_id | passport | other
   idCardName   String?  // real name as shown on ID card
