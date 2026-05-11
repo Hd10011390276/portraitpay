@@ -13,7 +13,7 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { verifyToken } from "@/lib/auth/jwt";
+import { verifyToken } from "@/lib/auth/edge-jwt";
 import { prisma } from "@/lib/prisma";
 export const dynamic = "force-dynamic";
 
@@ -30,7 +30,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ success: false, error: "Missing token" }, { status: 401 });
   }
 
-  const payload = verifyToken(token);
+  const payload = await verifyToken(token);
   if (!payload) {
     return NextResponse.json({ success: false, error: "Invalid token" }, { status: 401 });
   }

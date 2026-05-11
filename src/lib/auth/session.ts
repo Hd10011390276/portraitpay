@@ -1,5 +1,5 @@
 import { cookies } from "next/headers";
-import { verifyToken, type JwtPayload } from "./jwt";
+import { verifyToken, type JwtPayload } from "./edge-jwt";
 import { prisma } from "@/lib/prisma";
 import type { NextRequest } from "next/server";
 
@@ -17,7 +17,7 @@ const REFRESH_TOKEN_COOKIE = "pp_refresh_token";
 
 async function _verifySession(token: string | null): Promise<SessionUser | null> {
   if (!token) return null;
-  const payload: JwtPayload | null = verifyToken(token);
+  const payload: JwtPayload | null = await verifyToken(token);
   if (!payload) return null;
   const user = await prisma.user.findUnique({
     where: { id: payload.userId },

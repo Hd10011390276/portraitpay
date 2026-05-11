@@ -1,6 +1,6 @@
 
 import { NextRequest, NextResponse } from "next/server";
-import { verifyToken, signTokenPair } from "@/lib/auth/jwt";
+import { verifyToken, signTokenPair } from "@/lib/auth/edge-jwt";
 import { prisma } from "@/lib/prisma";
 export const dynamic = "force-dynamic";
 
@@ -28,7 +28,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const payload = verifyToken(refreshToken);
+    const payload = await verifyToken(refreshToken);
     if (!payload) {
       return NextResponse.json(
         { success: false, message: "令牌无效" },
@@ -48,7 +48,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const tokens = signTokenPair({
+    const tokens = await signTokenPair({
       userId: user.id,
       email: user.email,
       role: user.role,

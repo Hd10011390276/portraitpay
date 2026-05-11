@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { RegisterSchema } from "@/lib/auth/schemas";
-import { signTokenPair } from "@/lib/auth/jwt";
+import { signTokenPair } from "@/lib/auth/edge-jwt";
 import { setTokenCookies } from "@/lib/auth/session";
 import { sendWelcomeEmail } from "@/lib/email";
 export const dynamic = "force-dynamic";

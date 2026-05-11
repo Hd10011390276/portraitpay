@@ -2,7 +2,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { VerifyOtpSchema } from "@/lib/auth/schemas";
 import { verifyOtp } from "@/lib/auth/otp";
-import { signTokenPair } from "@/lib/auth/jwt";
+import { signTokenPair } from "@/lib/auth/edge-jwt";
 import { prisma } from "@/lib/prisma";
 export const dynamic = "force-dynamic";
 
