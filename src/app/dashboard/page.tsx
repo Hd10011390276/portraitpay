@@ -33,6 +33,8 @@ function DashboardContent({ user }: { user: User }) {
   const [lawyers, setLawyers] = useState<any[]>([]);
   const [actors, setActors] = useState<any[]>([]);
   const [showActors, setShowActors] = useState(false);
+  const [genderFilter, setGenderFilter] = useState<string>("all");
+  const [roleTypeFilter, setRoleTypeFilter] = useState<string>("all");
 
   const getRoleLabel = (role: string) => {
     const roleKey = role.toLowerCase() as keyof typeof t.dashboard.roleLabels;
@@ -296,64 +298,6 @@ function DashboardContent({ user }: { user: User }) {
           </div>
         </div>
 
-        {/* Three-View Photos Gallery — shown only when portraits have three-view URLs */}
-        {(() => {
-          const portraitsWithViews = recentPortraits.filter(p => p.frontViewUrl || p.sideViewUrl || p.backViewUrl);
-          return (
-            <div className="bg-white dark:bg-gray-900 rounded-xl border border-purple-200 dark:border-purple-800 overflow-hidden">
-              <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 dark:border-gray-800">
-                <div className="flex items-center gap-2">
-                  <span className="text-xl">📸</span>
-                  <h2 className="font-semibold text-gray-900 dark:text-white">
-                    Three-View Photos
-                  </h2>
-                </div>
-                <Link
-                  href="/portraits"
-                  className="text-sm text-blue-600 dark:text-blue-400 hover:underline"
-                >
-                  View All
-                </Link>
-              </div>
-              {portraitsWithViews.length > 0 ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 p-5">
-                  {portraitsWithViews.map((portrait) => (
-                    <div key={portrait.id} className="border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden">
-                      <div className="aspect-[4/3] bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
-                        {portrait.frontViewUrl ? (
-                          <img src={portrait.frontViewUrl} alt={`${portrait.title} - Front View`} className="w-full h-full object-cover" />
-                        ) : portrait.thumbnailUrl || portrait.originalImageUrl ? (
-                          <img src={portrait.thumbnailUrl || portrait.originalImageUrl} alt={portrait.title} className="w-full h-full object-cover" />
-                        ) : (
-                          <span className="text-4xl">👤</span>
-                        )}
-                      </div>
-                      <div className="p-3 bg-gray-50 dark:bg-gray-800/50">
-                        <p className="text-sm font-medium text-gray-900 dark:text-white truncate">{portrait.title}</p>
-                        <div className="flex gap-2 mt-2 flex-wrap">
-                          {portrait.frontViewUrl && <span className="px-2 py-0.5 text-xs bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300 rounded">Front</span>}
-                          {portrait.sideViewUrl && <span className="px-2 py-0.5 text-xs bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300 rounded">Side</span>}
-                          {portrait.backViewUrl && <span className="px-2 py-0.5 text-xs bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300 rounded">Back</span>}
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="p-8 text-center">
-                  <div className="text-4xl mb-3">📋</div>
-                  <p className="text-sm font-medium text-gray-900 dark:text-white mb-1">
-                    Three-View Photos — Powered by External Storage
-                  </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 max-w-md mx-auto leading-relaxed">
-                    Portrait images are stored on actor-trusted platforms (Google Drive, Dropbox, iCloud, etc.) and referenced via secure links. This approach eliminates platform storage costs while giving talent full control over their professional materials.
-                  </p>
-                </div>
-              )}
-            </div>
-          );
-        })()}
-
         {/* Quick Actions */}
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
           {[
@@ -419,67 +363,147 @@ function DashboardContent({ user }: { user: User }) {
                 ✕
               </button>
             </div>
+            {/* Filter Bar */}
+            <div className="px-5 py-3 border-b border-gray-100 dark:border-gray-800 flex flex-wrap gap-3 items-center">
+              <select
+                value={genderFilter}
+                onChange={(e) => setGenderFilter(e.target.value)}
+                className="text-sm border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-1.5 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-purple-500 focus:outline-none"
+              >
+                <option value="all">All Genders</option>
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+                <option value="non_binary">Non-binary</option>
+                <option value="not_specified">Not Specified</option>
+              </select>
+              <select
+                value={roleTypeFilter}
+                onChange={(e) => setRoleTypeFilter(e.target.value)}
+                className="text-sm border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-1.5 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-purple-500 focus:outline-none"
+              >
+                <option value="all">All Roles</option>
+                <option value="actor">Actor</option>
+                <option value="model">Model</option>
+                <option value="influencer">Influencer</option>
+                <option value="celebrity">Celebrity</option>
+                <option value="voice_actor">Voice Actor</option>
+                <option value="stunt_performer">Stunt Performer</option>
+              </select>
+              {(genderFilter !== "all" || roleTypeFilter !== "all") && (
+                <button
+                  onClick={() => { setGenderFilter("all"); setRoleTypeFilter("all"); }}
+                  className="text-xs text-purple-600 dark:text-purple-400 hover:underline"
+                >
+                  Clear Filters
+                </button>
+              )}
+            </div>
             {actors.length === 0 ? (
-              <div className="p-8 text-center text-gray-500 dark:text-gray-400 text-sm">
-                {t.dashboard.noActors || "No actors found"}
+              <div className="p-6 text-center border-b border-gray-100 dark:border-gray-800">
+                <div className="text-3xl mb-2">📋</div>
+                <p className="text-sm font-medium text-gray-900 dark:text-white mb-1">
+                  Three-View Photos — Powered by External Storage
+                </p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 max-w-lg mx-auto leading-relaxed">
+                  Portrait images are stored on actor-trusted platforms (Google Drive, Dropbox, iCloud, etc.) and referenced via secure links. This approach eliminates platform storage costs while giving talent full control over their professional materials.
+                </p>
               </div>
             ) : (
-              <div className="divide-y divide-gray-50 dark:divide-gray-800">
-                {actors.map((actor) => (
-                  <div
-                    key={actor.id}
-                    className="flex items-center gap-4 px-5 py-4 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
-                  >
-                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-100 to-pink-100 dark:from-purple-900/30 dark:to-pink-900/30 flex items-center justify-center text-xl flex-shrink-0 overflow-hidden">
-                      {actor.image ? (
-                        <img src={actor.image} alt="" className="w-full h-full object-cover" />
-                      ) : (
-                        <span>{(actor.name || actor.displayName || "?")[0]}</span>
-                      )}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
-                        {actor.displayName || actor.name || "Unnamed Actor"}
-                      </p>
-                      {actor.bio && (
-                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 line-clamp-1">
-                          {actor.bio}
+              <>
+                {(() => {
+                  const filteredActors = actors.map((actor) => ({
+                    ...actor,
+                    portraits: (actor.portraits || []).filter((p: any) =>
+                      (genderFilter === "all" || p.gender === genderFilter) &&
+                      (roleTypeFilter === "all" || p.roleType === roleTypeFilter)
+                    ),
+                  })).filter((a) => a.portraits.length > 0);
+                  if (filteredActors.length === 0) {
+                    return (
+                      <div className="p-8 text-center text-gray-500 dark:text-gray-400 text-sm">
+                        No actors match the selected filters
+                      </div>
+                    );
+                  }
+                  const hasAnyThreeView = filteredActors.some((a) => a.portraits.some((p: any) => p.frontViewUrl || p.sideViewUrl || p.backViewUrl));
+                  if (!hasAnyThreeView) {
+                    return (
+                      <div className="p-6 text-center border-b border-gray-100 dark:border-gray-800">
+                        <div className="text-3xl mb-2">📋</div>
+                        <p className="text-sm font-medium text-gray-900 dark:text-white mb-1">
+                          Three-View Photos — Powered by External Storage
                         </p>
-                      )}
-                      {actor.mediaKitUrl ? (
-                        <a
-                          href={actor.mediaKitUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1 text-xs text-blue-600 dark:text-blue-400 hover:underline mt-1"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          📎 {t.dashboard.viewMediaKit || "View Media Kit"}
-                        </a>
-                      ) : (
-                        <p className="text-xs text-gray-400 dark:text-gray-500 mt-1 italic">
-                          {actor.id === user?.id ? t.dashboard.setMediaKit || "Set your Media Kit in Settings" : t.dashboard.mediaKitHidden || "Media Kit not shared"}
+                        <p className="text-xs text-gray-500 dark:text-gray-400 max-w-lg mx-auto leading-relaxed">
+                          Portrait images are stored on actor-trusted platforms (Google Drive, Dropbox, iCloud, etc.) and referenced via secure links. This approach eliminates platform storage costs while giving talent full control over their professional materials.
                         </p>
-                      )}
-                    </div>
-                    <div className="flex-shrink-0">
-                      <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
-                        actor.mediaKitVisibility === "PUBLIC"
-                          ? "bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300"
-                          : actor.mediaKitVisibility === "VERIFIED_CREATORS"
-                          ? "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-300"
-                          : "bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400"
-                      }`}>
-                        {actor.mediaKitVisibility === "PUBLIC"
-                          ? t.dashboard.visibilityPublic || "Public"
-                          : actor.mediaKitVisibility === "VERIFIED_CREATORS"
-                          ? t.dashboard.visibilityVerified || "Verified"
-                          : t.dashboard.visibilityPrivate || "Private"}
-                      </span>
-                    </div>
+                      </div>
+                    );
+                  }
+                  return null;
+                })()}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 p-5">
+                  {actors.map((actor) =>
+                    (actor.portraits || [])
+                      .filter((p: any) =>
+                        (genderFilter === "all" || p.gender === genderFilter) &&
+                        (roleTypeFilter === "all" || p.roleType === roleTypeFilter)
+                      )
+                      .map((portrait: any) => (
+                      <div key={`${actor.id}-${portrait.id}`} className="border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden hover:shadow-md transition-shadow">
+                        <div className="aspect-[4/3] bg-gray-100 dark:bg-gray-800 flex items-center justify-center relative">
+                          {portrait.frontViewUrl ? (
+                            <img src={portrait.frontViewUrl} alt={`${portrait.title} - Front View`} className="w-full h-full object-cover" />
+                          ) : portrait.thumbnailUrl ? (
+                            <img src={portrait.thumbnailUrl} alt={portrait.title} className="w-full h-full object-cover" />
+                          ) : (
+                            <span className="text-4xl">👤</span>
+                          )}
+                          <div className="absolute top-2 right-2 flex gap-1">
+                            {portrait.frontViewUrl && <span className="px-1.5 py-0.5 text-[10px] bg-green-500 text-white rounded">Front</span>}
+                            {portrait.sideViewUrl && <span className="px-1.5 py-0.5 text-[10px] bg-blue-500 text-white rounded">Side</span>}
+                            {portrait.backViewUrl && <span className="px-1.5 py-0.5 text-[10px] bg-purple-500 text-white rounded">Back</span>}
+                          </div>
+                        </div>
+                        <div className="p-3 bg-gray-50 dark:bg-gray-800/50">
+                          <div className="flex items-center gap-2 mb-2">
+                            <div className="w-7 h-7 rounded-full bg-gradient-to-br from-purple-100 to-pink-100 dark:from-purple-900/30 dark:to-pink-900/30 flex items-center justify-center text-sm flex-shrink-0 overflow-hidden">
+                              {actor.image ? (
+                                <img src={actor.image} alt="" className="w-full h-full object-cover" />
+                              ) : (
+                                <span>{(actor.name || actor.displayName || "?")[0]}</span>
+                              )}
+                            </div>
+                            <p className="text-xs font-medium text-gray-900 dark:text-white truncate">
+                              {actor.displayName || actor.name || "Unnamed Actor"}
+                            </p>
+                          </div>
+                          <p className="text-sm font-medium text-gray-900 dark:text-white truncate mb-2">{portrait.title}</p>
+                          <div className="flex gap-1 flex-wrap mb-2">
+                            {portrait.gender && <span className="px-1.5 py-0.5 text-[10px] bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300 rounded capitalize">{portrait.gender.replace('_', ' ')}</span>}
+                            {portrait.roleType && <span className="px-1.5 py-0.5 text-[10px] bg-blue-100 text-blue-600 dark:bg-blue-900/40 dark:text-blue-300 rounded capitalize">{portrait.roleType.replace('_', ' ')}</span>}
+                            {portrait.productionType && <span className="px-1.5 py-0.5 text-[10px] bg-purple-100 text-purple-600 dark:bg-purple-900/40 dark:text-purple-300 rounded capitalize">{portrait.productionType.replace('_', ' ')}</span>}
+                          </div>
+                          {actor.mediaKitUrl && (
+                            <a
+                              href={actor.mediaKitUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-1 text-xs text-blue-600 dark:text-blue-400 hover:underline"
+                            >
+                              📎 {t.dashboard.viewMediaKit || "Media Kit"}
+                            </a>
+                          )}
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+                {actors.every(a => !a.portraits || a.portraits.length === 0) && actors.length > 0 && !actors.some(a => a.portraits && a.portraits.length > 0) && (
+                  <div className="p-8 text-center text-gray-500 dark:text-gray-400 text-sm">
+                    {t.dashboard.noActors || "No portraits uploaded yet"}
                   </div>
-                ))}
-              </div>
+                )}
+              </>
             )}
           </div>
         )}

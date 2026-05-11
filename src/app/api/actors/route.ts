@@ -23,6 +23,23 @@ const ACTOR_SELECT = {
   mediaKitUrl: true,
   mediaKitVisibility: true,
   createdAt: true,
+  portraits: {
+    where: { deletedAt: null },
+    select: {
+      id: true,
+      title: true,
+      thumbnailUrl: true,
+      frontViewUrl: true,
+      sideViewUrl: true,
+      backViewUrl: true,
+      gender: true,
+      roleType: true,
+      productionType: true,
+      status: true,
+    },
+    orderBy: { createdAt: "desc" },
+    take: 5,
+  },
 };
 
 export async function GET(request: NextRequest) {
