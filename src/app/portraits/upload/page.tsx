@@ -82,6 +82,25 @@ export default function UploadPortraitPage() {
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
 
+  // ── Test account bypass ────────────────────────────────────
+  const TEST_ACCOUNTS = ["799096322@qq.com"];
+  const [userEmail, setUserEmail] = useState<string>("");
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const res = await fetch("/api/auth/me", { credentials: "include" });
+        if (res.ok) {
+          const json = await res.json();
+          setUserEmail(json.data?.user?.email || json.user?.email || "");
+        }
+      } catch {}
+    };
+    checkAuth();
+  }, []);
+
+  const isTestAccount = TEST_ACCOUNTS.includes(userEmail);
+
   // ── Portrait count check ─────────────────────────────────────
   useEffect(() => {
     const checkCount = async () => {
@@ -95,19 +114,19 @@ export default function UploadPortraitPage() {
     checkCount();
   }, []);
 
-  if (countLoaded && portraitCount >= MAX_PORTRAITS) {
+  if (countLoaded && portraitCount >= MAX_PORTRAITS && !isTestAccount) {
     return (
       <DashboardShell title={t.upload?.title} subtitle={t.upload?.subtitle}>
         <div className="max-w-3xl">
           <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-8 text-center">
             <div className="text-5xl mb-4">🚫</div>
-            <h2 className="text-xl font-semibold text-red-700 dark:text-red-300 mb-2">您已达到最大肖像数量限制</h2>
-            <p className="text-gray-500 dark:text-gray-400 mb-6">普通用户最多上传 {MAX_PORTRAITS} 张肖像，您当前已有 {portraitCount} 张。</p>
+            <h2 className="text-xl font-semibold text-red-700 dark:text-red-300 mb-2">Maximum Portrait Limit Reached</h2>
+            <p className="text-gray-500 dark:text-gray-400 mb-6">You can only upload up to {MAX_PORTRAITS} portraits. You currently have {portraitCount}.</p>
             <button
               onClick={() => router.push("/portraits")}
               className="px-6 py-2.5 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
             >
-              返回我的肖像
+              Back to My Portraits
             </button>
           </div>
         </div>
@@ -119,11 +138,11 @@ export default function UploadPortraitPage() {
   const handleIdCardFrontChange = useCallback((file: File) => {
     if (!file) return;
     if (!file.type.startsWith("image/")) {
-      alert(t.upload?.clickToUploadID ?? "请上传图片文件");
+      alert(t.upload?.clickToUploadID ?? "Please upload an image file");
       return;
     }
     if (file.size > 10 * 1024 * 1024) {
-      alert(t.upload?.idDocSupported ?? "图片大小不能超过 10MB");
+      alert(t.upload?.idDocSupported ?? "Image size must be under 10MB");
       return;
     }
     setIdCardFront(file);
@@ -150,10 +169,10 @@ export default function UploadPortraitPage() {
     if (!form.title.trim()) errs.title = t.upload?.titleRequiredError;
     if (form.title.length > 200) errs.title = t.upload?.titleLengthError;
     if (!croppedFile) errs.image = t.upload?.imageRequiredError;
-    if (!idCardFront) errs.idCardFront = t.upload?.idCardRequiredError ?? "请上传身份证照片";
-    if (!form.idCardType) errs.idCardType = t.upload?.idCardTypeRequired ?? "请选择证件类型";
-    if (!form.idCardName.trim()) errs.idCardName = t.upload?.idCardNameRequired ?? "请输入真实姓名";
-    if (!form.idCardNumber.trim()) errs.idCardNumber = t.upload?.idCardNumberRequired ?? "请输入身份证号码";
+    if (!idCardFront) errs.idCardFront = t.upload?.idCardRequiredError ?? "Please upload your ID card photo";
+    if (!form.idCardType) errs.idCardType = t.upload?.idCardTypeRequired ?? "Please select ID type";
+    if (!form.idCardName.trim()) errs.idCardName = t.upload?.idCardNameRequired ?? "Please enter your name as on ID card";
+    if (!form.idCardNumber.trim()) errs.idCardNumber = t.upload?.idCardNumberRequired ?? "Please enter your ID card number";
     setErrors(errs);
     return Object.keys(errs).length === 0;
   };
@@ -267,7 +286,7 @@ export default function UploadPortraitPage() {
           {/* Notice */}
           <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-4">
             <p className="text-sm text-blue-700 dark:text-blue-400">
-              🔒 <strong>{t.upload?.uploadTip ? "隐私" : "隐私："}</strong>{t.upload?.uploadTip}
+              🔒 <strong>{t.upload?.privacyLabel || "Privacy"}:</strong> {t.upload?.uploadTip}
             </p>
           </div>
 
@@ -308,7 +327,7 @@ export default function UploadPortraitPage() {
             {/* Legal Warning */}
             <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl p-4 mb-4">
               <p className="text-sm text-amber-700 dark:text-amber-400">
-                ⚠️ <strong>重要提示：</strong>如果肖像与身份证信息不匹配，该证书将不具备法律效益。
+                ⚠️ <strong>{t.upload?.legalWarningTitle || "Important"}:</strong> {t.upload?.legalWarningDesc || "If the portrait does not match the ID card information, the certificate will not have legal effect."}
               </p>
             </div>
 
@@ -316,30 +335,30 @@ export default function UploadPortraitPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  证件类型 <span className="text-red-500">*</span>
+                  {t.upload?.idCardType || "ID Type"} <span className="text-red-500">*</span>
                 </label>
                 <select
                   value={form.idCardType}
                   onChange={e => { setForm(f => ({ ...f, idCardType: e.target.value })); setErrors(prev => ({ ...prev, idCardType: "" })); }}
                   className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
                 >
-                  <option value="">请选择证件类型</option>
-                  <option value="passport">护照 Passport</option>
-                  <option value="driver_license">驾驶证 Driver License</option>
-                  <option value="us_id">身份证 ID Card</option>
-                  <option value="other">其他 Other</option>
+                  <option value="">{t.upload?.selectIdType || "Select ID type"}</option>
+                  <option value="passport">Passport</option>
+                  <option value="driver_license">Driver License</option>
+                  <option value="us_id">ID Card</option>
+                  <option value="other">Other</option>
                 </select>
                 {errors.idCardType && <p className="mt-1 text-sm text-red-600">{errors.idCardType}</p>}
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  真实姓名 <span className="text-red-500">*</span>
+                  {t.upload?.idCardName || "Full Name"} <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
                   value={form.idCardName}
                   onChange={e => { setForm(f => ({ ...f, idCardName: e.target.value })); setErrors(prev => ({ ...prev, idCardName: "" })); }}
-                  placeholder="请输入证件上的真实姓名"
+                  placeholder={t.upload?.idCardNamePlaceholder || "Enter name as on ID card"}
                   maxLength={100}
                   className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
                 />
@@ -347,13 +366,13 @@ export default function UploadPortraitPage() {
               </div>
               <div className="sm:col-span-2">
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  身份证号码 <span className="text-red-500">*</span>
+                  {t.upload?.idCardNumber || "ID Number"} <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
                   value={form.idCardNumber}
                   onChange={e => { setForm(f => ({ ...f, idCardNumber: e.target.value })); setErrors(prev => ({ ...prev, idCardNumber: "" })); }}
-                  placeholder="请输入身份证号码"
+                  placeholder={t.upload?.idCardNumberPlaceholder || "Enter ID number"}
                   maxLength={50}
                   className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
                 />
@@ -362,7 +381,7 @@ export default function UploadPortraitPage() {
             </div>
 
             {/* ID Card photo upload */}
-            <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">身份证照片（正面）<span className="text-red-500">*</span></p>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">{t.upload?.idCardFront || "ID Card Photo (Front)"} <span className="text-red-500">*</span></p>
             {!idCardFrontPreview ? (
               <label
                 className="flex flex-col items-center justify-center border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl cursor-pointer hover:border-blue-400 dark:hover:border-blue-500 transition-colors"

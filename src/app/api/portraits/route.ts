@@ -113,6 +113,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ success: true, data: portrait }, { status: 201 });
   } catch (error) {
     console.error("[POST /api/portraits]", error);
-    return NextResponse.json({ success: false, error: "创建肖像记录失败，请重试。" }, { status: 500 });
+    return NextResponse.json({ success: false, error: "Failed to create portrait record, please retry." }, { status: 500 });
   }
 }

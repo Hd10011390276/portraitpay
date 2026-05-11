@@ -88,7 +88,7 @@ export async function GET(request: NextRequest) {
       }
 
       if (visibility === "VERIFIED_CREATORS") {
-        if (currentUser.role === "CREATOR") {
+        if (currentUser.role === "TALENT") {
           return actor;
         }
         // CREATOR sees actor without mediaKitUrl

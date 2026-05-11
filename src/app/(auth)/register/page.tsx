@@ -61,8 +61,8 @@ export default function RegisterPage() {
     else if (currentForm.password !== currentForm.confirmPassword) errs.confirmPassword = t.register.errors.passwordsMismatch;
     if (!currentForm.role) errs.role = t.register.errors.selectRole;
 
-    // Media Kit validation for ACTOR role
-    if (currentForm.role === "ACTOR" && mediaKitUrl.trim() !== "") {
+    // Media Kit validation for TALENT role
+    if (currentForm.role === "TALENT" && mediaKitUrl.trim() !== "") {
       try { new URL(mediaKitUrl); }
       catch { errs.mediaKitUrl = t.register.errors.invalidMediaKitUrl || "Invalid URL format"; }
       if (!mediaKitShareConfirmed) errs.mediaKitShareConfirmed = t.register.errors.mediaKitConfirmRequired || "Please confirm your rights to share this link";
@@ -95,10 +95,10 @@ export default function RegisterPage() {
           allowLicensing,
           allowedScopes,
           prohibitedContent,
-          mediaKitUrl: form.role === "ACTOR" ? mediaKitUrl : undefined,
-          mediaKitShareConfirmed: form.role === "ACTOR" ? mediaKitShareConfirmed : false,
-          mediaKitReviewOnlyAcknowledged: form.role === "ACTOR" ? mediaKitReviewOnlyAcknowledged : false,
-          mediaKitVisibility: form.role === "ACTOR" ? mediaKitVisibility : "PRIVATE",
+          mediaKitUrl: form.role === "TALENT" ? mediaKitUrl : undefined,
+          mediaKitShareConfirmed: form.role === "TALENT" ? mediaKitShareConfirmed : false,
+          mediaKitReviewOnlyAcknowledged: form.role === "TALENT" ? mediaKitReviewOnlyAcknowledged : false,
+          mediaKitVisibility: form.role === "TALENT" ? mediaKitVisibility : "PRIVATE",
         }),
       });
 
@@ -216,8 +216,8 @@ export default function RegisterPage() {
               error={errors.role}
             />
 
-            {/* Actor Media Kit — only shown for ACTOR role */}
-            {form.role === "ACTOR" && (
+            {/* Talent Media Kit — only shown for TALENT role */}
+            {form.role === "TALENT" && (
               <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-5 space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-blue-900 dark:text-blue-200 mb-1">

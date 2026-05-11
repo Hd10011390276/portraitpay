@@ -13,16 +13,10 @@ export function RoleSelector({ value, onChange, error }: RoleSelectorProps) {
 
   const roles = [
     {
-      value: "ACTOR",
-      label: t.register.roleActor,
-      description: t.register.roleActorDesc,
-      icon: "👤",
-    },
-    {
-      value: "CREATOR",
-      label: t.register.roleCreator,
-      description: t.register.roleCreatorDesc,
-      icon: "🎨",
+      value: "TALENT",
+      label: t.register.roleTalent || "Actor/Creator",
+      description: t.register.roleTalentDesc || "Actors, models, influencers - can upload portraits and create content",
+      icon: "🎭",
     },
     {
       value: "AGENCY",
