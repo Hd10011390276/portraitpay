@@ -170,6 +170,28 @@ export async function POST(request: NextRequest, context: RouteContext) {
       );
     }
 
+    // Assign sequential certificate number atomically
+    const counter = await prisma.$transaction(async (tx) => {
+      const updated = await tx.$executeRaw`
+        UPDATE "CertificateCounter"
+        SET "nextNumber" = "nextNumber" + 1
+        WHERE id = 'global'
+        RETURNING "nextNumber"
+      `;
+      return updated[0]?.nextNumber ?? null;
+    });
+
+    if (!counter) {
+      return NextResponse.json(
+        { success: false, error: "Failed to generate certificate number" },
+        { status: 500 }
+      );
+    }
+
+    const certificateNumber = counter - 1;
+    const certNo = `CERT-${new Date().getFullYear()}-${String(certificateNumber).padStart(5, "0")}`;
+    const isEarlyContributor = certificateNumber <= 1000;
+
     const updated = await prisma.portrait.update({
       where: { id },
       data: {
@@ -182,6 +204,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
         blockchainNetwork: network,
         certifiedAt: certificationResult.certifiedAt,
         status: "ACTIVE",
+        certificateNumber,
       },
     });
 
@@ -194,7 +217,6 @@ export async function POST(request: NextRequest, context: RouteContext) {
         ? rawNumber.slice(0, 3) + "***" + rawNumber.slice(-4)
         : "***";
 
-      const certNo = `PPC-${new Date().getFullYear()}${String(new Date().getMonth() + 1).padStart(2, "0")}${String(new Date().getDate()).padStart(2, "0")}-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
       const templatePath = `${process.cwd()}/public/images/blockchain-certificate-template.png`;
       const ownerName = portrait.owner.name ?? portrait.owner.email.split("@")[0];
 
@@ -212,6 +234,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
             network,
             certifiedAt: certificationResult.certifiedAt,
             certificateNo: certNo,
+            isEarlyContributor,
           },
           templatePath
         ) as unknown as Buffer;
@@ -233,6 +256,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
         certifiedAt: certificationResult.certifiedAt.toString(),
         certificateBuffer: certBuffer,
         certificateNo: certNo,
+        isEarlyContributor,
       }).catch((e: unknown) => console.error("[Mint] Email send failed:", e));
     }
 
@@ -246,6 +270,9 @@ export async function POST(request: NextRequest, context: RouteContext) {
         blockNumber: certificationResult.blockNumber,
         network,
         certifiedAt: certificationResult.certifiedAt,
+        certificateNumber,
+        certNo,
+        isEarlyContributor,
       },
     });
   } catch (error) {

@@ -26,6 +26,7 @@ interface PortraitDetail {
   blockchainNetwork?: string | null;
   ipfsCid?: string | null;
   certifiedAt?: string | null;
+  certificateNumber?: number | null;
   isPublic: boolean;
   createdAt: string;
   updatedAt: string;
@@ -370,6 +371,15 @@ export default function PortraitDetailPage() {
                 <span>📜</span> {tc.blockchainCertificate}
               </h3>
               <div className="space-y-2 text-sm">
+                {portrait.certificateNumber && (
+                  <div className="flex gap-2">
+                    <span className="text-gray-500 dark:text-gray-400 w-24 shrink-0">Certificate</span>
+                    <span className="text-yellow-600 dark:text-yellow-400 font-bold">
+                      CERT-{new Date().getFullYear()}-{String(portrait.certificateNumber).padStart(5, "0")}
+                      {portrait.certificateNumber <= 1000 && <span className="ml-2 text-yellow-500">★ EARLY CONTRIBUTOR ★</span>}
+                    </span>
+                  </div>
+                )}
                 <div className="flex gap-2">
                   <span className="text-gray-500 dark:text-gray-400 w-24 shrink-0">{tc.network}</span>
                   <span className="text-gray-900 dark:text-white font-medium">{getNetworkLabel(portrait.blockchainNetwork)}</span>

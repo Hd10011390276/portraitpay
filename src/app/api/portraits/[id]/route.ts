@@ -46,6 +46,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
         idCardType: true,
         idCardName: true,
         certifiedAt: true,
+        certificateNumber: true,
         status: true,
         isPublic: true,
         createdAt: true,

@@ -193,15 +193,17 @@ interface PortraitCertifiedEmailParams {
   certificateBuffer?: Buffer;
   certificateUrl?: string;
   certificateNo?: string;
+  isEarlyContributor?: boolean;
 }
 
 export async function sendPortraitCertifiedEmail(params: PortraitCertifiedEmailParams): Promise<void> {
-  const { name, email, portraitTitle, portraitImageHash, idCardFrontHash, idCardName, idCardType, idCardNumberMasked, blockchainTxHash, network, certifiedAt, certificateBuffer, certificateUrl, certificateNo } = params;
+  const { name, email, portraitTitle, portraitImageHash, idCardFrontHash, idCardName, idCardType, idCardNumberMasked, blockchainTxHash, network, certifiedAt, certificateBuffer, certificateUrl, certificateNo, isEarlyContributor } = params;
   const explorerUrl = network === "base" ? "https://basescan.org/tx/" : "https://etherscan.io/tx/";
   const txUrl = `${explorerUrl}${blockchainTxHash}`;
-  const certifiedAtStr = new Date(certifiedAt).toLocaleString("zh-CN", { timeZone: "Asia/Shanghai" });
+  const certifiedAtStr = new Date(certifiedAt).toLocaleString("en-US", { timeZone: "UTC" });
 
-  const idTypeLabel = idCardType === "driver_license" ? "驾驶证" : idCardType === "us_id" ? "美国身份证" : idCardType === "passport" ? "护照" : "其他";
+  const idTypeLabel = idCardType === "driver_license" ? "Driver License" : idCardType === "us_id" ? "US ID" : idCardType === "passport" ? "Passport" : "Other";
+  const earlyBadge = isEarlyContributor ? '<div style="background:#fbbf24;color:#000;padding:8px 16px;border-radius:8px;font-size:13px;font-weight:bold;margin-bottom:16px;text-align:center">★ EARLY CONTRIBUTOR — Certificate #' + certificateNo + ' ★</div>' : '';
 
   const html = `<!DOCTYPE html>
 <html>
@@ -209,39 +211,41 @@ export async function sendPortraitCertifiedEmail(params: PortraitCertifiedEmailP
 <body style="font-family:Arial,sans-serif;background:#f4f4f4;margin:0;padding:20px">
 <div style="max-width:600px;margin:0 auto;background:#fff;border-radius:8px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.08)">
   <div style="background:#7c3aed;padding:20px 24px">
-    <h2 style="margin:0;color:#fff;font-size:18px">✅ 肖像区块链认证完成</h2>
-    <p style="margin:4px 0 0;color:#e9d5ff;font-size:13px">PortraitPay AI · 认证通知</p>
+    <h2 style="margin:0;color:#fff;font-size:18px">Portrait Blockchain Certification Complete</h2>
+    <p style="margin:4px 0 0;color:#e9d5ff;font-size:13px">PortraitPay AI · Certification Notice</p>
   </div>
   <div style="padding:24px">
-    <p style="font-size:15px;color:#333">${name}，您好！</p>
-    <p style="font-size:15px;color:#333">您的肖像 <strong>"${portraitTitle}"</strong> 已成功注册到区块链，永久存证不可篡改。</p>
+    ${earlyBadge}
+    <p style="font-size:15px;color:#333">Hello ${name}!</p>
+    <p style="font-size:15px;color:#333">Your portrait <strong>"${portraitTitle}"</strong> has been successfully registered on the blockchain — permanently stored and tamper-proof.</p>
+    ${certificateNo ? '<p style="font-size:15px;color:#7c3aed;font-weight:bold">Certificate No: ' + certificateNo + '</p>' : ''}
     <div style="margin:20px 0;padding:16px;background:#f9f9f9;border-radius:8px">
       <table style="width:100%;border-collapse:collapse">
-        <tr><td style="padding:6px 0;color:#666;font-size:13px">真实姓名</td><td style="padding:6px 0;font-size:13px;font-weight:bold;color:#333">${idCardName}</td></tr>
-        <tr><td style="padding:6px 0;color:#666;font-size:13px">证件类型</td><td style="padding:6px 0;font-size:13px">${idTypeLabel}</td></tr>
-        <tr><td style="padding:6px 0;color:#666;font-size:13px">证件号码</td><td style="padding:6px 0;font-size:13px;font-family:monospace;color:#7c3aed">${idCardNumberMasked}</td></tr>
-        <tr><td style="padding:6px 0;color:#666;font-size:13px">肖像照片哈希</td><td style="padding:6px 0;font-size:11px;font-family:monospace;color:#7c3aed;word-break:break-all">${portraitImageHash.slice(0, 20)}...</td></tr>
-        <tr><td style="padding:6px 0;color:#666;font-size:13px">证件照片哈希</td><td style="padding:6px 0;font-size:11px;font-family:monospace;color:#7c3aed;word-break:break-all">${idCardFrontHash.slice(0, 20)}...</td></tr>
-        <tr><td style="padding:6px 0;color:#666;font-size:13px">区块链网络</td><td style="padding:6px 0;font-size:13px">${network === "base" ? "Base Mainnet" : network}</td></tr>
-        <tr><td style="padding:6px 0;color:#666;font-size:13px">认证时间</td><td style="padding:6px 0;font-size:13px">${certifiedAtStr}</td></tr>
-        <tr><td style="padding:6px 0;color:#666;font-size:13px">交易哈希</td><td style="padding:6px 0;font-size:12px;font-family:monospace;color:#7c3aed">${blockchainTxHash.slice(0, 16)}...</td></tr>
+        <tr><td style="padding:6px 0;color:#666;font-size:13px">Legal Name</td><td style="padding:6px 0;font-size:13px;font-weight:bold;color:#333">${idCardName}</td></tr>
+        <tr><td style="padding:6px 0;color:#666;font-size:13px">ID Type</td><td style="padding:6px 0;font-size:13px">${idTypeLabel}</td></tr>
+        <tr><td style="padding:6px 0;color:#666;font-size:13px">ID Number</td><td style="padding:6px 0;font-size:13px;font-family:monospace;color:#7c3aed">${idCardNumberMasked}</td></tr>
+        <tr><td style="padding:6px 0;color:#666;font-size:13px">Portrait Photo Hash</td><td style="padding:6px 0;font-size:11px;font-family:monospace;color:#7c3aed;word-break:break-all">${portraitImageHash.slice(0, 20)}...</td></tr>
+        <tr><td style="padding:6px 0;color:#666;font-size:13px">ID Photo Hash</td><td style="padding:6px 0;font-size:11px;font-family:monospace;color:#7c3aed;word-break:break-all">${idCardFrontHash.slice(0, 20)}...</td></tr>
+        <tr><td style="padding:6px 0;color:#666;font-size:13px">Blockchain Network</td><td style="padding:6px 0;font-size:13px">${network === "base" ? "Base Mainnet" : network}</td></tr>
+        <tr><td style="padding:6px 0;color:#666;font-size:13px">Certification Time</td><td style="padding:6px 0;font-size:13px">${certifiedAtStr}</td></tr>
+        <tr><td style="padding:6px 0;color:#666;font-size:13px">Transaction Hash</td><td style="padding:6px 0;font-size:12px;font-family:monospace;color:#7c3aed">${blockchainTxHash.slice(0, 16)}...</td></tr>
       </table>
     </div>
     <div style="text-align:center;margin:20px 0">
-      <a href="${txUrl}" style="display:inline-block;padding:12px 24px;background:#7c3aed;color:#fff;text-decoration:none;border-radius:8px;font-size:14px">查看区块链交易 →</a>
+      <a href="${txUrl}" style="display:inline-block;padding:12px 24px;background:#7c3aed;color:#fff;text-decoration:none;border-radius:8px;font-size:14px">View Blockchain Transaction →</a>
     </div>
-    <p style="font-size:12px;color:#999">此通知由系统自动发送，请勿回复。如有疑问请联系 support@portraitpayai.com</p>
+    <p style="font-size:12px;color:#999">This is an automated system notification. Please do not reply. Contact support@portraitpayai.com for questions.</p>
   </div>
 </div>
 </body>
 </html>`;
 
-  const text = `PortraitPay AI — 肖像区块链认证完成\n\n${name}，您好！\n您的肖像 "${portraitTitle}" 已成功注册到区块链，永久存证不可篡改。\n\n真实姓名: ${idCardName}\n证件类型: ${idTypeLabel}\n证件号码: ${idCardNumberMasked}\n肖像照片哈希: ${portraitImageHash}\n证件照片哈希: ${idCardFrontHash}\n区块链网络: ${network === "base" ? "Base Mainnet" : network}\n认证时间: ${certifiedAtStr}\n交易哈希: ${blockchainTxHash}\n\n查看区块链交易: ${txUrl}\n\n此通知由系统自动发送，请勿回复。`;
+  const text = `PortraitPay AI — Portrait Blockchain Certification Complete\n\nHello ${name}!\nYour portrait "${portraitTitle}" has been successfully registered on the blockchain — permanently stored and tamper-proof.\n${certificateNo ? 'Certificate No: ' + certificateNo + '\n' : ''}\nLegal Name: ${idCardName}\nID Type: ${idTypeLabel}\nID Number: ${idCardNumberMasked}\nPortrait Photo Hash: ${portraitImageHash}\nID Photo Hash: ${idCardFrontHash}\nBlockchain Network: ${network === "base" ? "Base Mainnet" : network}\nCertification Time: ${certifiedAtStr}\nTransaction Hash: ${blockchainTxHash}\n\nView Blockchain Transaction: ${txUrl}\n\nThis is an automated system notification. Please do not reply.`;
 
   try {
     await sendEmail({
       to: email,
-      subject: `✅ 肖像认证成功 - ${portraitTitle}`,
+      subject: `Portrait Certification Complete - ${portraitTitle}`,
       html,
       text,
       attachments: certificateBuffer

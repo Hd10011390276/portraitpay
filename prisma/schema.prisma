@@ -151,6 +151,8 @@ model Portrait {
   blockchainTxHash  String?   @unique
   blockchainNetwork String?   @default("sepolia")
   certifiedAt       DateTime?
+  // Sequential certificate number: CERT-2026-00001
+  certificateNumber Int?      @unique
 
   // Status: DRAFT, ACTIVE, SUSPENDED, ARCHIVED
   status        String @default("DRAFT")
