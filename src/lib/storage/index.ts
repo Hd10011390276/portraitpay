@@ -11,12 +11,14 @@ export interface UploadResult {
 }
 
 function getS3Config() {
+  const endpoint = process.env.AWS_ENDPOINT;
+  const isR2 = !!endpoint;
   return {
     bucket: process.env.AWS_S3_BUCKET!,
-    region: process.env.AWS_REGION ?? process.env.AWS_S3_REGION ?? "auto",
+    region: isR2 ? "auto" : (process.env.AWS_REGION ?? process.env.AWS_S3_REGION ?? "us-east-1"),
     accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
     secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
-    endpoint: process.env.AWS_ENDPOINT, // Optional: for R2/custom S3
+    endpoint,
   };
 }
 
