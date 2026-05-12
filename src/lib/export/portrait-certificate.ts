@@ -1,10 +1,12 @@
 /**
  * Generate PNG certificate by overlaying text on template image
- * Uses embedded fonts to work in Vercel serverless environment
+ * Uses fonts from node_modules to work in Vercel serverless environment
  */
 
 import sharp from "sharp";
 import { format } from "date-fns";
+import * as fs from "fs";
+import * as path from "path";
 
 export interface CertificateData {
   portraitTitle: string;
@@ -34,6 +36,36 @@ function truncateHash(hash: string, maxLen: number = 40): string {
   return hash.slice(0, 16) + "..." + hash.slice(-16);
 }
 
+// Load font file and return as base64
+function loadFontBase64(fontPath: string): string | null {
+  try {
+    if (fs.existsSync(fontPath)) {
+      const fontData = fs.readFileSync(fontPath);
+      return fontData.toString("base64");
+    }
+  } catch (e) {
+    // Ignore errors
+  }
+  return null;
+}
+
+function getNotoSansLatinBase64(): string | null {
+  const paths = [
+    // Production: process.cwd() should be the project root on Vercel
+    path.join(process.cwd(), "node_modules/@fontsource/noto-sans/files/noto-sans-latin-400-normal.woff"),
+    path.join(process.cwd(), "node_modules/@fontsource/noto-sans/files/noto-sans-latin-400-normal.woff2"),
+    // Development fallback paths
+    path.join(__dirname, "../../node_modules/@fontsource/noto-sans/files/noto-sans-latin-400-normal.woff"),
+    path.join(__dirname, "../../node_modules/@fontsource/noto-sans/files/noto-sans-latin-400-normal.woff2"),
+  ];
+
+  for (const p of paths) {
+    const result = loadFontBase64(p);
+    if (result) return result;
+  }
+  return null;
+}
+
 export async function buildCertificateImage(
   data: CertificateData,
   templatePath?: string
@@ -50,15 +82,37 @@ export async function buildCertificateImage(
 
   const portraitTitle = escapeXml(data.portraitTitle);
   const ownerName = escapeXml(data.idCardName);
-  const idCardType = escapeXml(data.idCardType);
   const txHash = truncateHash(data.blockchainTxHash, 66);
   const imgHash = truncateHash(data.portraitHash || "", 66);
 
   const VAL_X = 1229;
 
-  // Use Google Fonts for all text - works in Vercel serverless if network is available
-  // Noto Sans SC covers both Latin and Chinese characters
-  const googleFontUrl = "https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&family=Noto+Sans:wght@400;500;700&display=swap";
+  // Try to load Noto Sans Latin font for ASCII text (hashes, dates, etc.)
+  // Font file is ~16KB and is bundled via @fontsource/noto-sans
+  const fontBase64 = getNotoSansLatinBase64();
+
+  // Build CSS with embedded font if available, otherwise use system fonts
+  const fontFaceCSS = fontBase64
+    ? `
+    @font-face {
+      font-family: 'NotoSans';
+      src: url(data:font/woff;base64,${fontBase64}) format('woff');
+      font-weight: 400;
+      font-style: normal;
+    }`
+    : '';
+
+  // Font stack - try embedded Noto Sans first, then fall back to common fonts
+  // that might be available on the system
+  const fontFamilyASCII = fontBase64
+    ? "'NotoSans', 'Arial', 'Helvetica', sans-serif"
+    : "'Arial', 'Helvetica', sans-serif";
+  const fontFamilyAsian = fontBase64
+    ? "'NotoSans', 'Noto Sans SC', 'Microsoft YaHei', 'SimHei', sans-serif"
+    : "'Noto Sans SC', 'Microsoft YaHei', 'SimHei', 'Arial', sans-serif";
+  const fontFamilyMono = fontBase64
+    ? "'NotoSans', 'Courier New', monospace"
+    : "'Courier New', monospace";
 
   const overlaySvg = `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg">
   <defs>
@@ -67,48 +121,48 @@ export async function buildCertificateImage(
       <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
     </filter>
     <style>
-      @import url('${googleFontUrl}');
+      ${fontFaceCSS}
     </style>
   </defs>
 
-  <!-- Network - y=1216 -->
+  <!-- Network - y=1216 (ASCII only) -->
   <text x="${VAL_X}" y="1216"
-        font-family="'Noto Sans', 'Noto Sans SC', sans-serif" font-size="50"
+        font-family="${fontFamilyASCII}" font-size="50"
         fill="#a855f7" font-weight="500">
     ${networkLabel}
   </text>
 
-  <!-- User ID / Owner Name - y=1336 -->
+  <!-- User ID / Owner Name - y=1336 (may have Chinese) -->
   <text x="${VAL_X}" y="1336"
-        font-family="'Noto Sans SC', 'Noto Sans', sans-serif" font-size="50"
+        font-family="${fontFamilyAsian}" font-size="50"
         font-weight="500" fill="white">
     ${ownerName}
   </text>
 
-  <!-- Portrait Title - y=1459 -->
+  <!-- Portrait Title - y=1459 (may have Chinese) -->
   <text x="${VAL_X}" y="1459"
-        font-family="'Noto Sans SC', 'Noto Sans', sans-serif" font-size="50"
+        font-family="${fontFamilyAsian}" font-size="50"
         font-weight="500" fill="white">
     ${portraitTitle}
   </text>
 
-  <!-- Transaction Hash - y=1651 -->
+  <!-- Transaction Hash - y=1651 (ASCII only) -->
   <text x="${VAL_X}" y="1651"
-        font-family="'Noto Sans', monospace" font-size="42"
+        font-family="${fontFamilyMono}" font-size="42"
         fill="#a855f7">
     ${escapeXml(txHash)}
   </text>
 
-  <!-- Image Hash (SHA-256) - y=1894 -->
+  <!-- Image Hash (SHA-256) - y=1894 (ASCII only) -->
   <text x="${VAL_X}" y="1894"
-        font-family="'Noto Sans', monospace" font-size="42"
+        font-family="${fontFamilyMono}" font-size="42"
         fill="#a855f7">
     ${escapeXml(imgHash)}
   </text>
 
-  <!-- Certified Time - y=2086 -->
+  <!-- Certified Time - y=2086 (ASCII only) -->
   <text x="${VAL_X}" y="2086"
-        font-family="'Noto Sans SC', 'Noto Sans', sans-serif" font-size="48"
+        font-family="${fontFamilyASCII}" font-size="48"
         fill="white" font-weight="500">
     ${certDateStr}
   </text>
@@ -116,7 +170,7 @@ export async function buildCertificateImage(
   <!-- Early Contributor Badge -->
   ${data.isEarlyContributor ? `
   <text x="${W * 0.5}" y="${H * 0.92}"
-        text-anchor="middle" font-family="'Noto Sans', sans-serif" font-size="48"
+        text-anchor="middle" font-family="${fontFamilyASCII}" font-size="48"
         font-weight="bold" fill="#fbbf24" filter="url(#glow)">
     ★ EARLY CONTRIBUTOR ★
   </text>` : ""}
