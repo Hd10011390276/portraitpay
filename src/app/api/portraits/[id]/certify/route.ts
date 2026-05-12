@@ -121,18 +121,18 @@ export async function POST(request: NextRequest, context: RouteContext) {
     let pngBuffer = null;
     try {
       pngBuffer = await buildPortraitCertificate({
-        portraitId: id,
-        portraitTitle: portrait.title,
+        portraitTitle: portrait.title || "Untitled",
         portraitHash: portraitImageHash,
         idCardHash: idCardFrontHash,
-        idCardType,
-        idCardName,
-        idCardNumber,
         blockchainTxHash: certificationResult.txHash,
-        certifiedAt: certificationResult.certifiedAt,
         network,
+        certifiedAt: new Date(certificationResult.certifiedAt),
+        idCardName: idCardName || "Unknown",
+        idCardType: idCardType || "ID Card",
+        idCardNumberMasked: idCardNumber ? idCardNumber.replace(/^(.{4}).+(.{4})$/, "$1****$2") : "****",
+        certificateNo: `CERT-${new Date().getFullYear()}-00001`,
       });
-      
+
       // Upload to R2
       const certKey = `certificates/${id}/${Date.now()}.png`;
       certificateUrl = await uploadFile(pngBuffer, certKey, "image/png");
@@ -144,20 +144,19 @@ export async function POST(request: NextRequest, context: RouteContext) {
     // Send email with PNG buffer attached
     try {
       await sendPortraitCertifiedEmail({
-        portraitId: id,
-        portraitTitle: portrait.title,
-        ownerEmail: portrait.owner.email!,
-        ownerName: portrait.owner.name ?? portrait.owner.displayName ?? "User",
-        portraitHash: portraitImageHash,
-        idCardHash: idCardFrontHash,
-        idCardType,
-        idCardName,
-        idCardNumber,
+        name: portrait.owner.name ?? portrait.owner.displayName ?? "User",
+        email: portrait.owner.email!,
+        portraitTitle: portrait.title || "Untitled",
+        portraitImageHash: portraitImageHash,
+        idCardFrontHash: idCardFrontHash,
+        idCardType: idCardType || "ID Card",
+        idCardName: idCardName || "Unknown",
+        idCardNumberMasked: idCardNumber ? idCardNumber.replace(/^(.{4}).+(.{4})$/, "$1****$2") : "****",
         blockchainTxHash: certificationResult.txHash,
-        certifiedAt: certificationResult.certifiedAt,
         network,
-        certificateBuffer: pngBuffer,
-        certificateUrl,
+        certifiedAt: certificationResult.certifiedAt,
+        certificateBuffer: pngBuffer || undefined,
+        certificateUrl: certificateUrl || undefined,
       });
     } catch (emailErr) {
       console.error("[Certify] Email send failed:", emailErr);
