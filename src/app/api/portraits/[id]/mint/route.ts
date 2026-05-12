@@ -125,8 +125,9 @@ export async function POST(request: NextRequest, context: RouteContext) {
       console.error("[Mint] Blockchain mint failed:", errMsg);
 
       if (errMsg.includes("already registered") || errMsg.includes("already minted") || errMsg.includes("Already certified")) {
+        // Find any portrait with the same image hash (already on blockchain)
         const existingPortrait = await prisma.portrait.findFirst({
-          where: { portraitImageHash, blockchainTxHash: { not: null } },
+          where: { portraitImageHash },
           select: {
             id: true, portraitImageHash: true, blockchainTxHash: true,
             blockchainNetwork: true, certifiedAt: true,
@@ -142,9 +143,9 @@ export async function POST(request: NextRequest, context: RouteContext) {
               idCardType,
               idCardName,
               idCardNumber,
-              blockchainTxHash: existingPortrait.blockchainTxHash,
-              blockchainNetwork: existingPortrait.blockchainNetwork,
-              certifiedAt: existingPortrait.certifiedAt,
+              blockchainTxHash: existingPortrait.blockchainTxHash ?? `reused:${portraitImageHash.slice(0, 16)}`,
+              blockchainNetwork: existingPortrait.blockchainNetwork ?? network,
+              certifiedAt: existingPortrait.certifiedAt ?? new Date(),
               status: "ACTIVE",
             },
           });
