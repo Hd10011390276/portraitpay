@@ -1,18 +1,21 @@
 /**
- * Email utility — Nodemailer + SMTP (腾讯企业邮箱 / exmail.qq.com)
- * 邮件发送工具，通过 nodemailer 调用 SMTP 发送
+ * Email utility — Resend (primary) or Nodemailer + SMTP (fallback)
  *
  * 环境变量配置:
- * - SMTP_HOST     (默认: smtp.exmail.qq.com)
- * - SMTP_PORT     (默认: 465)
- * - SMTP_USER     (发件邮箱，如 contact@portraitpayai.com)
- * - SMTP_PASS     (SMTP 授权码)
- * - EMAIL_FROM    (发件地址，同 SMTP_USER)
- * - EMAIL_FROM_NAME  (发件人名称，默认 PortraitPay AI)
- * - ADMIN_EMAIL   (通知邮件收件人)
+ * - RESEND_API_KEY    (Resend API key, 推荐使用)
+ * - SMTP_HOST         (默认: smtp.exmail.qq.com)
+ * - SMTP_PORT         (默认: 465)
+ * - SMTP_USER         (发件邮箱，如 contact@portraitpayai.com)
+ * - SMTP_PASS         (SMTP 授权码)
+ * - EMAIL_FROM        (发件地址)
+ * - EMAIL_FROM_NAME   (发件人名称，默认 PortraitPay AI)
+ * - ADMIN_EMAIL       (通知邮件收件人)
  */
 
 import nodemailer from "nodemailer";
+import { Resend } from "resend";
+
+const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
 export interface EmailOptions {
   to: string | string[];
@@ -65,16 +68,42 @@ function createTransporter(): nodemailer.Transporter {
 }
 
 // ============================================================
-// SMTP sender
+// Email sender (Resend preferred, SMTP fallback)
 // ============================================================
 async function sendViaSMTP(opts: EmailOptions): Promise<void> {
-  const transporter = createTransporter();
-
   const from = process.env.EMAIL_FROM ?? process.env.SMTP_USER ?? "noreply@portraitpayai.com";
   const fromName = process.env.EMAIL_FROM_NAME ?? "PortraitPay AI";
-
   const toAddresses = Array.isArray(opts.to) ? opts.to : [opts.to];
 
+  // Try Resend first if API key is configured
+  if (resend) {
+    try {
+      const { data, error } = await resend.emails.send({
+        from: `${fromName} <${from}>`,
+        to: toAddresses,
+        subject: opts.subject,
+        html: opts.html,
+        text: opts.text,
+        attachments: opts.attachments?.map(a => ({
+          filename: a.filename,
+          content: typeof a.content === 'string' ? a.content : a.content.toString('base64'),
+        })),
+      });
+
+      if (error) {
+        throw new Error(`Resend error: ${error.message}`);
+      }
+
+      console.log("[Email] Sent via Resend:", data?.id, "to:", opts.to);
+      return;
+    } catch (resendErr) {
+      console.error("[Email] Resend failed, falling back to SMTP:", resendErr instanceof Error ? resendErr.message : String(resendErr));
+      // Fall through to SMTP
+    }
+  }
+
+  // Fallback to SMTP
+  const transporter = createTransporter();
   const info = await transporter.sendMail({
     from: `"${fromName}" <${from}>`,
     to: toAddresses.join(", "),

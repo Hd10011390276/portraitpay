@@ -17,6 +17,35 @@ async function sendSmtpEmail(options: {
   html: string;
   text: string;
 }): Promise<void> {
+  // Try Resend first if API key is configured
+  if (process.env.RESEND_API_KEY) {
+    try {
+      const { Resend } = await import("resend");
+      const resend = new Resend(process.env.RESEND_API_KEY);
+      const smtpFrom = process.env.SMTP_FROM || process.env.SMTP_USER || "noreply@portraitpayai.com";
+      const fromName = process.env.EMAIL_FROM_NAME || "PortraitPay AI";
+
+      const { data, error } = await resend.emails.send({
+        from: `${fromName} <${smtpFrom}>`,
+        to: options.to,
+        subject: options.subject,
+        html: options.html,
+        text: options.text,
+      });
+
+      if (error) {
+        throw new Error(`Resend error: ${error.message}`);
+      }
+
+      console.log("[Email] Sent via Resend:", data?.id, "to:", options.to);
+      return;
+    } catch (resendErr) {
+      console.error("[Email] Resend failed, falling back to SMTP:", resendErr instanceof Error ? resendErr.message : String(resendErr));
+      // Fall through to SMTP
+    }
+  }
+
+  // Fallback to SMTP
   let nodemailer: typeof import("nodemailer") | null = null;
   try {
     nodemailer = await import("nodemailer");
