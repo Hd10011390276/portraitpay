@@ -218,7 +218,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
         ? rawNumber.slice(0, 3) + "***" + rawNumber.slice(-4)
         : "***";
 
-      const templatePath = `${process.cwd()}/public/images/blockchain-certificate-template.png`;
+      const templatePath = `${process.cwd()}/public/images/blockchain-certificate-template-final.png`;
       const ownerName = portrait.owner.name ?? portrait.owner.email.split("@")[0];
 
       let certBuffer: Buffer | undefined;
