@@ -46,6 +46,10 @@ export async function GET(request: NextRequest, context: RouteContext) {
       certifiedAt: portrait.certifiedAt ? new Date(portrait.certifiedAt) : new Date(),
       idCardName: portrait.idCardName || 'Unknown',
       idCardType: portrait.idCardType || 'ID Card',
+      certificateNo: portrait.certificateNumber
+        ? `CERT-${new Date().getFullYear()}-${String(portrait.certificateNumber).padStart(5, '0')}`
+        : `CERT-${new Date().getFullYear()}-00000`,
+      isEarlyContributor: portrait.certificateNumber != null && portrait.certificateNumber <= 1000,
     });
 
     return new Response(pngBuffer, {
