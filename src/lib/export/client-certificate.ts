@@ -60,39 +60,39 @@ export async function generateCertificateClientSide(
   // Set up font styles
   ctx.textBaseline = "top";
 
-  // Network - purple, bold
-  ctx.font = '500 50px "Noto Sans SC", "Microsoft YaHei", "Arial", sans-serif';
+  // Network - purple, bold (ASCII text, put system sans-serif first)
+  ctx.font = '500 50px "Arial", "Helvetica", "Microsoft YaHei", sans-serif';
   ctx.fillStyle = "#a855f7";
   ctx.fillText(networkLabel, POSITIONS.network.x, POSITIONS.network.y - 50);
 
-  // Owner Name - white
-  ctx.font = '500 50px "Noto Sans SC", "Microsoft YaHei", "Arial", sans-serif';
+  // Owner Name - white (may have Chinese, put CJK font first)
+  ctx.font = '500 50px "Microsoft YaHei", "PingFang SC", "Arial", sans-serif';
   ctx.fillStyle = "white";
   ctx.fillText(data.idCardName, POSITIONS.ownerName.x, POSITIONS.ownerName.y - 50);
 
-  // Portrait Title - white
-  ctx.font = '500 50px "Noto Sans SC", "Microsoft YaHei", "Arial", sans-serif';
+  // Portrait Title - white (may have Chinese)
+  ctx.font = '500 50px "Microsoft YaHei", "PingFang SC", "Arial", sans-serif';
   ctx.fillStyle = "white";
   ctx.fillText(data.portraitTitle, POSITIONS.portraitTitle.x, POSITIONS.portraitTitle.y - 50);
 
-  // Transaction Hash - purple, monospace-like
-  ctx.font = '42px "Noto Sans SC", "Courier New", monospace';
+  // Transaction Hash - purple, monospace (hex characters need monospace font first)
+  ctx.font = '42px "Courier New", "Consolas", monospace';
   ctx.fillStyle = "#a855f7";
   ctx.fillText(txHash, POSITIONS.txHash.x, POSITIONS.txHash.y - 42);
 
-  // Image Hash - purple
-  ctx.font = '42px "Noto Sans SC", "Courier New", monospace';
+  // Image Hash - purple (hex characters)
+  ctx.font = '42px "Courier New", "Consolas", monospace';
   ctx.fillStyle = "#a855f7";
   ctx.fillText(imgHash, POSITIONS.imgHash.x, POSITIONS.imgHash.y - 42);
 
-  // Certified Time - white
-  ctx.font = '500 48px "Noto Sans SC", "Microsoft YaHei", "Arial", sans-serif';
+  // Certified Time - white (ASCII)
+  ctx.font = '500 48px "Arial", "Helvetica", "Microsoft YaHei", sans-serif';
   ctx.fillStyle = "white";
   ctx.fillText(certDateStr, POSITIONS.certifiedTime.x, POSITIONS.certifiedTime.y - 48);
 
   // Early Contributor Badge
   if (data.isEarlyContributor) {
-    ctx.font = 'bold 48px "Noto Sans SC", "Arial", sans-serif';
+    ctx.font = 'bold 48px "Arial", "Helvetica", sans-serif';
     ctx.fillStyle = "#fbbf24";
     ctx.textAlign = "center";
     ctx.shadowColor = "#a855f7";
