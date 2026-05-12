@@ -28,6 +28,7 @@ interface PortraitDetail {
   ipfsCid?: string | null;
   certifiedAt?: string | null;
   certificateNumber?: number | null;
+  idCardName?: string | null;
   isPublic: boolean;
   createdAt: string;
   updatedAt: string;
@@ -419,7 +420,7 @@ export default function PortraitDetailPage() {
                         blockchainTxHash: portrait.blockchainTxHash,
                         network: portrait.blockchainNetwork || "sepolia",
                         certifiedAt: new Date(portrait.certifiedAt),
-                        idCardName: portrait.owner.displayName || "Unknown",
+                        idCardName: portrait.idCardName || portrait.owner.displayName || "Unknown",
                         certificateNo: portrait.certificateNumber
                           ? `CERT-${new Date().getFullYear()}-${String(portrait.certificateNumber).padStart(5, "0")}`
                           : `CERT-${new Date().getFullYear()}-00000`,
