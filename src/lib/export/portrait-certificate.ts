@@ -64,6 +64,11 @@ export async function buildCertificateImage(
   // Values x position (after the dash separator)
   const VAL_X = 1229;
 
+  // Use generic font families that work in Vercel serverless
+  // Specific fonts (Arial, Courier New) may not be available
+  const FONT_REGULAR = "sans-serif";
+  const FONT_MONO = "monospace";
+
   const overlaySvg = `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg">
   <defs>
     <filter id="glow">
@@ -74,42 +79,42 @@ export async function buildCertificateImage(
 
   <!-- Network - y=1216 -->
   <text x="${VAL_X}" y="1216"
-        font-family="Arial, sans-serif" font-size="50"
+        font-family="${FONT_REGULAR}" font-size="50"
         fill="#a855f7" font-weight="500">
     ${networkLabel}
   </text>
 
   <!-- User ID / Owner Name - y=1336 -->
   <text x="${VAL_X}" y="1336"
-        font-family="Arial, sans-serif" font-size="50"
+        font-family="${FONT_REGULAR}" font-size="50"
         font-weight="500" fill="white">
     ${ownerName}
   </text>
 
   <!-- Portrait Title - y=1459 -->
   <text x="${VAL_X}" y="1459"
-        font-family="Arial, sans-serif" font-size="50"
+        font-family="${FONT_REGULAR}" font-size="50"
         font-weight="500" fill="white">
     ${portraitTitle}
   </text>
 
   <!-- Transaction Hash - y=1651 -->
   <text x="${VAL_X}" y="1651"
-        font-family="Courier New, monospace" font-size="42"
+        font-family="${FONT_MONO}" font-size="42"
         fill="#a855f7">
     ${escapeXml(txHash)}
   </text>
 
   <!-- Image Hash (SHA-256) - y=1894 -->
   <text x="${VAL_X}" y="1894"
-        font-family="Courier New, monospace" font-size="42"
+        font-family="${FONT_MONO}" font-size="42"
         fill="#a855f7">
     ${escapeXml(imgHash)}
   </text>
 
   <!-- Certified Time - y=2086 -->
   <text x="${VAL_X}" y="2086"
-        font-family="Arial, sans-serif" font-size="48"
+        font-family="${FONT_REGULAR}" font-size="48"
         fill="white" font-weight="500">
     ${certDateStr}
   </text>
@@ -117,7 +122,7 @@ export async function buildCertificateImage(
   <!-- Early Contributor Badge -->
   ${data.isEarlyContributor ? `
   <text x="${W * 0.5}" y="${H * 0.92}"
-        text-anchor="middle" font-family="Arial, sans-serif" font-size="48"
+        text-anchor="middle" font-family="${FONT_REGULAR}" font-size="48"
         font-weight="bold" fill="#fbbf24" filter="url(#glow)">
     ★ EARLY CONTRIBUTOR ★
   </text>` : ''}
