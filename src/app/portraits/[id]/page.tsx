@@ -11,6 +11,7 @@ import Link from "next/link";
 import { DashboardShell } from "@/components/layout/DashboardShell";
 import { getIpfsGatewayUrl } from "@/lib/ipfs";
 import { useLanguage } from "@/context/LanguageContext";
+import { downloadCertificateClientSide } from "@/lib/export/client-certificate";
 
 interface PortraitDetail {
   id: string;
@@ -409,14 +410,25 @@ export default function PortraitDetailPage() {
               </div>
               <div className="mt-4">
                 <button
-                  onClick={() => {
-                    const link = document.createElement('a');
-                    link.href = `/api/portraits/${id}/certificate`;
-                    link.download = `portrait-certificate-${id}.png`;
-                    link.target = '_blank';
-                    document.body.appendChild(link);
-                    link.click();
-                    document.body.removeChild(link);
+                  onClick={async () => {
+                    if (!portrait.blockchainTxHash || !portrait.certifiedAt) return;
+                    try {
+                      await downloadCertificateClientSide(portrait.id, {
+                        portraitTitle: portrait.title || "Untitled",
+                        portraitHash: portrait.imageHash || "",
+                        blockchainTxHash: portrait.blockchainTxHash,
+                        network: portrait.blockchainNetwork || "sepolia",
+                        certifiedAt: new Date(portrait.certifiedAt),
+                        idCardName: portrait.owner.displayName || "Unknown",
+                        certificateNo: portrait.certificateNumber
+                          ? `CERT-${new Date().getFullYear()}-${String(portrait.certificateNumber).padStart(5, "0")}`
+                          : `CERT-${new Date().getFullYear()}-00000`,
+                        isEarlyContributor: portrait.certificateNumber != null && portrait.certificateNumber <= 1000,
+                      });
+                    } catch (err) {
+                      console.error("Failed to generate certificate:", err);
+                      alert("Failed to generate certificate. Please try again.");
+                    }
                   }}
                   className="w-full px-4 py-2.5 bg-purple-600 text-white font-medium rounded-lg hover:bg-purple-700 transition-colors flex items-center justify-center gap-2"
                 >
