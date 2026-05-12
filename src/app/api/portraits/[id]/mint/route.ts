@@ -124,7 +124,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
       const errMsg = err instanceof Error ? err.message : String(err);
       console.error("[Mint] Blockchain mint failed:", errMsg);
 
-      if (errMsg.includes("already registered") || errMsg.includes("already minted")) {
+      if (errMsg.includes("already registered") || errMsg.includes("already minted") || errMsg.includes("Already certified")) {
         const existingPortrait = await prisma.portrait.findFirst({
           where: { portraitImageHash, blockchainTxHash: { not: null } },
           select: {
