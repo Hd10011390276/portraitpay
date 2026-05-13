@@ -171,18 +171,22 @@ export async function POST(req: NextRequest) {
 
     const { email, password, name, role, phone, allowLicensing, allowedScopes, prohibitedContent, mediaKitUrl, mediaKitShareConfirmed, mediaKitReviewOnlyAcknowledged, mediaKitVisibility } = parsed.data;
 
-    // Check if user exists
-    const existing = await prisma.user.findUnique({ where: { email } });
+    // Check if user exists (excluding soft-deleted users)
+    const existing = await prisma.user.findFirst({
+      where: { email, deletedAt: null },
+    });
     if (existing) {
       return NextResponse.json(
-        { success: false, message: "该邮箱已注册" },
+        { success: false, message: "This email is already registered" },
         { status: 409 }
       );
     }
 
-    // If phone provided, check uniqueness
+    // If phone provided, check uniqueness (excluding soft-deleted users)
     if (phone) {
-      const phoneExists = await prisma.user.findUnique({ where: { phone } });
+      const phoneExists = await prisma.user.findFirst({
+        where: { phone, deletedAt: null },
+      });
       if (phoneExists) {
         return NextResponse.json(
           { success: false, message: "该手机号已被使用" },

@@ -42,8 +42,10 @@ export async function DELETE(req: NextRequest) {
     });
 
     const response = NextResponse.json({ success: true, message: "Account deleted" });
-    response.cookies.get("accessToken") && response.cookies.delete("accessToken");
-    response.cookies.get("refreshToken") && response.cookies.delete("refreshToken");
+    response.cookies.delete("accessToken");
+    response.cookies.delete("refreshToken");
+    response.cookies.delete("pp_access_token");
+    response.cookies.delete("pp_refresh_token");
 
     return response;
   } catch (err) {

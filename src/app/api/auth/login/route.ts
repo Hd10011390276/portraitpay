@@ -1,4 +1,3 @@
-
 import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
@@ -17,7 +16,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(
         {
           success: false,
-          message: "表单验证失败",
+          message: "Validation failed",
           errors: parsed.error.flatten().fieldErrors,
         },
         { status: 400 }
@@ -26,15 +25,23 @@ export async function POST(req: NextRequest) {
 
     const { email, password } = parsed.data;
 
-    const user = await prisma.user.findUnique({
-      where: { email },
+    const user = await prisma.user.findFirst({
+      where: { email, deletedAt: null },
       select: { id: true, email: true, name: true, role: true, passwordHash: true, emailVerified: true },
     });
 
     if (!user || !user.passwordHash) {
       return NextResponse.json(
-        { success: false, message: "邮箱或密码错误" },
+        { success: false, message: "Email or password incorrect" },
         { status: 401 }
+      );
+    }
+
+    // Check if email is verified
+    if (!user.emailVerified) {
+      return NextResponse.json(
+        { success: false, message: "Please verify your email first", code: "EMAIL_NOT_VERIFIED" },
+        { status: 403 }
       );
     }
 
@@ -44,27 +51,26 @@ export async function POST(req: NextRequest) {
 
     const isValid = await bcrypt.compare(password, user.passwordHash);
     if (!isValid) {
-      // Log failed login attempt
       await logAudit({
         userId: user.id,
         action: "LOGIN_FAILED",
         success: false,
-        detail: "密码错误导致登录失败",
+        detail: "Wrong password",
         meta: { ip, userAgent, errorCode: "INVALID_PASSWORD" },
       });
       return NextResponse.json(
-        { success: false, message: "邮箱或密码错误" },
+        { success: false, message: "Email or password incorrect" },
         { status: 401 }
       );
     }
 
-    // Check if email is verified
-    if (!user.emailVerified) {
-      return NextResponse.json(
-        { success: false, message: "请先验证邮箱", code: "EMAIL_NOT_VERIFIED" },
-        { status: 403 }
-      );
-    }
+    await logAudit({
+      userId: user.id,
+      action: "LOGIN",
+      success: true,
+      detail: "Email login successful",
+      meta: { ip, userAgent },
+    });
 
     const tokens = await signTokenPair({
       userId: user.id,
@@ -72,18 +78,9 @@ export async function POST(req: NextRequest) {
       role: user.role,
     });
 
-    // Log successful login
-    await logAudit({
-      userId: user.id,
-      action: "LOGIN",
-      success: true,
-      detail: "邮箱密码登录成功",
-      meta: { ip, userAgent },
-    });
-
     const response = NextResponse.json({
       success: true,
-      message: "登录成功",
+      message: "Login successful",
       data: {
         user: {
           id: user.id,
@@ -111,7 +108,7 @@ export async function POST(req: NextRequest) {
   } catch (error) {
     console.error("[LOGIN_ERROR]", error);
     return NextResponse.json(
-      { success: false, message: "服务器错误，请稍后重试" },
+      { success: false, message: "Server error, please try again later" },
       { status: 500 }
     );
   }

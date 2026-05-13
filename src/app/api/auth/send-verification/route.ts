@@ -145,13 +145,13 @@ export async function POST(req: NextRequest) {
     let user: { id: string; email: string; emailVerified: boolean; name: string | null } | null = null;
 
     if (emailInput) {
-      user = await prisma.user.findUnique({
-        where: { email: emailInput },
+      user = await prisma.user.findFirst({
+        where: { email: emailInput, deletedAt: null },
         select: { id: true, email: true, emailVerified: true, name: true },
       });
     } else if (userIdInput) {
-      user = await prisma.user.findUnique({
-        where: { id: userIdInput },
+      user = await prisma.user.findFirst({
+        where: { id: userIdInput, deletedAt: null },
         select: { id: true, email: true, emailVerified: true, name: true },
       });
     }
