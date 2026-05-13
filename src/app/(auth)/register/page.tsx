@@ -114,12 +114,17 @@ export default function RegisterPage() {
       }
 
       if (data.data?.accessToken) {
-        localStorage.setItem("pp_access_token", data.data.accessToken);
-        localStorage.setItem("pp_refresh_token", data.data.refreshToken);
-        localStorage.setItem("pp_user", JSON.stringify(data.data.user));
+        // Clear any existing auth state on registration
+        localStorage.removeItem("pp_access_token");
+        localStorage.removeItem("pp_refresh_token");
+        localStorage.removeItem("pp_user");
       }
 
-      router.push("/dashboard");
+      // Don't give token — account needs email verification first
+      const pendingUrl = new URL("/verify-email-pending", window.location.origin);
+      pendingUrl.searchParams.set("email", form.email);
+      pendingUrl.searchParams.set("name", form.name);
+      router.push(pendingUrl.toString());
     } catch {
       setGlobalError(t.register.errors.networkError);
     } finally {

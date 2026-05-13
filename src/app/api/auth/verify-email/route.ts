@@ -8,6 +8,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
+import { sendWelcomeEmail } from "@/lib/email";
 export const dynamic = "force-dynamic";
 
 const VerifyEmailSchema = z.object({
@@ -69,8 +70,13 @@ export async function POST(req: NextRequest) {
 
     console.log(`[VERIFY_EMAIL] Email verified for user: ${user.id}`);
 
+    // Send welcome email after successful verification (non-blocking)
+    sendWelcomeEmail({ email: user.email, name: user.name ?? user.email.split("@")[0] }).catch((err) => {
+      console.error("[VERIFY_EMAIL] Welcome email failed:", err instanceof Error ? err.message : String(err));
+    });
+
     return NextResponse.json(
-      { success: true, message: "邮箱验证成功" },
+      { success: true, message: "Email verified successfully" },
       { status: 200 }
     );
   } catch (err) {

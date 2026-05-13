@@ -3,9 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { RegisterSchema } from "@/lib/auth/schemas";
-import { signTokenPair } from "@/lib/auth/edge-jwt";
-import { setTokenCookies } from "@/lib/auth/session";
-import { sendWelcomeEmail, sendVerificationEmail } from "@/lib/email";
+import { sendVerificationEmail } from "@/lib/email";
 export const dynamic = "force-dynamic";
 
 type UserRole = string;
@@ -86,11 +84,6 @@ export async function POST(req: NextRequest) {
       select: { id: true, email: true, name: true, role: true },
     });
 
-    // Send welcome email (non-blocking — don't fail registration if email throws)
-    sendWelcomeEmail({ email: user.email, name: user.name ?? user.email.split("@")[0], role: user.role }).catch((emailError) => {
-      console.error("[REGISTER] Welcome email failed:", emailError instanceof Error ? emailError.message : String(emailError));
-    });
-
     // Send verification email (blocking — must be observable, returns emailSent status)
     let emailSent = true;
     let verificationError: string | undefined;
@@ -109,15 +102,10 @@ export async function POST(req: NextRequest) {
       console.error("[REGISTER] Verification email threw:", verificationError);
     }
 
-    const tokens = await signTokenPair({
-      userId: user.id,
-      email: user.email,
-      role: user.role,
-    });
-
+    // Note: NO token is issued here. Account requires email verification before login is allowed.
     const responseBody: Record<string, unknown> = {
       success: true,
-      message: emailSent ? "Registration successful" : "Registration successful, but verification email failed",
+      message: emailSent ? "Registration successful — please verify your email" : "Registration successful, but verification email failed",
       emailSent,
       ...(!emailSent && { emailError: verificationError }),
       data: {
@@ -127,23 +115,10 @@ export async function POST(req: NextRequest) {
           name: user.name,
           role: user.role,
         },
-        accessToken: tokens.accessToken,
-        refreshToken: tokens.refreshToken,
       },
     };
 
     const response = NextResponse.json(responseBody, { status: 201 });
-
-    response.cookies.set(
-      setTokenCookies(tokens.accessToken, tokens.refreshToken).accessTokenCookie,
-      tokens.accessToken,
-      { httpOnly: true, sameSite: "lax", path: "/", maxAge: 60 * 15, secure: process.env.NODE_ENV === "production" }
-    );
-    response.cookies.set(
-      setTokenCookies(tokens.accessToken, tokens.refreshToken).refreshTokenCookie,
-      tokens.refreshToken,
-      { httpOnly: true, sameSite: "lax", path: "/", maxAge: 60 * 60 * 24 * 7, secure: process.env.NODE_ENV === "production" }
-    );
 
     return response;
   } catch (error) {
