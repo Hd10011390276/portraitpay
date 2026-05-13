@@ -71,10 +71,24 @@ function SettingsContent() {
     }
   };
 
-  const handleDeleteAccount = () => {
-    const confirmed = window.confirm(t.settings.deleteAccountConfirm || "Are you sure you want to delete your account? This action cannot be undone.");
-    if (confirmed) {
-      toast({ type: "error", title: t.settings.deleteAccountError || "Account deletion requires contacting support" });
+  const handleDeleteAccount = async () => {
+    const confirmed = window.confirm("Are you sure you want to delete your account? This action cannot be undone.");
+    if (!confirmed) return;
+
+    try {
+      const res = await fetch("/api/auth/me", {
+        method: "DELETE",
+        credentials: "include",
+      });
+      const json = await res.json();
+      if (json.success) {
+        toast({ type: "success", title: "Account deleted. Goodbye!" });
+        setTimeout(() => { window.location.href = "/"; }, 1500);
+      } else {
+        toast({ type: "error", title: json.error || "Failed to delete account" });
+      }
+    } catch {
+      toast({ type: "error", title: "Failed to delete account" });
     }
   };
 
