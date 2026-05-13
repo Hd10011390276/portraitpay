@@ -379,25 +379,25 @@ export async function sendWelcomeEmail({ name, email, role: _role }: WelcomeEmai
 <body style="font-family:Arial,sans-serif;background:#f4f4f4;margin:0;padding:20px">
 <div style="max-width:600px;margin:0 auto;background:#fff;border-radius:8px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.08)">
   <div style="background:#7c3aed;padding:20px 24px">
-    <h2 style="margin:0;color:#fff;font-size:18px">欢迎来到 PortraitPay AI</h2>
-    <p style="margin:4px 0 0;color:#e9d5ff;font-size:13px">感谢您的注册</p>
+    <h2 style="margin:0;color:#fff;font-size:18px">Welcome to PortraitPay AI</h2>
+    <p style="margin:4px 0 0;color:#e9d5ff;font-size:13px">Thank you for registering</p>
   </div>
   <div style="padding:24px">
-    <p style="font-size:15px;color:#333">${name}，您好！</p>
-    <p style="font-size:15px;color:#333">感谢您注册 PortraitPay AI，您的账户已成功创建。</p>
-    <p style="font-size:15px;color:#333">您可以登录后开始上传和管理您的肖像资产。</p>
-    <a href="${process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"}" style="display:inline-block;margin-top:16px;padding:10px 20px;background:#7c3aed;color:#fff;border-radius:6px;text-decoration:none;font-size:14px">立即体验 →</a>
+    <p style="font-size:15px;color:#333">Hi ${name},</p>
+    <p style="font-size:15px;color:#333">Welcome to PortraitPay AI! Your account has been successfully created.</p>
+    <p style="font-size:15px;color:#333">You can now log in and start uploading and managing your portrait assets.</p>
+    <a href="${process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"}" style="display:inline-block;margin-top:16px;padding:10px 20px;background:#7c3aed;color:#fff;border-radius:6px;text-decoration:none;font-size:14px">Get Started →</a>
   </div>
 </div>
 </body>
 </html>`;
 
-    const text = `欢迎来到 PortraitPay AI\n\n${name}，您好！\n感谢您注册 PortraitPay AI，您的账户已成功创建。\n您可以登录后开始上传和管理您的肖像资产。`;
+    const text = `Welcome to PortraitPay AI\n\nHi ${name},\n\nWelcome to PortraitPay AI! Your account has been successfully created.\nYou can now log in and start uploading and managing your portrait assets.\n\nGet started: ${process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"}`;
 
     console.log("[sendWelcomeEmail] Calling sendEmail for:", email);
     await sendEmail({
       to: email,
-      subject: "欢迎来到 PortraitPay AI",
+      subject: "Welcome to PortraitPay AI",
       html,
       text,
     });

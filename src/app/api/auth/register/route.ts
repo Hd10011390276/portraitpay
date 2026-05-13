@@ -85,22 +85,22 @@ interface VerificationEmailParams {
 
 function buildVerificationEmailHtml(params: VerificationEmailParams): { subject: string; html: string; text: string } {
   const { name, email, verifyUrl, verificationCode } = params;
-  const timestamp = new Date().toLocaleString("zh-CN", { timeZone: "Asia/Shanghai" });
+  const timestamp = new Date().toLocaleString("en-US", { timeZone: "Asia/Shanghai" });
   const html = `<!DOCTYPE html>
 <html>
 <head><meta charset="utf-8"></head>
 <body style="font-family:Arial,sans-serif;background:#f4f4f4;margin:0;padding:20px">
   <div style="max-width:600px;margin:0 auto;background:#fff;border-radius:8px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.08)">
     <div style="background:#7c3aed;padding:20px 24px">
-      <h2 style="margin:0;color:#fff;font-size:18px">验证你的邮箱地址</h2>
-      <p style="margin:4px 0 0;color:#e9d5ff;font-size:13px">PortraitPay AI · 邮箱验证</p>
+      <h2 style="margin:0;color:#fff;font-size:18px">Verify Your Email Address</h2>
+      <p style="margin:4px 0 0;color:#e9d5ff;font-size:13px">PortraitPay AI · Email Verification</p>
     </div>
     <div style="padding:24px">
       <p style="margin:0 0 16px;color:#333;font-size:15px">
-        您好 <strong>${name}</strong>，
+        Hi <strong>${name}</strong>,
       </p>
       <p style="margin:0 0 24px;color:#333;font-size:15px">
-        感谢你注册 PortraitPay AI！你的邮箱验证码为：
+        Thank you for registering with PortraitPay AI! Your email verification code is:
       </p>
       <div style="text-align:center;margin:24px 0">
         <span style="display:inline-block;font-size:36px;font-weight:bold;color:#7c3aed;letter-spacing:8px;background:#f3f0ff;padding:16px 32px;border-radius:12px;border:2px dashed #7c3aed">
@@ -108,49 +108,49 @@ function buildVerificationEmailHtml(params: VerificationEmailParams): { subject:
         </span>
       </div>
       <p style="margin:0 0 16px;color:#333;font-size:15px">
-        或者点击以下链接验证你的邮箱地址：
+        Or click the link below to verify your email address:
       </p>
       <div style="text-align:center;margin:16px 0 24px">
         <a href="${verifyUrl}" style="display:inline-block;padding:12px 32px;background:#7c3aed;color:#fff;text-decoration:none;border-radius:8px;font-weight:600;font-size:14px">
-          验证邮箱地址
+          Verify Email Address
         </a>
       </div>
       <p style="margin:0 0 16px;color:#666;font-size:13px">
-        链接有效期为 <strong>30 分钟</strong>。
+        The link is valid for <strong>30 minutes</strong>.
       </p>
       <div style="margin-top:24px;padding:16px;background:#f9f9f9;border-radius:8px">
-        <p style="margin:0 0 8px;color:#666;font-size:12px"><strong>安全提示：</strong></p>
+        <p style="margin:0 0 8px;color:#666;font-size:12px"><strong>Security Notice:</strong></p>
         <ul style="margin:0;padding-left:20px;color:#666;font-size:12px">
-          <li>如果你没有注册 PortraitPay AI，请忽略此邮件。</li>
-          <li>此验证码和链接仅可使用一次，有效期为 <strong>30 分钟</strong>。</li>
-          <li>请勿将验证码告知他人。</li>
+          <li>If you did not register for PortraitPay AI, please ignore this email.</li>
+          <li>This code and link can only be used once and expires in <strong>30 minutes</strong>.</li>
+          <li>Do not share your verification code with anyone.</li>
         </ul>
       </div>
-      <p style="margin:24px 0 0;font-size:12px;color:#999">请求时间：${timestamp}</p>
+      <p style="margin:24px 0 0;font-size:12px;color:#999">Request time: ${timestamp}</p>
     </div>
   </div>
 </body>
 </html>`;
   const text = [
-    `PortraitPay AI — 邮箱验证`,
+    `PortraitPay AI — Email Verification`,
     `============================`,
     ``,
-    `您好 ${name}，`,
+    `Hi ${name},`,
     ``,
-    `感谢你注册 PortraitPay AI！你的邮箱验证码为：${verificationCode}`,
+    `Thank you for registering with PortraitPay AI! Your email verification code is: ${verificationCode}`,
     ``,
-    `访问以下链接验证邮箱（链接有效期 30 分钟）：`,
+    `Visit the link below to verify your email (link expires in 30 minutes):`,
     `${verifyUrl}`,
     ``,
     `-------------------------------------------`,
-    `安全提示：`,
-    `- 如果你没有注册 PortraitPay AI，请忽略此邮件。`,
-    `- 此验证码和链接仅可使用一次，有效期 30 分钟。`,
-    `- 请勿将验证码告知他人。`,
+    `Security Notice:`,
+    `- If you did not register for PortraitPay AI, please ignore this email.`,
+    `- This code and link can only be used once and expires in 30 minutes.`,
+    `- Do not share your verification code with anyone.`,
     ``,
-    `请求时间：${timestamp}`,
+    `Request time: ${timestamp}`,
   ].join("\n");
-  return { subject: "[PortraitPay AI] 邮箱验证码", html, text };
+  return { subject: "[PortraitPay AI] Email Verification Code", html, text };
 }
 
 export async function POST(req: NextRequest) {
