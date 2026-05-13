@@ -362,6 +362,127 @@ export async function sendPortraitMintFailedEmail(params: PortraitMintFailedEmai
 }
 
 // ============================================================
+// Verification Email Template
+// ============================================================
+export interface VerificationEmailParams {
+  name: string;
+  email: string;
+  verifyUrl: string;
+  verificationCode: string;
+}
+
+export function buildVerificationEmailHtml(params: VerificationEmailParams): { subject: string; html: string; text: string } {
+  const { name, verifyUrl, verificationCode } = params;
+  const timestamp = new Date().toLocaleString("en-US", { timeZone: "Asia/Shanghai" });
+
+  const html = `<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"></head>
+<body style="font-family:Arial,sans-serif;background:#f4f4f4;margin:0;padding:20px">
+  <div style="max-width:600px;margin:0 auto;background:#fff;border-radius:8px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.08)">
+    <div style="background:#7c3aed;padding:20px 24px">
+      <h2 style="margin:0;color:#fff;font-size:18px">Verify Your Email Address</h2>
+      <p style="margin:4px 0 0;color:#e9d5ff;font-size:13px">PortraitPay AI · Email Verification</p>
+    </div>
+    <div style="padding:24px">
+      <p style="margin:0 0 16px;color:#333;font-size:15px">Hi <strong>${name}</strong>,</p>
+      <p style="margin:0 0 24px;color:#333;font-size:15px">Thank you for registering with PortraitPay AI! Your email verification code is:</p>
+      <div style="text-align:center;margin:24px 0">
+        <span style="display:inline-block;font-size:36px;font-weight:bold;color:#7c3aed;letter-spacing:8px;background:#f3f0ff;padding:16px 32px;border-radius:12px;border:2px dashed #7c3aed">${verificationCode}</span>
+      </div>
+      <p style="margin:0 0 16px;color:#333;font-size:15px">Or click the link below to verify your email address:</p>
+      <div style="text-align:center;margin:16px 0 24px">
+        <a href="${verifyUrl}" style="display:inline-block;padding:12px 32px;background:#7c3aed;color:#fff;text-decoration:none;border-radius:8px;font-weight:600;font-size:14px">Verify Email Address</a>
+      </div>
+      <p style="margin:0 0 16px;color:#666;font-size:13px">The link is valid for <strong>30 minutes</strong>.</p>
+      <div style="margin-top:24px;padding:16px;background:#f9f9f9;border-radius:8px">
+        <p style="margin:0 0 8px;color:#666;font-size:12px"><strong>Security Notice:</strong></p>
+        <ul style="margin:0;padding-left:20px;color:#666;font-size:12px">
+          <li>If you did not register for PortraitPay AI, please ignore this email.</li>
+          <li>This code and link can only be used once and expires in <strong>30 minutes</strong>.</li>
+          <li>Do not share your verification code with anyone.</li>
+        </ul>
+      </div>
+      <p style="margin:24px 0 0;font-size:12px;color:#999">Request time: ${timestamp}</p>
+    </div>
+  </div>
+</body>
+</html>`;
+
+  const text = [
+    `PortraitPay AI — Email Verification`,
+    `============================`,
+    ``,
+    `Hi ${name},`,
+    ``,
+    `Thank you for registering with PortraitPay AI! Your email verification code is: ${verificationCode}`,
+    ``,
+    `Visit the link below to verify your email (link expires in 30 minutes):`,
+    `${verifyUrl}`,
+    ``,
+    `-------------------------------------------`,
+    `Security Notice:`,
+    `- If you did not register for PortraitPay AI, please ignore this email.`,
+    `- This code and link can only be used once and expires in 30 minutes.`,
+    `- Do not share your verification code with anyone.`,
+    ``,
+    `Request time: ${timestamp}`,
+  ].join("\n");
+
+  return { subject: "[PortraitPay AI] Email Verification Code", html, text };
+}
+
+// ============================================================
+// Verification Email (shared by register and send-verification routes)
+// Returns { sent: true } on success or { sent: false, error: string } on failure
+// ============================================================
+export interface SendVerificationEmailResult {
+  sent: boolean;
+  error?: string;
+  code?: string;
+}
+
+export async function sendVerificationEmail(params: {
+  userId: string;
+  email: string;
+  name: string;
+  prisma: unknown;
+}): Promise<SendVerificationEmailResult> {
+  const { userId, email, name, prisma: db } = params;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const prisma = db as any;
+
+  const verificationCode = String(Math.floor(100000 + Math.random() * 900000));
+  const verificationExpires = new Date(Date.now() + 30 * 60 * 1000);
+
+  await prisma.user.update({
+    where: { id: userId },
+    data: { verificationCode, verificationExpires },
+  });
+
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://portraitpayai.com";
+  const verifyUrl = `${baseUrl}/verify-email?code=${verificationCode}&userId=${userId}`;
+
+  const { subject, html, text } = buildVerificationEmailHtml({
+    name,
+    email,
+    verifyUrl,
+    verificationCode,
+  });
+
+  try {
+    await sendEmail({ to: email, subject, html, text });
+    console.log(`[sendVerificationEmail] Sent to ${email}, code: ${verificationCode}`);
+    return { sent: true, code: verificationCode };
+  } catch (err) {
+    const errMsg = err instanceof Error ? err.message : String(err);
+    console.error(`[sendVerificationEmail] FAILED to ${email}:`, errMsg);
+    console.error(`[sendVerificationEmail] SMTP_HOST: ${process.env.SMTP_HOST}, SMTP_USER: ${process.env.SMTP_USER}, RESEND_API_KEY set: ${!!process.env.RESEND_API_KEY}`);
+    return { sent: false, error: errMsg };
+  }
+}
+
+// ============================================================
 // Welcome email
 // ============================================================
 interface WelcomeEmailParams {

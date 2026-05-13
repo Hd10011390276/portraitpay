@@ -40,8 +40,8 @@ export const RegisterSchema = z.object({
   message: "两次密码不一致",
   path: ["confirmPassword"],
 }).refine((data) => {
-  // If role is ACTOR and mediaKitUrl is provided, both confirmations must be true
-  if (data.role === "ACTOR" && data.mediaKitUrl && data.mediaKitUrl.trim() !== "") {
+  // If role is TALENT and mediaKitUrl is provided, both confirmations must be true
+  if (data.role === "TALENT" && data.mediaKitUrl && data.mediaKitUrl.trim() !== "") {
     return data.mediaKitShareConfirmed === true && data.mediaKitReviewOnlyAcknowledged === true;
   }
   return true;
