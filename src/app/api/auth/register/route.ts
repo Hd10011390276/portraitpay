@@ -182,6 +182,15 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // If a soft-deleted user exists with this email, hard-delete them to allow re-registration
+    const deletedUser = await prisma.user.findFirst({
+      where: { email, deletedAt: { not: null } },
+    });
+
+    if (deletedUser) {
+      await prisma.user.delete({ where: { id: deletedUser.id } });
+    }
+
     // If phone provided, check uniqueness (excluding soft-deleted users)
     if (phone) {
       const phoneExists = await prisma.user.findFirst({
