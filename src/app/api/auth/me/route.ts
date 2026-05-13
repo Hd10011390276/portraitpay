@@ -1,8 +1,6 @@
 /**
- * DELETE /api/auth/me
- *
- * Soft-delete the authenticated user's account.
- * Sets deletedAt timestamp, does not physically remove the record.
+ * GET /api/auth/me — Get current session
+ * DELETE /api/auth/me — Soft-delete the authenticated user's account
  */
 
 import { NextRequest, NextResponse } from "next/server";
@@ -10,6 +8,22 @@ import { getSessionFromRequest } from "@/lib/auth/session";
 import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
+
+export async function GET(req: NextRequest) {
+  const session = await getSessionFromRequest(req);
+
+  if (!session) {
+    return NextResponse.json(
+      { success: false, message: "Unauthorized" },
+      { status: 401 }
+    );
+  }
+
+  return NextResponse.json({
+    success: true,
+    data: { user: session },
+  });
+}
 
 export async function DELETE(req: NextRequest) {
   const session = await getSessionFromRequest(req);
@@ -27,7 +41,6 @@ export async function DELETE(req: NextRequest) {
       data: { deletedAt: new Date() },
     });
 
-    // Clear session cookies
     const response = NextResponse.json({ success: true, message: "Account deleted" });
     response.cookies.get("accessToken") && response.cookies.delete("accessToken");
     response.cookies.get("refreshToken") && response.cookies.delete("refreshToken");
