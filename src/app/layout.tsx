@@ -16,8 +16,8 @@ export const metadata: Metadata = {
     default: "PortraitPay AI — Your Portrait, Your Rights",
     template: "%s | PortraitPay AI",
   },
-  description: "AI-powered face tracing and portrait copyright protection platform. Protect your digital identity and authorize your portrait rights.",
-  keywords: ["face recognition", "portrait copyright", "blockchain", "AI", "digital identity"],
+  description: "AI-powered portrait rights protection and licensing platform. Protect your digital identity and authorize portrait usage with timestamped certificates.",
+  keywords: ["portrait rights", "portrait licensing", "AI copyright protection", "digital identity", "IP protection", "consent management"],
   authors: [{ name: "PortraitPay AI" }],
   icons: {
     icon: "/favicon.png",

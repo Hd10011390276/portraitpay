@@ -421,7 +421,7 @@ export const translations = {
       submit: "Submit Inquiry",
       submitting: "Submitting...",
       packageIncludes: "Enterprise License Includes",
-      package1: "Blockchain-Registered Licensing Agreement",
+      package1: "Timestamped Licensing Agreement",
       package2: "Bulk Portrait Data Usage License",
       package3: "Complete Compliance Documentation",
       package4: "Flexible Licensing Scope Customization",
@@ -465,7 +465,7 @@ export const translations = {
       bulkUpload: "Bulk Upload",
       bulkUploadDesc: "Upload multiple portraits for multiple artists at once",
       whiteLabelCert: "White-Label Certificates",
-      whiteLabelCertDesc: "Customize blockchain certificate appearance for your brand",
+      whiteLabelCertDesc: "Customize certificate appearance for your brand",
       apiAccess: "API Access",
       apiAccessDesc: "Full REST API for system integration",
       dedicatedAccountMgr: "Dedicated Account Manager",
@@ -651,9 +651,9 @@ export const translations = {
     },
     // Meta
     meta: {
-      title: "PortraitPay AI — Blockchain Portrait Rights Protection",
+      title: "PortraitPay AI — Portrait Rights Protection",
       description:
-        "Register your portrait rights on Ethereum. Upload, certify, and manage portrait licensing with blockchain timestamps.",
+        "Register your portrait rights with timestamped certificates. Upload, certify, and manage portrait licensing with legal evidence.",
     },
     // Dashboard
     dashboard: {
