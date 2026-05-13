@@ -19,7 +19,6 @@ import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { DashboardShell } from "@/components/layout/DashboardShell";
 import { useLanguage } from "@/context/LanguageContext";
-import { getIpfsGatewayUrl } from "@/lib/ipfs";
 
 interface PortraitDetail {
   id: string;

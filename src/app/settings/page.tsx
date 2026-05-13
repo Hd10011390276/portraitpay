@@ -20,6 +20,12 @@ function SettingsContent() {
   const [mediaKitShareConfirmed, setMediaKitShareConfirmed] = useState(false);
   const [mediaKitReviewOnlyAcknowledged, setMediaKitReviewOnlyAcknowledged] = useState(false);
   const [mediaKitVisibility, setMediaKitVisibility] = useState("PRIVATE");
+  // Portrait Settings state
+  const [allowLicensing, setAllowLicensing] = useState(true);
+  const [allowedScopes, setAllowedScopes] = useState<string[]>([]);
+  const [prohibitedContent, setProhibitedContent] = useState<string[]>([]);
+  const [defaultLicenseFee, setDefaultLicenseFee] = useState(0);
+  const [defaultTerritorialScope, setDefaultTerritorialScope] = useState("global");
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -34,6 +40,19 @@ function SettingsContent() {
           setMediaKitShareConfirmed(u.mediaKitShareConfirmed || false);
           setMediaKitReviewOnlyAcknowledged(u.mediaKitReviewOnlyAcknowledged || false);
           setMediaKitVisibility(u.mediaKitVisibility || "PRIVATE");
+        }
+        // Fetch portrait settings
+        const psRes = await fetch("/api/user", { credentials: "include" });
+        if (psRes.ok) {
+          const psJson = await psRes.json();
+          const ps = psJson.data?.user?.portraitSettings;
+          if (ps) {
+            setAllowLicensing(ps.allowLicensing ?? true);
+            setAllowedScopes(ps.allowedScopes ?? []);
+            setProhibitedContent(ps.prohibitedContent ?? []);
+            setDefaultLicenseFee(Number(ps.defaultLicenseFee) || 0);
+            setDefaultTerritorialScope(ps.defaultTerritorialScope ?? "global");
+          }
         }
       } catch { window.location.href = "/login"; }
       finally { setChecking(false); }
@@ -52,6 +71,12 @@ function SettingsContent() {
         payload.mediaKitReviewOnlyAcknowledged = mediaKitReviewOnlyAcknowledged;
         payload.mediaKitVisibility = mediaKitVisibility;
       }
+      // Portrait Licensing Settings
+      payload.portraitAllowLicensing = allowLicensing;
+      payload.portraitAllowedScopes = allowedScopes;
+      payload.portraitProhibitedContent = prohibitedContent;
+      payload.portraitDefaultLicenseFee = defaultLicenseFee;
+      payload.portraitDefaultTerritorialScope = defaultTerritorialScope;
       const res = await fetch("/api/user", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
@@ -260,6 +285,101 @@ function SettingsContent() {
               </div>
             </div>
           )}
+
+          {/* Portrait Licensing Settings */}
+          <div className="bg-white dark:bg-gray-900 rounded-2xl border border-purple-200 dark:border-purple-800/50 p-6">
+            <h2 className="text-base font-semibold text-purple-700 dark:text-purple-400 mb-1">Portrait Licensing Preferences</h2>
+            <p className="text-xs text-gray-500 dark:text-gray-400 mb-5">Define how others can use your portrait. These defaults apply to new consent authorizations.</p>
+
+            {/* Allow Licensing Toggle */}
+            <div className="flex items-start justify-between gap-4 mb-5">
+              <div className="flex-1">
+                <p className="text-sm font-medium text-gray-900 dark:text-white">Allow Licensing</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">When off, all licensing requests are declined by default.</p>
+              </div>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={allowLicensing}
+                onClick={() => setAllowLicensing(!allowLicensing)}
+                className={`relative inline-flex h-5 w-9 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 ${allowLicensing ? "bg-purple-600" : "bg-gray-200 dark:bg-gray-700"}`}
+              >
+                <span className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${allowLicensing ? "translate-x-4" : "translate-x-0"}`} />
+              </button>
+            </div>
+
+            {/* Allowed Scopes */}
+            <div className="mb-5">
+              <label className="block text-sm font-medium text-gray-900 dark:text-white mb-2">Allowed Usage Types</label>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                {["FILM", "ANIMATION", "ADVERTISING", "GAMING", "PRINT", "MERCHANDISE", "SOCIAL_MEDIA", "EDUCATION", "NEWS"].map((scope) => (
+                  <label key={scope} className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={allowedScopes.includes(scope)}
+                      onChange={() => {
+                        setAllowedScopes(prev => prev.includes(scope) ? prev.filter(s => s !== scope) : [...prev, scope]);
+                      }}
+                      className="w-4 h-4 rounded border-gray-300 text-purple-600 focus:ring-purple-500"
+                    />
+                    <span className="text-xs text-gray-700 dark:text-gray-300">{scope.replace("_", " ")}</span>
+                  </label>
+                ))}
+              </div>
+              <p className="text-xs text-gray-400 mt-1.5">Leave all unchecked = all types allowed</p>
+            </div>
+
+            {/* Prohibited Content */}
+            <div className="mb-5">
+              <label className="block text-sm font-medium text-gray-900 dark:text-white mb-2">Prohibited Content</label>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                {["ADULT", "POLITICAL", "VIOLENCE", "HATE", "FRAUD", "WEAPONS", "ILLEGAL"].map((type) => (
+                  <label key={type} className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={prohibitedContent.includes(type)}
+                      onChange={() => {
+                        setProhibitedContent(prev => prev.includes(type) ? prev.filter(c => c !== type) : [...prev, type]);
+                      }}
+                      className="w-4 h-4 rounded border-gray-300 text-red-500 focus:ring-red-500"
+                    />
+                    <span className="text-xs text-gray-700 dark:text-gray-300">{type}</span>
+                  </label>
+                ))}
+              </div>
+              <p className="text-xs text-gray-400 mt-1.5">Content types NEVER allowed regardless of licensing</p>
+            </div>
+
+            {/* Default Fee + Territory */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Default License Fee (USD)</label>
+                <input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={defaultLicenseFee}
+                  onChange={(e) => setDefaultLicenseFee(parseFloat(e.target.value) || 0)}
+                  className="w-full px-4 py-2.5 border border-gray-200 dark:border-gray-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+                />
+                <p className="text-xs text-gray-400 mt-1">0 = case by case</p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Default Territory</label>
+                <select
+                  value={defaultTerritorialScope}
+                  onChange={(e) => setDefaultTerritorialScope(e.target.value)}
+                  className="w-full px-4 py-2.5 border border-gray-200 dark:border-gray-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+                >
+                  <option value="global">Global</option>
+                  <option value="china">China</option>
+                  <option value="asia">Asia</option>
+                  <option value="europe">Europe</option>
+                  <option value="americas">Americas</option>
+                </select>
+              </div>
+            </div>
+          </div>
 
           {/* Admin Settings - only for ADMIN role */}
           {user?.role === "ADMIN" && (

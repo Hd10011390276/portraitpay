@@ -1,6 +1,7 @@
 /**
  * PortraitCert contract ABI (minimal)
- * Deployed on Base Mainnet
+ * Deployed on Ethereum Sepolia testnet (chainId: 11155111)
+ * For Base Mainnet deployment, use LICENSING_CONTRACT_ABI below.
  */
 
 export const PORTRAIT_CERT_ABI = [

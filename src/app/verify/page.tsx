@@ -5,7 +5,7 @@ import { useLanguage } from "@/context/LanguageContext";
 import ThemeToggle from "@/components/ThemeToggle";
 
 const ETHERSCAN_BASE = "https://sepolia.etherscan.io/tx/";
-const CONTRACT_ADDRESS = "0x2D5F2B7Ae9eBe1e9Aa1B8b8c6E7b6F3F5fBfF0fE";
+const CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS ?? "0x2D5F2B7Ae9eBe1e9Aa1B8b8c6E7b6F3F5fBfF0fE";
 
 export default function VerifyPage() {
   const { t } = useLanguage();

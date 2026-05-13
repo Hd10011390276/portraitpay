@@ -20,6 +20,11 @@ const UpdateUserSchema = z.object({
   mediaKitShareConfirmed: z.boolean().optional(),
   mediaKitReviewOnlyAcknowledged: z.boolean().optional(),
   mediaKitVisibility: z.enum(["PUBLIC", "VERIFIED_CREATORS", "PRIVATE"]).optional(),
+  portraitAllowLicensing: z.boolean().optional(),
+  portraitAllowedScopes: z.array(z.string()).optional(),
+  portraitProhibitedContent: z.array(z.string()).optional(),
+  portraitDefaultLicenseFee: z.number().min(0).optional(),
+  portraitDefaultTerritorialScope: z.string().optional(),
 });
 
 const SENSITIVE_FIELDS = ["passwordHash", "otpCode", "otpExpires"];
@@ -149,9 +154,26 @@ export async function PATCH(request: NextRequest) {
       }
     }
 
+    const { phone, walletAddress, portraitAllowLicensing, portraitAllowedScopes, portraitProhibitedContent, portraitDefaultLicenseFee, portraitDefaultTerritorialScope, ...userFields } = parsed.data;
+
+    const portraitSettingsData: Record<string, unknown> = {};
+    if (portraitAllowLicensing !== undefined) portraitSettingsData.allowLicensing = portraitAllowLicensing;
+    if (portraitAllowedScopes !== undefined) portraitSettingsData.allowedScopes = portraitAllowedScopes;
+    if (portraitProhibitedContent !== undefined) portraitSettingsData.prohibitedContent = portraitProhibitedContent;
+    if (portraitDefaultLicenseFee !== undefined) portraitSettingsData.defaultLicenseFee = portraitDefaultLicenseFee;
+    if (portraitDefaultTerritorialScope !== undefined) portraitSettingsData.defaultTerritorialScope = portraitDefaultTerritorialScope;
+
+    if (Object.keys(portraitSettingsData).length > 0) {
+      await prisma.portraitSettings.upsert({
+        where: { userId: session.userId },
+        create: { userId: session.userId, ...portraitSettingsData },
+        update: portraitSettingsData,
+      });
+    }
+
     const updatedUser = await prisma.user.update({
       where: { id: session.userId },
-      data: parsed.data,
+      data: userFields,
       select: USER_PUBLIC_SELECT,
     });
 
