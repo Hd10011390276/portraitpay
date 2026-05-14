@@ -114,7 +114,7 @@ export async function POST(req: NextRequest) {
         success: true,
         jobId: `mock_mj_${Date.now()}`,
         status: "pending",
-        message: "Development mode: Midjourney API not configured. License created on-chain.",
+        message: "Development mode: Midjourney API not configured. License created on the platform.",
         mock: true,
         licenseId: licenseResult.licenseId,
         royalty: {

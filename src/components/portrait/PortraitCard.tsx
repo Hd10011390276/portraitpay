@@ -70,7 +70,7 @@ export default function PortraitCard({ portrait, onView, onCertify, onDelete }: 
         {portrait.blockchainTxHash && (
           <div className="absolute top-2 left-2">
             <span className="px-2 py-0.5 text-xs font-semibold rounded-full bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800">
-              🔗 On-chain
+              🔗 Certified
             </span>
           </div>
         )}

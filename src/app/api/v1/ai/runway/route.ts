@@ -115,7 +115,7 @@ export async function POST(req: NextRequest) {
         success: true,
         jobId: `mock_runway_${Date.now()}`,
         status: "pending",
-        message: "Development mode: Runway API not configured. License created on-chain.",
+        message: "Development mode: Runway API not configured. License created on the platform.",
         mock: true,
         licenseId: licenseResult.licenseId,
         royalty: {

@@ -258,7 +258,7 @@ export const translations = {
       teamResponseTime: "Our team will respond within 1-3 business days",
       quickLinks: "Quick Links",
       blockchainValidTitle: "Is the platform certificate legally valid?",
-      blockchainValidDesc: "Yes. On-chain hash + timestamp confirmed by partner law firms as litigation evidence.",
+      blockchainValidDesc: "Yes. Hash + timestamp confirmed by partner law firms as litigation evidence.",
       items: [
         {
           q: "What does PortraitPay AI do?",
@@ -1632,7 +1632,7 @@ export const translations = {
         portraitNotFound: "Local portrait not found",
         savedToDownloads: "Photo saved to downloads folder",
         downloadFailed: "Download failed, please try again",
-        bannerKycRequired: "You have not completed identity verification. On-chain functions are limited.",
+        bannerKycRequired: "You have not completed identity verification. Platform functions are limited.",
         bannerGoVerify: "Verify Now",
         // Mint page specific
         portrait: "Portrait",
