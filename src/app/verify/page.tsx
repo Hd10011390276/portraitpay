@@ -98,13 +98,13 @@ export default function VerifyPage() {
         <div className="text-center mb-10">
           <div className="inline-flex items-center gap-2 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 text-sm px-4 py-1.5 rounded-full mb-4">
             <span>🔗</span>
-            <span>Publicly verifiable on Sepolia blockchain</span>
+            <span>Publicly verifiable on Sepolia</span>
           </div>
           <h1 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-3">
             {tv.title || "Verify Blockchain Certificate"}
           </h1>
           <p className="text-gray-600 dark:text-gray-400 max-w-lg mx-auto">
-            {tv.subtitle || "Enter a portrait hash or transaction hash to verify if any portrait has been timestamp-certified on the Ethereum Sepolia blockchain. No login required, fully public."}
+            {tv.subtitle || "Enter a portrait hash or transaction hash to verify if any portrait has been timestamped on Ethereum Sepolia. No login required, fully public."}
           </p>
         </div>
 
@@ -147,7 +147,7 @@ export default function VerifyPage() {
               <div className="space-y-3">
                 <div className="flex items-center gap-2 text-green-700 dark:text-green-300 font-semibold">
                   <span>✓</span>
-                  <span>{tv.found || "Certificate found on-chain"}</span>
+                  <span>{tv.found || "Certificate found"}</span>
                 </div>
                 {result.txHash && (
                   <div className="text-sm space-y-1">
@@ -182,7 +182,7 @@ export default function VerifyPage() {
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-1 text-xs text-blue-600 dark:text-blue-400 hover:underline"
                 >
-                  View contract on Etherscan →
+                  View contract on block explorer →
                 </a>
               </div>
             ) : result.error ? (
@@ -192,8 +192,8 @@ export default function VerifyPage() {
               </div>
             ) : (
               <div className="text-gray-600 dark:text-gray-400">
-                <p className="font-semibold text-gray-800 dark:text-gray-200">{tv.notFound || "No certificate found on-chain"}</p>
-                <p className="text-sm mt-1">{tv.notFoundDesc || "This hash has no certification record on the Sepolia blockchain."}</p>
+                <p className="font-semibold text-gray-800 dark:text-gray-200">{tv.notFound || "No certificate found"}</p>
+                <p className="text-sm mt-1">{tv.notFoundDesc || "This hash has no certification record on Sepolia."}</p>
               </div>
             )}
           </div>
@@ -205,7 +205,7 @@ export default function VerifyPage() {
           <ol className="space-y-3 text-sm text-gray-600 dark:text-gray-400">
             <li className="flex gap-3">
               <span className="flex-shrink-0 w-6 h-6 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-full flex items-center justify-center text-xs font-bold">1</span>
-              <span>Find the on-chain hash (64-char hex) on the portrait detail page</span>
+              <span>Find the digital hash (64-char hex) on the portrait detail page</span>
             </li>
             <li className="flex gap-3">
               <span className="flex-shrink-0 w-6 h-6 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-full flex items-center justify-center text-xs font-bold">2</span>
@@ -213,11 +213,11 @@ export default function VerifyPage() {
             </li>
             <li className="flex gap-3">
               <span className="flex-shrink-0 w-6 h-6 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-full flex items-center justify-center text-xs font-bold">3</span>
-              <span>Click "{tv.verifyBtn || "Verify"}" for a live query on the Ethereum Sepolia blockchain</span>
+              <span>Click "{tv.verifyBtn || "Verify"}" for a live query on Ethereum Sepolia</span>
             </li>
           </ol>
           <div className="mt-4 p-3 bg-gray-50 dark:bg-gray-800 rounded-xl text-xs text-gray-500 dark:text-gray-400">
-            <p>📋 {tv.factLabel || "Note"}: All certification records are publicly stored on the Ethereum Sepolia blockchain (contract address {CONTRACT_ADDRESS}), and anyone can verify them independently via Etherscan at any time — no need to go through this platform.</p>
+            <p>📋 {tv.factLabel || "Note"}: All certification records are publicly stored on Ethereum Sepolia (contract address {CONTRACT_ADDRESS}), and anyone can verify them independently via block explorer at any time — no need to go through this platform.</p>
           </div>
         </div>
       </main>

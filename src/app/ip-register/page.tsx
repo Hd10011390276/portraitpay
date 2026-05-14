@@ -497,7 +497,7 @@ export default function IPRegisterPage() {
   };
 
   const handleCertify = async (contentId: string) => {
-    if (!confirm(ipRegT.certifyConfirmMsg || `Confirm blockchain certification on Base Mainnet?\nGas fees will be deducted.`)) return;
+    if (!confirm(ipRegT.certifyConfirmMsg || `Confirm certification on Base Mainnet?\nGas fees will be deducted.`)) return;
 
     setCertifyingId(contentId);
     setCertStatus({ id: contentId, message: ipRegT.connectingBlockchain || "Connecting to blockchain..." });

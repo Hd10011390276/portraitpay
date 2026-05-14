@@ -411,7 +411,7 @@ function MintAlreadyDone({ portrait, tc, t }: { portrait: PortraitDetail; tc: ty
     <div className="max-w-lg mx-auto mt-8 p-8 bg-white dark:bg-gray-900 rounded-2xl shadow-lg border border-green-200 dark:border-green-900 text-center">
       <div className="text-6xl mb-4">✅</div>
       <h2 className="text-2xl font-bold mb-2">{tc.certifySuccess}</h2>
-      <p className="text-gray-500 mb-6">{(t.upload as Record<string, string>).certifySuccessDesc ?? "Your portrait is now permanently certified on the blockchain."}</p>
+      <p className="text-gray-500 mb-6">{(t.upload as Record<string, string>).certifySuccessDesc ?? "Your portrait is now permanently certified on the platform."}</p>
 
       {portrait.blockchainTxHash && (
         <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-4 mb-6 text-left space-y-3">

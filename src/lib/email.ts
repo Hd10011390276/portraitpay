@@ -240,13 +240,13 @@ export async function sendPortraitCertifiedEmail(params: PortraitCertifiedEmailP
 <body style="font-family:Arial,sans-serif;background:#f4f4f4;margin:0;padding:20px">
 <div style="max-width:600px;margin:0 auto;background:#fff;border-radius:8px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.08)">
   <div style="background:#7c3aed;padding:20px 24px">
-    <h2 style="margin:0;color:#fff;font-size:18px">Portrait Blockchain Certification Complete</h2>
+    <h2 style="margin:0;color:#fff;font-size:18px">Portrait Certification Complete</h2>
     <p style="margin:4px 0 0;color:#e9d5ff;font-size:13px">PortraitPay AI · Certification Notice</p>
   </div>
   <div style="padding:24px">
     ${earlyBadge}
     <p style="font-size:15px;color:#333">Hello ${name}!</p>
-    <p style="font-size:15px;color:#333">Your portrait <strong>"${portraitTitle}"</strong> has been successfully registered on the blockchain — permanently stored and tamper-proof.</p>
+    <p style="font-size:15px;color:#333">Your portrait <strong>"${portraitTitle}"</strong> has been successfully certified — permanently stored and tamper-proof.</p>
     ${certificateNo ? '<p style="font-size:15px;color:#7c3aed;font-weight:bold">Certificate No: ' + certificateNo + '</p>' : ''}
     <div style="margin:20px 0;padding:16px;background:#f9f9f9;border-radius:8px">
       <table style="width:100%;border-collapse:collapse">
@@ -255,13 +255,13 @@ export async function sendPortraitCertifiedEmail(params: PortraitCertifiedEmailP
         <tr><td style="padding:6px 0;color:#666;font-size:13px">ID Number</td><td style="padding:6px 0;font-size:13px;font-family:monospace;color:#7c3aed">${idCardNumberMasked}</td></tr>
         <tr><td style="padding:6px 0;color:#666;font-size:13px">Portrait Photo Hash</td><td style="padding:6px 0;font-size:11px;font-family:monospace;color:#7c3aed;word-break:break-all">${portraitImageHash.slice(0, 20)}...</td></tr>
         <tr><td style="padding:6px 0;color:#666;font-size:13px">ID Photo Hash</td><td style="padding:6px 0;font-size:11px;font-family:monospace;color:#7c3aed;word-break:break-all">${idCardFrontHash.slice(0, 20)}...</td></tr>
-        <tr><td style="padding:6px 0;color:#666;font-size:13px">Blockchain Network</td><td style="padding:6px 0;font-size:13px">${network === "base" ? "Base Mainnet" : network}</td></tr>
+        <tr><td style="padding:6px 0;color:#666;font-size:13px">Network</td><td style="padding:6px 0;font-size:13px">${network === "base" ? "Base Mainnet" : network}</td></tr>
         <tr><td style="padding:6px 0;color:#666;font-size:13px">Certification Time</td><td style="padding:6px 0;font-size:13px">${certifiedAtStr}</td></tr>
         <tr><td style="padding:6px 0;color:#666;font-size:13px">Transaction Hash</td><td style="padding:6px 0;font-size:12px;font-family:monospace;color:#7c3aed">${blockchainTxHash.slice(0, 16)}...</td></tr>
       </table>
     </div>
     <div style="text-align:center;margin:20px 0">
-      <a href="${txUrl}" style="display:inline-block;padding:12px 24px;background:#7c3aed;color:#fff;text-decoration:none;border-radius:8px;font-size:14px">View Blockchain Transaction →</a>
+      <a href="${txUrl}" style="display:inline-block;padding:12px 24px;background:#7c3aed;color:#fff;text-decoration:none;border-radius:8px;font-size:14px">View Transaction →</a>
     </div>
     <p style="font-size:12px;color:#999">This is an automated system notification. Please do not reply. Contact support@portraitpayai.com for questions.</p>
   </div>
@@ -269,7 +269,7 @@ export async function sendPortraitCertifiedEmail(params: PortraitCertifiedEmailP
 </body>
 </html>`;
 
-  const text = `PortraitPay AI — Portrait Blockchain Certification Complete\n\nHello ${name}!\nYour portrait "${portraitTitle}" has been successfully registered on the blockchain — permanently stored and tamper-proof.\n${certificateNo ? 'Certificate No: ' + certificateNo + '\n' : ''}\nLegal Name: ${idCardName}\nID Type: ${idTypeLabel}\nID Number: ${idCardNumberMasked}\nPortrait Photo Hash: ${portraitImageHash}\nID Photo Hash: ${idCardFrontHash}\nBlockchain Network: ${network === "base" ? "Base Mainnet" : network}\nCertification Time: ${certifiedAtStr}\nTransaction Hash: ${blockchainTxHash}\n\nView Blockchain Transaction: ${txUrl}\n\nThis is an automated system notification. Please do not reply.`;
+  const text = `PortraitPay AI — Portrait Certification Complete\n\nHello ${name}!\nYour portrait "${portraitTitle}" has been successfully certified — permanently stored and tamper-proof.\n${certificateNo ? 'Certificate No: ' + certificateNo + '\n' : ''}\nLegal Name: ${idCardName}\nID Type: ${idTypeLabel}\nID Number: ${idCardNumberMasked}\nPortrait Photo Hash: ${portraitImageHash}\nID Photo Hash: ${idCardFrontHash}\nNetwork: ${network === "base" ? "Base Mainnet" : network}\nCertification Time: ${certifiedAtStr}\nTransaction Hash: ${blockchainTxHash}\n\nView Transaction: ${txUrl}\n\nThis is an automated system notification. Please do not reply.`;
 
   try {
     await sendEmail({

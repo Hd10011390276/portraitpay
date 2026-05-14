@@ -17,7 +17,7 @@ const STATUS_META = {
     label: "Registered",
     color: "bg-emerald-100 text-emerald-700 border-emerald-200",
     dot: "bg-emerald-500",
-    desc: "Ownership registered on-chain",
+    desc: "Ownership registered on the platform",
   },
   pending: {
     label: "Pending",

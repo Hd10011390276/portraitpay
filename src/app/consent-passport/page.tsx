@@ -342,7 +342,7 @@ export default function ConsentPassportPage() {
           </button>
 
           <p className="text-xs text-center text-gray-400">
-            This record is publicly verifiable on-chain. No login required.
+            This record is publicly verifiable on the platform. No login required.
           </p>
         </form>
       </main>
