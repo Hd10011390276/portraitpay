@@ -49,6 +49,7 @@ export default function PortraitDetailPage() {
 
   const [portrait, setPortrait] = useState<PortraitDetail | null>(null);
   const [loading, setLoading] = useState(true);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [certifying, setCertifying] = useState(false);
   const [certifyMsg, setCertifyMsg] = useState("");
   const [deleting, setDeleting] = useState(false);
@@ -99,6 +100,12 @@ export default function PortraitDetailPage() {
     fetch(`/api/portraits/${id}/three-view`)
       .then((r) => r.json())
       .then((j) => { if (j.success) setThreeView(j.data); })
+      .catch(() => {});
+
+    // Load current user
+    fetch("/api/auth/session")
+      .then((r) => r.json())
+      .then((j) => { if (j.success) setCurrentUserId(j.data?.userId ?? null); })
       .catch(() => {});
   }, [id, router]);
 
@@ -537,13 +544,13 @@ export default function PortraitDetailPage() {
           {threeViewEditing ? (
             <div className="bg-white dark:bg-gray-900 rounded-xl border border-blue-200 dark:border-blue-800 p-5">
               <h3 className="font-semibold text-blue-900 dark:text-blue-300 mb-4 flex items-center gap-2">
-                📁 三视图资料
+                📁 Three-View Materials
               </h3>
               <div className="space-y-3">
                 {(["front", "side", "top"] as const).map((view) => (
                   <div key={view}>
                     <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">
-                      {view === "front" ? "正视视图" : view === "side" ? "侧视图" : "仰视图"} Google Drive 链接
+                      {view === "front" ? "Front View" : view === "side" ? "Side View" : "Top View"} Google Drive link
                     </label>
                     <input
                       type="text"
@@ -560,7 +567,7 @@ export default function PortraitDetailPage() {
                   onClick={() => setThreeViewEditing(false)}
                   className="flex-1 px-4 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition"
                 >
-                  取消
+                  Cancel
                 </button>
                 <button
                   onClick={async () => {
@@ -587,7 +594,7 @@ export default function PortraitDetailPage() {
                   disabled={threeViewSaving}
                   className="flex-1 px-4 py-2 text-sm bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition disabled:opacity-50"
                 >
-                  {threeViewSaving ? "保存中..." : "保存"}
+                  {threeViewSaving ? "Saving..." : "Save"}
                 </button>
               </div>
             </div>
@@ -595,25 +602,27 @@ export default function PortraitDetailPage() {
             <div className="bg-white dark:bg-gray-900 rounded-xl border border-blue-200 dark:border-blue-800 p-5">
               <div className="flex items-center justify-between mb-3">
                 <h3 className="font-semibold text-blue-900 dark:text-blue-300 flex items-center gap-2">
-                  📁 三视图资料
+                  📁 Three-View Materials
                 </h3>
-                <button
-                  onClick={() => {
-                    setEditThreeView({
-                      front: threeView?.threeViewFront ?? "",
-                      side: threeView?.threeViewSide ?? "",
-                      top: threeView?.threeViewTop ?? "",
-                    });
-                    setThreeViewEditing(true);
-                  }}
-                  className="text-xs px-3 py-1.5 bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 rounded-lg hover:bg-blue-200 dark:hover:bg-blue-900/60 transition"
-                >
-                  编辑
-                </button>
+                {currentUserId === portrait?.owner?.id && (
+                  <button
+                    onClick={() => {
+                      setEditThreeView({
+                        front: threeView?.threeViewFront ?? "",
+                        side: threeView?.threeViewSide ?? "",
+                        top: threeView?.threeViewTop ?? "",
+                      });
+                      setThreeViewEditing(true);
+                    }}
+                    className="text-xs px-3 py-1.5 bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 rounded-lg hover:bg-blue-200 dark:hover:bg-blue-900/60 transition"
+                  >
+                    Edit
+                  </button>
+                )}
               </div>
               <div className="space-y-2 text-sm">
                 {(["front", "side", "top"] as const).map((view) => {
-                  const label = view === "front" ? "正视视图" : view === "side" ? "侧视图" : "仰视图";
+                  const label = view === "front" ? "Front View" : view === "side" ? "Side View" : "Top View";
                   const value = threeView?.[`threeView${view.charAt(0).toUpperCase() + view.slice(1) as "Front" | "Side" | "Top"}`];
                   return (
                     <div key={view} className="flex gap-2">
@@ -621,7 +630,7 @@ export default function PortraitDetailPage() {
                       {value ? (
                         <a href={value} target="_blank" rel="noopener noreferrer" className="text-blue-600 dark:text-blue-400 hover:underline truncate">{value}</a>
                       ) : (
-                        <span className="text-gray-400 italic">未设置</span>
+                        <span className="text-gray-400 italic">Not set</span>
                       )}
                     </div>
                   );
