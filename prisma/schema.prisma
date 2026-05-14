@@ -228,6 +228,9 @@ model Authorization {
   licenseFee Decimal @db.Decimal(12, 2)
   currency   String  @default("USD")
 
+  platformFee  Decimal? @db.Decimal(12, 2)
+  actorPayment Decimal? @db.Decimal(12, 2)
+
   terms String @db.Text
 
   contractHash    String? @unique
@@ -246,6 +249,32 @@ model Authorization {
   @@index([portraitId])
   @@index([granteeId])
   @@index([status])
+}
+
+// ============================================================
+// Consent Passport
+// ============================================================
+
+model ConsentPassport {
+  id String @id @default(cuid())
+
+  // Public token for sharing (no auth needed to view)
+  shareToken String @unique @default(cuid())
+
+  // Basic info
+  fullName String
+  email    String
+
+  // Allowed uses - e.g. VIDEO_GENERATION, VOICE_CLONE, DIGITAL_AVATAR, ADVERTISING
+  allowedUses    String[] @default([])
+  prohibitedUses String[] @default([])
+
+  // Optional
+  contactInfo    String?
+  additionalTerms String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 // ============================================================
