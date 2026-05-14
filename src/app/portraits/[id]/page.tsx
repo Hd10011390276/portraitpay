@@ -79,6 +79,12 @@ export default function PortraitDetailPage() {
   const tc = t.portraits.detail;
   const [hasImageError, setHasImageError] = useState(false);
 
+  // Three-view state
+  const [threeView, setThreeView] = useState<{ threeViewFront?: string | null; threeViewSide?: string | null; threeViewTop?: string | null } | null>(null);
+  const [threeViewEditing, setThreeViewEditing] = useState(false);
+  const [threeViewSaving, setThreeViewSaving] = useState(false);
+  const [editThreeView, setEditThreeView] = useState({ front: "", side: "", top: "" });
+
   useEffect(() => {
     fetch(`/api/portraits/${id}`)
       .then((r) => r.json())
@@ -88,6 +94,12 @@ export default function PortraitDetailPage() {
       })
       .catch(() => router.push("/portraits"))
       .finally(() => setLoading(false));
+
+    // Load three-view links
+    fetch(`/api/portraits/${id}/three-view`)
+      .then((r) => r.json())
+      .then((j) => { if (j.success) setThreeView(j.data); })
+      .catch(() => {});
   }, [id, router]);
 
   function getNetworkLabel(network: string | null | undefined): string {
@@ -520,6 +532,103 @@ export default function PortraitDetailPage() {
               </div>
             )}
           </div>
+
+          {/* Three-View Materials Card */}
+          {threeViewEditing ? (
+            <div className="bg-white dark:bg-gray-900 rounded-xl border border-blue-200 dark:border-blue-800 p-5">
+              <h3 className="font-semibold text-blue-900 dark:text-blue-300 mb-4 flex items-center gap-2">
+                📁 三视图资料
+              </h3>
+              <div className="space-y-3">
+                {(["front", "side", "top"] as const).map((view) => (
+                  <div key={view}>
+                    <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">
+                      {view === "front" ? "正视视图" : view === "side" ? "侧视图" : "仰视图"} Google Drive 链接
+                    </label>
+                    <input
+                      type="text"
+                      value={editThreeView[view]}
+                      onChange={(e) => setEditThreeView((p) => ({ ...p, [view]: e.target.value }))}
+                      placeholder="https://drive.google.com/..."
+                      className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white"
+                    />
+                  </div>
+                ))}
+              </div>
+              <div className="flex gap-2 mt-4">
+                <button
+                  onClick={() => setThreeViewEditing(false)}
+                  className="flex-1 px-4 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition"
+                >
+                  取消
+                </button>
+                <button
+                  onClick={async () => {
+                    setThreeViewSaving(true);
+                    try {
+                      const res = await fetch(`/api/portraits/${id}/three-view`, {
+                        method: "PATCH",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                          threeViewFront: editThreeView.front || null,
+                          threeViewSide: editThreeView.side || null,
+                          threeViewTop: editThreeView.top || null,
+                        }),
+                      });
+                      const json = await res.json();
+                      if (json.success) {
+                        setThreeView(json.data);
+                        setThreeViewEditing(false);
+                      }
+                    } finally {
+                      setThreeViewSaving(false);
+                    }
+                  }}
+                  disabled={threeViewSaving}
+                  className="flex-1 px-4 py-2 text-sm bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition disabled:opacity-50"
+                >
+                  {threeViewSaving ? "保存中..." : "保存"}
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="bg-white dark:bg-gray-900 rounded-xl border border-blue-200 dark:border-blue-800 p-5">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="font-semibold text-blue-900 dark:text-blue-300 flex items-center gap-2">
+                  📁 三视图资料
+                </h3>
+                <button
+                  onClick={() => {
+                    setEditThreeView({
+                      front: threeView?.threeViewFront ?? "",
+                      side: threeView?.threeViewSide ?? "",
+                      top: threeView?.threeViewTop ?? "",
+                    });
+                    setThreeViewEditing(true);
+                  }}
+                  className="text-xs px-3 py-1.5 bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 rounded-lg hover:bg-blue-200 dark:hover:bg-blue-900/60 transition"
+                >
+                  编辑
+                </button>
+              </div>
+              <div className="space-y-2 text-sm">
+                {(["front", "side", "top"] as const).map((view) => {
+                  const label = view === "front" ? "正视视图" : view === "side" ? "侧视图" : "仰视图";
+                  const value = threeView?.[`threeView${view.charAt(0).toUpperCase() + view.slice(1) as "Front" | "Side" | "Top"}`];
+                  return (
+                    <div key={view} className="flex gap-2">
+                      <span className="text-gray-500 dark:text-gray-400 w-20 shrink-0">{label}:</span>
+                      {value ? (
+                        <a href={value} target="_blank" rel="noopener noreferrer" className="text-blue-600 dark:text-blue-400 hover:underline truncate">{value}</a>
+                      ) : (
+                        <span className="text-gray-400 italic">未设置</span>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
 
           <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 p-4">
             <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">{tc.owner}</p>

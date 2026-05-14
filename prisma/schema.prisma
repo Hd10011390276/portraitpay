@@ -167,6 +167,11 @@ model Portrait {
   backViewUrl    String?  // 后面照
   threeViewHash  String?  // Combined hash of all three views
 
+  // Google Drive links for three-view reference materials (用户上传到 Google Drive 的三视图资料链接)
+  threeViewFront String?  // 正视图 Google Drive 链接
+  threeViewSide  String?  // 侧视图 Google Drive 链接
+  threeViewTop   String?  // 仰视图 Google Drive 链接
+
   // ID card info — captured at mint time
   idCardType   String?  // driver_license | us_id | passport | other
   idCardName   String?  // real name as shown on ID card

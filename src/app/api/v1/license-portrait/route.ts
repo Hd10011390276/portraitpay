@@ -226,6 +226,10 @@ export async function POST(request: NextRequest) {
     endDate.setDate(endDate.getDate() + durationDays);
 
     // Create authorization record (PENDING until payment succeeds)
+    const PLATFORM_FEE_PERCENT = 0.01;
+    const platformFee = Math.round(totalFee * PLATFORM_FEE_PERCENT * 100) / 100;
+    const actorPayment = Math.round((totalFee - platformFee) * 100) / 100;
+
     const authorization = await prisma.authorization.create({
       data: {
         portraitId: portrait.id,
@@ -239,7 +243,7 @@ export async function POST(request: NextRequest) {
         endDate,
         licenseFee: totalFee,
         currency: currency.toUpperCase(),
-        terms: `Portrait license for ${usageScope.join(", ")} use. ${exclusivity ? "Exclusive" : "Non-exclusive"} license.`,
+        terms: JSON.stringify({ platformFee, actorPayment }),
         status: "PENDING",
       },
     });
@@ -277,6 +281,8 @@ export async function POST(request: NextRequest) {
         endDate,
         licenseFee: totalFee,
         currency: currency.toUpperCase(),
+        platformFee,
+        actorPayment,
         payment: {
           clientSecret,
           paymentIntentId,
@@ -379,6 +385,8 @@ export async function GET(request: NextRequest) {
           endDate: auth.endDate,
           licenseFee: auth.licenseFee.toNumber(),
           currency: auth.currency,
+          platformFee: auth.licenseFee.toNumber() * 0.01,
+          actorPayment: auth.licenseFee.toNumber() * 0.99,
           license: auth.licenses[0] ?? null,
           createdAt: auth.createdAt,
         },
