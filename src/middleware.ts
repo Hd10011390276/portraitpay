@@ -16,6 +16,8 @@ const PUBLIC_PATHS = [
   "/faq",
   "/report-public",
   "/verify",
+  "/consent-passport",
+  "/verify-batch",
 ];
 
 export async function middleware(req: NextRequest) {
@@ -40,7 +42,8 @@ export async function middleware(req: NextRequest) {
     pathname.startsWith("/api/stats") ||
     pathname.startsWith("/api/public-report") ||
     pathname.startsWith("/api/portraits/") && pathname.includes("/mint") ||
-    (pathname.startsWith("/api/lawyers") && req.method === "GET")
+    (pathname.startsWith("/api/lawyers") && req.method === "GET") ||
+    pathname.startsWith("/api/consent-passport")
   ) {
     return NextResponse.next();
   }
