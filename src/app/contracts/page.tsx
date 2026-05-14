@@ -11,6 +11,11 @@ import ThemeToggle from "@/components/ThemeToggle";
 
 const CONTRACT_FILES = [
   {
+    name: "Consent-Passport",
+    labelKey: "fileConsentPassport",
+    icon: "🪪",
+  },
+  {
     name: "00-Overview-and-Signing-Guide",
     labelKey: "fileOverview",
     icon: "📋",
@@ -34,11 +39,6 @@ const CONTRACT_FILES = [
     name: "04-Film-Adaptation-License-Agreement",
     labelKey: "fileFilm",
     icon: "🎬",
-  },
-  {
-    name: "Consent-Passport",
-    labelKey: "fileConsentPassport",
-    icon: "🪪",
   },
 ];
 
@@ -188,52 +188,68 @@ export default function ContractsPage() {
 
                 {/* Download Buttons */}
                 <div className="px-6 pb-6 flex flex-wrap items-center gap-3">
-                  <button
-                    onClick={() => downloadPdf(contract.name)}
-                    disabled={isPdfLoading}
-                    className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#16a34a] hover:bg-[#15803d] disabled:opacity-60 disabled:cursor-not-allowed text-white text-sm font-medium rounded-lg transition-colors"
-                  >
-                    {isPdfLoading ? (
-                      <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                      </svg>
-                    ) : (
-                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                      </svg>
-                    )}
-                    {isPdfLoading ? t.contracts.downloading : t.contracts.freeDownloadPdf}
-                  </button>
-
-                  {isUnlocked ? (
-                    <button
-                      onClick={() => downloadWord(contract.name)}
-                      disabled={isWordLoading}
-                      className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#244169] hover:bg-[#1a3354] disabled:opacity-60 disabled:cursor-not-allowed text-white text-sm font-medium rounded-lg transition-colors"
-                    >
-                      {isWordLoading ? (
-                        <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                        </svg>
-                      ) : (
+                  {contract.name === "Consent-Passport" ? (
+                    <>
+                      <Link
+                        href="/consent-passport"
+                        className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#16a34a] hover:bg-[#15803d] text-white text-sm font-medium rounded-lg transition-colors"
+                      >
                         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                         </svg>
-                      )}
-                      {isWordLoading ? t.contracts.downloading : t.contracts.downloadWord}
-                    </button>
+                        {t.contracts.enterConsentPassport ?? "Enter Consent Passport"}
+                      </Link>
+                    </>
                   ) : (
-                    <Link
-                      href={`/contracts/payment?name=${encodeURIComponent(contract.name)}`}
-                      className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#244169] hover:bg-[#1a3354] text-white text-sm font-medium rounded-lg transition-colors"
-                    >
-                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                      </svg>
-                      {t.contracts.unlockWord}
-                    </Link>
+                    <>
+                      <button
+                        onClick={() => downloadPdf(contract.name)}
+                        disabled={isPdfLoading}
+                        className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#16a34a] hover:bg-[#15803d] disabled:opacity-60 disabled:cursor-not-allowed text-white text-sm font-medium rounded-lg transition-colors"
+                      >
+                        {isPdfLoading ? (
+                          <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                          </svg>
+                        ) : (
+                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                          </svg>
+                        )}
+                        {isPdfLoading ? t.contracts.downloading : t.contracts.freeDownloadPdf}
+                      </button>
+
+                      {isUnlocked ? (
+                        <button
+                          onClick={() => downloadWord(contract.name)}
+                          disabled={isWordLoading}
+                          className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#244169] hover:bg-[#1a3354] disabled:opacity-60 disabled:cursor-not-allowed text-white text-sm font-medium rounded-lg transition-colors"
+                        >
+                          {isWordLoading ? (
+                            <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                            </svg>
+                          ) : (
+                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                            </svg>
+                          )}
+                          {isWordLoading ? t.contracts.downloading : t.contracts.downloadWord}
+                        </button>
+                      ) : (
+                        <Link
+                          href={`/contracts/payment?name=${encodeURIComponent(contract.name)}`}
+                          className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#244169] hover:bg-[#1a3354] text-white text-sm font-medium rounded-lg transition-colors"
+                        >
+                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                          </svg>
+                          {t.contracts.unlockWord}
+                        </Link>
+                      )}
+                    </>
                   )}
                 </div>
               </div>

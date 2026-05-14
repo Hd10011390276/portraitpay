@@ -296,6 +296,78 @@ export async function sendPortraitCertifiedEmail(params: PortraitCertifiedEmailP
 }
 
 // ============================================================
+// Consent Passport email
+// ============================================================
+interface ConsentPassportEmailParams {
+  name: string;
+  email: string;
+  shareUrl: string;
+  allowedUses: string[];
+  prohibitedUses: string[];
+}
+
+export async function sendConsentPassportEmail(params: ConsentPassportEmailParams): Promise<void> {
+  const { name, email, shareUrl, allowedUses, prohibitedUses } = params;
+  const timestamp = new Date().toLocaleString("en-US", { timeZone: "UTC" });
+
+  const usesHtml = allowedUses.length > 0
+    ? `<div style="margin:16px 0;padding:12px;background:#f0fdf4;border-radius:8px">
+        <p style="margin:0 0 8px;font-size:12px;font-weight:bold;color:#166534">ALLOWED USES</p>
+        <div style="display:flex;flex-wrap:wrap;gap:6px">${allowedUses.map(u => `<span style="background:#dcfce7;color:#166534;padding:4px 10px;border-radius:20px;font-size:12px">${u}</span>`).join('')}</div>
+       </div>`
+    : '';
+
+  const prohibitedHtml = prohibitedUses.length > 0
+    ? `<div style="margin:16px 0;padding:12px;background:#fef2f2;border-radius:8px">
+        <p style="margin:0 0 8px;font-size:12px;font-weight:bold;color:#991b1b">PROHIBITED USES</p>
+        <div style="display:flex;flex-wrap:wrap;gap:6px">${prohibitedUses.map(u => `<span style="background:#fee2e2;color:#991b1b;padding:4px 10px;border-radius:20px;font-size:12px">${u}</span>`).join('')}</div>
+       </div>`
+    : '';
+
+  const html = `<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"></head>
+<body style="font-family:Arial,sans-serif;background:#f4f4f4;margin:0;padding:20px">
+<div style="max-width:600px;margin:0 auto;background:#fff;border-radius:8px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.08)">
+  <div style="background:linear-gradient(135deg,#1e3a5f,#2d5a87);padding:24px 32px;text-align:center">
+    <div style="font-size:32px;margin-bottom:8px">🪪</div>
+    <h2 style="margin:0;color:#fff;font-size:20px;font-weight:bold">Your Consent Passport is Ready</h2>
+    <p style="margin:4px 0 0;color:rgba(255,255,255,0.75);font-size:13px">PortraitPay AI · Public Portrait Authorization Record</p>
+  </div>
+  <div style="padding:24px">
+    <p style="font-size:15px;color:#333;margin:0 0 16px">Hi <strong>${name}</strong>,</p>
+    <p style="font-size:14px;color:#555;line-height:1.6">Your Consent Passport has been created successfully. Your portrait usage preferences are now publicly verifiable.</p>
+    ${usesHtml}
+    ${prohibitedHtml}
+    <div style="margin:20px 0;padding:16px;background:#f9f9f9;border-radius:8px">
+      <p style="margin:0 0 8px;font-size:12px;color:#666">Shareable Link</p>
+      <a href="${shareUrl}" style="font-size:13px;font-family:monospace;color:#2563eb;word-break:break-all;text-decoration:none">${shareUrl}</a>
+    </div>
+    <div style="text-align:center;margin:20px 0">
+      <a href="${shareUrl}" style="display:inline-block;padding:12px 24px;background:#244169;color:#fff;text-decoration:none;border-radius:8px;font-size:14px;font-weight:600">View Your Consent Passport →</a>
+    </div>
+    <p style="font-size:12px;color:#999;margin-top:16px">Created: ${timestamp} UTC</p>
+  </div>
+</div>
+</body>
+</html>`;
+
+  const text = `PortraitPay AI — Your Consent Passport is Ready\n\nHi ${name},\n\nYour Consent Passport has been created successfully.\n\nShareable link: ${shareUrl}\n\nView your passport: ${shareUrl}\n\nCreated: ${timestamp} UTC`;
+
+  try {
+    await sendEmail({
+      to: email,
+      subject: `🪪 Your Consent Passport is Ready - ${name}`,
+      html,
+      text,
+    });
+    console.log("[sendConsentPassportEmail] Sent to:", email);
+  } catch (err) {
+    console.error("[sendConsentPassportEmail] failed:", err instanceof Error ? err.message : String(err));
+  }
+}
+
+// ============================================================
 // Portrait mint failed email
 // ============================================================
 interface PortraitMintFailedEmailParams {

@@ -7,6 +7,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { getSessionFromRequest } from "@/lib/auth/session";
+import { sendConsentPassportEmail } from "@/lib/email";
 export const dynamic = "force-dynamic";
 
 const CreateSchema = z.object({
@@ -47,12 +48,23 @@ export async function POST(request: NextRequest) {
       },
     });
 
+    const shareUrl = `/consent-passport/${passport.shareToken}`;
+    const fullShareUrl = `${process.env.NEXT_PUBLIC_APP_URL ?? "https://portraitpayai.com"}${shareUrl}`;
+
+    await sendConsentPassportEmail({
+      name: parsed.data.fullName,
+      email: parsed.data.email,
+      shareUrl: fullShareUrl,
+      allowedUses: parsed.data.allowedUses,
+      prohibitedUses: parsed.data.prohibitedUses,
+    });
+
     return NextResponse.json({
       success: true,
       data: {
         id: passport.id,
         shareToken: passport.shareToken,
-        shareUrl: `/consent-passport/${passport.shareToken}`,
+        shareUrl,
       },
     });
   } catch (error) {
