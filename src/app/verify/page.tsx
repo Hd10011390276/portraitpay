@@ -101,7 +101,7 @@ export default function VerifyPage() {
             <span>Publicly verifiable on Sepolia</span>
           </div>
           <h1 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-3">
-            {tv.title || "Verify Blockchain Certificate"}
+            {tv.title || "Verify Certificate"}
           </h1>
           <p className="text-gray-600 dark:text-gray-400 max-w-lg mx-auto">
             {tv.subtitle || "Enter a portrait hash or transaction hash to verify if any portrait has been timestamped on Ethereum Sepolia. No login required, fully public."}
@@ -130,7 +130,7 @@ export default function VerifyPage() {
             </button>
           </div>
           <p className="mt-2 text-xs text-gray-400">
-            {tv.hint || "Supports 64-char hex hash or transaction hash. Blockchain queries are free."}
+            {tv.hint || "Supports 64-char hex hash or transaction hash. Queries are free."}
           </p>
         </form>
 
