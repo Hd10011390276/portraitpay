@@ -9,6 +9,7 @@ const ALLOWED_FILES = [
   "02-Exclusive-License-Agreement.docx",
   "03-Endorsement-License-Agreement.docx",
   "04-Film-Adaptation-License-Agreement.docx",
+  "Consent-Passport.docx",
 ];
 
 export async function GET(

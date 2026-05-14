@@ -775,6 +775,8 @@ export const translations = {
       fileEndorsementDesc: "Portrait authorization for brand endorsement and advertising campaigns",
       fileFilm: "Film Adaptation License Agreement",
       fileFilmDesc: "Portrait authorization for film adaptation, games, animation and creative industries",
+      fileConsentPassport: "Consent Passport",
+      fileConsentPassportDesc: "Personal portrait rights passport covering all licensing preferences and consent settings",
       contractLabel: "Contract: ",
     },
     // Enterprise Certification

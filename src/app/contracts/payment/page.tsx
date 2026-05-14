@@ -16,6 +16,7 @@ const CONTRACT_LABELS: Record<string, { label: string; labelZh: string }> = {
   "02-Exclusive-License-Agreement": { label: "Exclusive License Agreement", labelZh: "独家授权协议" },
   "03-Endorsement-License-Agreement": { label: "Endorsement License Agreement", labelZh: "代言授权协议" },
   "04-Film-Adaptation-License-Agreement": { label: "Film Adaptation License Agreement", labelZh: "影视改编授权协议" },
+  "Consent-Passport": { label: "Consent Passport", labelZh: "肖像授权护照" },
 };
 
 // PayPal.me link — PortraitPay AI official PayPal account

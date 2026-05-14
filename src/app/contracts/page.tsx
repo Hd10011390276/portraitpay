@@ -35,6 +35,11 @@ const CONTRACT_FILES = [
     labelKey: "fileFilm",
     icon: "🎬",
   },
+  {
+    name: "Consent-Passport",
+    labelKey: "fileConsentPassport",
+    icon: "🪪",
+  },
 ];
 
 export default function ContractsPage() {
