@@ -41,6 +41,9 @@ export default function ConsentPassportPage() {
     email: "",
     contactInfo: "",
     additionalTerms: "",
+    threeViewFront: "",
+    threeViewSide: "",
+    threeViewTop: "",
   });
   const [allowedUses, setAllowedUses] = useState<string[]>([]);
   const [prohibitedUses, setProhibitedUses] = useState<string[]>([]);
@@ -81,6 +84,9 @@ export default function ConsentPassportPage() {
           prohibitedUses,
           contactInfo: form.contactInfo.trim() || undefined,
           additionalTerms: form.additionalTerms.trim() || undefined,
+          threeViewFront: form.threeViewFront.trim() || undefined,
+          threeViewSide: form.threeViewSide.trim() || undefined,
+          threeViewTop: form.threeViewTop.trim() || undefined,
         }),
       });
       const json = await res.json();
@@ -291,6 +297,29 @@ export default function ConsentPassportPage() {
               rows={3}
               className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white resize-none"
             />
+          </div>
+
+          {/* Three-View Materials */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              📁 Three-View Materials <span className="text-gray-400 font-normal">(optional)</span>
+            </label>
+            <div className="space-y-2">
+              {(["Front", "Side", "Top"] as const).map((view) => (
+                <div key={view}>
+                  <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">
+                    {view} View
+                  </label>
+                  <input
+                    type="text"
+                    value={form[`threeView${view}` as keyof typeof form] as string}
+                    onChange={(e) => setForm((p) => ({ ...p, [`threeView${view}` as keyof typeof form]: e.target.value }))}
+                    placeholder="https://drive.google.com/..."
+                    className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white text-sm"
+                  />
+                </div>
+              ))}
+            </div>
           </div>
 
           {/* Submit */}

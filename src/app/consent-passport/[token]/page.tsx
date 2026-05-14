@@ -38,6 +38,9 @@ export default function ConsentPassportViewPage() {
     prohibitedUses: string[];
     contactInfo?: string | null;
     additionalTerms?: string | null;
+    threeViewFront?: string | null;
+    threeViewSide?: string | null;
+    threeViewTop?: string | null;
     createdAt: string;
   } | null>(null);
   const [loading, setLoading] = useState(true);
@@ -147,6 +150,30 @@ export default function ConsentPassportViewPage() {
             <div className="px-6 py-5 border-b border-gray-100 dark:border-gray-800">
               <p className="text-xs text-gray-400 uppercase tracking-wide mb-2">Additional Terms</p>
               <p className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap">{passport.additionalTerms}</p>
+            </div>
+          )}
+
+          {/* Three-View Materials */}
+          {(passport.threeViewFront || passport.threeViewSide || passport.threeViewTop) && (
+            <div className="px-6 py-5 border-b border-gray-100 dark:border-gray-800">
+              <p className="text-xs text-gray-400 uppercase tracking-wide mb-3">Three-View Materials</p>
+              <div className="space-y-2">
+                {passport.threeViewFront && (
+                  <a href={passport.threeViewFront} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-sm text-blue-600 dark:text-blue-400 hover:underline">
+                    <span>📁</span> Front View
+                  </a>
+                )}
+                {passport.threeViewSide && (
+                  <a href={passport.threeViewSide} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-sm text-blue-600 dark:text-blue-400 hover:underline">
+                    <span>📁</span> Side View
+                  </a>
+                )}
+                {passport.threeViewTop && (
+                  <a href={passport.threeViewTop} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-sm text-blue-600 dark:text-blue-400 hover:underline">
+                    <span>📁</span> Top View
+                  </a>
+                )}
+              </div>
             </div>
           )}
 
