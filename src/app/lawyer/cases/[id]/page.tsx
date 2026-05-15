@@ -18,12 +18,12 @@ const STATUS_COLORS: Record<string, string> = {
 };
 
 const STATUS_LABELS: Record<string, string> = {
-  PENDING: "等待平台确认",
-  IN_PROGRESS: "进行中",
-  WON: "已胜诉",
-  LOST: "已败诉",
-  CLOSED: "已结算",
-  REJECTED: "已拒绝",
+  PENDING: "Awaiting Confirmation",
+  IN_PROGRESS: "In Progress",
+  WON: "Won",
+  LOST: "Lost",
+  CLOSED: "Closed",
+  REJECTED: "Rejected",
 };
 
 export default function LawyerCaseDetailPage() {
@@ -78,7 +78,7 @@ export default function LawyerCaseDetailPage() {
   };
 
   const handleStatusChange = async (newStatus: string) => {
-    if (!confirm(`确认将案件状态改为「${STATUS_LABELS[newStatus] || newStatus}」？`)) return;
+    if (!confirm(`Confirm status change to ${STATUS_LABELS[newStatus] || newStatus}?`)) return;
     setUpdating(true);
     try {
       const res = await fetch(`/api/lawyers/cases/${id}`, {
@@ -99,7 +99,7 @@ export default function LawyerCaseDetailPage() {
   };
 
   const handleClose = async () => {
-    if (!confirm("确认结算此案件？仅在判决为「已胜诉」或「已败诉」时可结算。")) return;
+    if (!confirm("Confirm case closure? Only available after a Won/Lost verdict.")) return;
     setClosing(true);
     setCloseError("");
     try {
@@ -126,12 +126,12 @@ export default function LawyerCaseDetailPage() {
         <div className="bg-white border-b border-gray-200 sticky top-0 z-20">
           <div className="max-w-3xl mx-auto px-4 h-14 flex items-center justify-between">
             <Link href="/lawyer/cases" className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-900">
-              ‹ 返回案件列表
+              ‹ Back to Case List
             </Link>
             <ThemeToggle />
           </div>
         </div>
-        <div className="max-w-3xl mx-auto px-4 py-12 text-center text-gray-500">加载中...</div>
+        <div className="max-w-3xl mx-auto px-4 py-12 text-center text-gray-500">Loading...</div>
       </div>
     );
   }
@@ -147,7 +147,7 @@ export default function LawyerCaseDetailPage() {
             <ThemeToggle />
           </div>
         </div>
-        <div className="max-w-3xl mx-auto px-4 py-12 text-center text-red-500">{error || "案件不存在"}</div>
+        <div className="max-w-3xl mx-auto px-4 py-12 text-center text-red-500">{error || "Case not found"}</div>
       </div>
     );
   }
@@ -178,53 +178,53 @@ export default function LawyerCaseDetailPage() {
               {STATUS_LABELS[lawyerCase.status] || lawyerCase.status}
             </span>
             {lawyerCase.platformConfirmed ? (
-              <span className="text-sm text-green-600">✓ 平台已确认</span>
+              <span className="text-sm text-green-600">✓ Platform Confirmed</span>
             ) : (
-              <span className="text-sm text-yellow-600">⏳ 等待平台确认</span>
+              <span className="text-sm text-yellow-600">⏳ Awaiting Platform Confirmation</span>
             )}
-            {isClosed && <span className="text-sm text-gray-400">已结算</span>}
+            {isClosed && <span className="text-sm text-gray-400">Closed</span>}
           </div>
           <h1 className="text-2xl font-bold text-gray-900">
-            {lawyerCase.infringementReport?.portrait?.title || "侵权案件"}
+            {lawyerCase.infringementReport?.portrait?.title || "Infringement Case"}
           </h1>
         </div>
 
         <div className="space-y-6">
-          {/* 侵权报告信息 */}
+          {/* Infringement Report Info */}
           <div className="bg-white rounded-xl border border-gray-200 p-5">
-            <h2 className="text-sm font-semibold text-gray-700 mb-3">侵权报告信息</h2>
+            <h2 className="text-sm font-semibold text-gray-700 mb-3">Infringement Report</h2>
             <div className="space-y-2 text-sm">
               <div className="flex gap-2 text-gray-500">
-                <span className="w-20 flex-shrink-0">报告人：</span>
+                <span className="w-24 flex-shrink-0 text-gray-600">Reporter:</span>
                 <span className="text-gray-900">{lawyerCase.infringementReport?.reporter?.displayName || "—"}</span>
               </div>
               <div className="flex gap-2 text-gray-500">
-                <span className="w-20 flex-shrink-0">侵权描述：</span>
+                <span className="w-24 flex-shrink-0 text-gray-600">Description:</span>
                 <span className="text-gray-900">{lawyerCase.infringementReport?.description || "—"}</span>
               </div>
               {lawyerCase.infringementReport?.detectedUrl && (
                 <div className="flex gap-2 text-gray-500">
-                  <span className="w-20 flex-shrink-0">侵权链接：</span>
+                  <span className="w-24 flex-shrink-0 text-gray-600">URL:</span>
                   <a href={lawyerCase.infringementReport.detectedUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline break-all">
                     {lawyerCase.infringementReport.detectedUrl}
                   </a>
                 </div>
               )}
               <div className="flex gap-2 text-gray-500">
-                <span className="w-20 flex-shrink-0">创建时间：</span>
-                <span className="text-gray-900">{new Date(lawyerCase.infringementReport?.createdAt).toLocaleString("zh-CN")}</span>
+                <span className="w-24 flex-shrink-0 text-gray-600">Created:</span>
+                <span className="text-gray-900">{new Date(lawyerCase.infringementReport?.createdAt).toLocaleString()}</span>
               </div>
             </div>
           </div>
 
-          {/* 律师备注 */}
+          {/* Lawyer Notes */}
           {!isClosed && (
             <div className="bg-white rounded-xl border border-gray-200 p-5">
-              <h2 className="text-sm font-semibold text-gray-700 mb-3">案件备注</h2>
+              <h2 className="text-sm font-semibold text-gray-700 mb-3">Case Notes</h2>
               <textarea
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                placeholder="输入案件备注..."
+                placeholder="Enter case notes..."
                 rows={4}
                 className="w-full text-sm border border-gray-200 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-100 resize-none"
               />
@@ -234,39 +234,39 @@ export default function LawyerCaseDetailPage() {
                   disabled={updating}
                   className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50"
                 >
-                  {updating ? "保存中..." : "保存备注"}
+                  {updating ? "Saving..." : "Save Notes"}
                 </button>
               </div>
             </div>
           )}
 
-          {/* 费用明细 */}
+          {/* Fee Breakdown */}
           <div className="bg-white rounded-xl border border-gray-200 p-5">
-            <h2 className="text-sm font-semibold text-gray-700 mb-3">费用明细</h2>
+            <h2 className="text-sm font-semibold text-gray-700 mb-3">Fee Breakdown</h2>
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
-                <span className="text-gray-500">侵权赔偿金</span>
-                <span className="font-medium text-gray-900">¥{comp.toFixed(2)}</span>
+                <span className="text-gray-500">Infringement Compensation</span>
+                <span className="font-medium text-gray-900">${comp.toFixed(2)}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-500">平台服务费 ({(Number(lawyerCase.platformFeeRate || 0) * 100).toFixed(0)}%)</span>
-                <span className="text-red-600">-¥{pf.toFixed(2)}</span>
+                <span className="text-gray-500">Platform Fee ({(Number(lawyerCase.platformFeeRate || 0) * 100).toFixed(0)}%)</span>
+                <span className="text-red-600">-${pf.toFixed(2)}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-500">律师费 ({(Number(lawyerCase.lawyerFeeRate || 0) * 100).toFixed(0)}%)</span>
-                <span className="text-blue-600">+¥{lf.toFixed(2)}</span>
+                <span className="text-gray-500">Lawyer Fee ({(Number(lawyerCase.lawyerFeeRate || 0) * 100).toFixed(0)}%)</span>
+                <span className="text-blue-600">+${lf.toFixed(2)}</span>
               </div>
               <div className="border-t border-gray-100 pt-2 flex justify-between">
-                <span className="text-gray-700 font-medium">肖像主所得</span>
-                <span className="font-bold text-green-600">¥{pop.toFixed(2)}</span>
+                <span className="text-gray-700 font-medium">Portrait Owner</span>
+                <span className="font-bold text-green-600">${pop.toFixed(2)}</span>
               </div>
             </div>
           </div>
 
-          {/* 案件状态操作 */}
+          {/* Case Actions */}
           {!isClosed && (
             <div className="bg-white rounded-xl border border-gray-200 p-5">
-              <h2 className="text-sm font-semibold text-gray-700 mb-3">案件操作</h2>
+              <h2 className="text-sm font-semibold text-gray-700 mb-3">Case Actions</h2>
               <div className="flex flex-wrap gap-2">
                 {lawyerCase.status === "IN_PROGRESS" && (
                   <>
@@ -275,14 +275,14 @@ export default function LawyerCaseDetailPage() {
                       disabled={updating}
                       className="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 disabled:opacity-50"
                     >
-                      标记为已胜诉
+                    Mark as Won
                     </button>
                     <button
                       onClick={() => handleStatusChange("LOST")}
                       disabled={updating}
                       className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 disabled:opacity-50"
                     >
-                      标记为已败诉
+                      Mark as Lost
                     </button>
                   </>
                 )}
@@ -291,21 +291,21 @@ export default function LawyerCaseDetailPage() {
                 )}
                 {(lawyerCase.status === "WON" || lawyerCase.status === "LOST") && !isClosed && (
                   <div className="w-full space-y-3">
-                    <p className="text-sm text-gray-600">判决已完成，请联系管理员结算此案件。</p>
+                    <p className="text-sm text-gray-600">Verdict reached. Contact admin to close the case.</p>
                   </div>
                 )}
               </div>
             </div>
           )}
 
-          {/* 结算 (Admin) */}
+          {/* Close Case (Admin) */}
           {canClose && (
             <div className="bg-white rounded-xl border border-gray-200 p-5">
-              <h2 className="text-sm font-semibold text-gray-700 mb-3">结算案件（管理员）</h2>
+              <h2 className="text-sm font-semibold text-gray-700 mb-3">Close Case (Admin)</h2>
               <textarea
                 value={closeNotes}
                 onChange={(e) => setCloseNotes(e.target.value)}
-                placeholder="结算备注（可选）..."
+                placeholder="Resolution notes (optional)..."
                 rows={3}
                 className="w-full text-sm border border-gray-200 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-100 resize-none mb-3"
               />
@@ -315,25 +315,25 @@ export default function LawyerCaseDetailPage() {
                 disabled={closing}
                 className="px-4 py-2 text-sm font-medium text-white bg-gray-900 rounded-lg hover:bg-gray-800 disabled:opacity-50"
               >
-                {closing ? "结算中..." : "确认结算"}
+                {closing ? "Closing..." : "Confirm Closure"}
               </button>
             </div>
           )}
 
-          {/* 已结算信息 */}
+          {/* Closure Info */}
           {isClosed && (
             <div className="bg-white rounded-xl border border-gray-200 p-5">
-              <h2 className="text-sm font-semibold text-gray-700 mb-3">结算信息</h2>
+              <h2 className="text-sm font-semibold text-gray-700 mb-3">Closure Info</h2>
               <div className="space-y-2 text-sm">
                 <div className="flex gap-2 text-gray-500">
-                  <span className="w-20 flex-shrink-0">结算时间：</span>
+                  <span className="w-20 flex-shrink-0 text-gray-600">Closed:</span>
                   <span className="text-gray-900">
                     {lawyerCase.closedAt ? new Date(lawyerCase.closedAt).toLocaleString("zh-CN") : "—"}
                   </span>
                 </div>
                 {lawyerCase.resolutionNotes && (
                   <div className="flex gap-2 text-gray-500">
-                    <span className="w-20 flex-shrink-0">备注：</span>
+                    <span className="w-20 flex-shrink-0 text-gray-600">Notes:</span>
                     <span className="text-gray-900">{lawyerCase.resolutionNotes}</span>
                   </div>
                 )}
@@ -341,20 +341,20 @@ export default function LawyerCaseDetailPage() {
             </div>
           )}
 
-          {/* 律师信息 */}
+          {/* Assigned Lawyer */}
           <div className="bg-white rounded-xl border border-gray-200 p-5">
-            <h2 className="text-sm font-semibold text-gray-700 mb-3">代理律师</h2>
+            <h2 className="text-sm font-semibold text-gray-700 mb-3">Assigned Lawyer</h2>
             <div className="space-y-2 text-sm">
               <div className="flex gap-2 text-gray-500">
-                <span className="w-20 flex-shrink-0">律所：</span>
+                <span className="w-20 flex-shrink-0 text-gray-600">Firm:</span>
                 <span className="text-gray-900">{lawyerCase.lawyerRegistration?.companyName || "—"}</span>
               </div>
               <div className="flex gap-2 text-gray-500">
-                <span className="w-20 flex-shrink-0">联系人：</span>
+                <span className="w-20 flex-shrink-0 text-gray-600">Contact:</span>
                 <span className="text-gray-900">{lawyerCase.lawyerRegistration?.contactName || "—"}</span>
               </div>
               <div className="flex gap-2 text-gray-500">
-                <span className="w-20 flex-shrink-0">地区：</span>
+                <span className="w-20 flex-shrink-0 text-gray-600">Region:</span>
                 <span className="text-gray-900">{lawyerCase.lawyerRegistration?.region || "—"}</span>
               </div>
             </div>
@@ -362,8 +362,8 @@ export default function LawyerCaseDetailPage() {
 
           {/* 元信息 */}
           <div className="text-xs text-gray-400 space-y-1">
-            <p>案件ID：{lawyerCase.id}</p>
-            <p>创建时间：{new Date(lawyerCase.createdAt).toLocaleString("zh-CN")}</p>
+            <p>Case ID: {lawyerCase.id}</p>
+            <p>Created: {new Date(lawyerCase.createdAt).toLocaleString()}</p>
           </div>
         </div>
       </div>
