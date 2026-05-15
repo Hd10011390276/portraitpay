@@ -4,6 +4,7 @@
  */
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useLanguage } from "@/context/LanguageContext";
 import ThemeToggle from "@/components/ThemeToggle";
 
@@ -27,6 +28,7 @@ const STATUS_LABELS: Record<string, string> = {
 
 export default function LawyerCasesPage() {
   const { t } = useLanguage();
+  const router = useRouter();
   const [cases, setCases] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -36,11 +38,15 @@ export default function LawyerCasesPage() {
       .then((r) => r.json())
       .then((j) => {
         if (j.success) setCases(j.data);
-        else setError(j.error || "Failed to load");
+        else if (j.error === "Not an approved lawyer" || j.error === "Unauthorized") {
+          router.replace("/lawyer/dashboard");
+        } else {
+          setError(j.error || "Failed to load");
+        }
       })
       .catch(() => setError("Network error"))
       .finally(() => setLoading(false));
-  }, []);
+  }, [router]);
 
   return (
     <div className="min-h-screen bg-gray-50">
