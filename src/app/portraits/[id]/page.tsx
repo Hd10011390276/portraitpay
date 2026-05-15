@@ -103,9 +103,9 @@ export default function PortraitDetailPage() {
       .catch(() => {});
 
     // Load current user
-    fetch("/api/auth/session")
+    fetch("/api/auth/me")
       .then((r) => r.json())
-      .then((j) => { if (j.success) setCurrentUserId(j.data?.userId ?? null); })
+      .then((j) => { if (j.success) setCurrentUserId(j.data?.user?.userId ?? null); })
       .catch(() => {});
   }, [id, router]);
 

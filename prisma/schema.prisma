@@ -368,6 +368,7 @@ model InfringementReport {
   alertId String? @unique
 
   notices InfringementNotice[]
+  lawyerCases LawyerCase[]
 
   @@index([portraitId])
   @@index([reporterId])
@@ -1338,6 +1339,57 @@ model LawyerRegistration {
   @@index([status])
   @@index([region])
   @@index([createdAt])
+  lawyerCases LawyerCase[]
+}
+
+// ============================================================
+// LawyerCase — Attorney case assignment and fee settlement
+// ============================================================
+
+model LawyerCase {
+  id String @id @default(cuid())
+
+  // One case per infringement report (unique constraint)
+  infringementReportId String @unique
+  infringementReport InfringementReport @relation(fields: [infringementReportId], references: [id])
+
+  lawyerRegistrationId String
+  lawyerRegistration LawyerRegistration @relation(fields: [lawyerRegistrationId], references: [id])
+
+  // 状态机
+  // PENDING = 律师已接案，等待平台确认
+  // IN_PROGRESS = 平台确认，案件激活
+  // WON = 胜诉（赔偿金到位）
+  // LOST = 败诉
+  // CLOSED = 案件结算完毕
+  // REJECTED = 平台拒绝此案件
+  status String @default("PENDING")
+
+  // 平台管理员必须确认才能激活案件（防假案件）
+  platformConfirmed Boolean @default(false)
+
+  // 赔偿金分配
+  compensation Decimal @db.Decimal(12,2) // 侵权方赔付总金额
+  platformFee Decimal @db.Decimal(12,2) // platformFeeRate × compensation
+  lawyerFee Decimal @db.Decimal(12,2) // (compensation - platformFee) × lawyerFeeRate
+  portraitOwnerPayout Decimal @db.Decimal(12,2) // compensation - platformFee - lawyerFee
+
+  // 案件描述/备注
+  description String? @db.Text
+
+  // 费率
+  lawyerFeeRate Decimal @default(0.20) @db.Decimal(5,4) // 20%
+  platformFeeRate Decimal @default(0.10) @db.Decimal(5,4) // 10%
+
+  // 结算信息
+  closedAt DateTime?
+  resolutionNotes String? @db.Text
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([lawyerRegistrationId])
+  @@index([status])
 }
 
 // ============================================================
