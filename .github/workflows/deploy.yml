@@ -26,11 +26,5 @@ jobs:
           git config --global user.email "hangdivision@gmail.com"
           git config --global user.name "Hang"
 
-      - name: Install Vercel CLI
-        run: npm install -g vercel
-
-      - name: Deploy to Vercel
-        run: vercel --prod --yes --token ${{ secrets.VERCEL_TOKEN_2 }}
-        env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          DIRECT_URL: ${{ secrets.DIRECT_URL }}
+      # Vercel GitHub App handles deployment automatically on push to main
+      # No need for manual vercel --prod command here
