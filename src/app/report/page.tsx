@@ -1,237 +1,493 @@
 "use client";
 
 /**
- * Infringement Report Submission Page
- * Route: /report
+ * /report — Infringement Report Submission Page
  *
- * Allows any authenticated user to submit an infringement report.
- * Validates portrait ownership and required evidence before submission.
+ * Allows authenticated users to submit an infringement report.
+ * Reference: /consent-passport UX pattern (max-w-2xl card layout, dark mode)
  */
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { DashboardShell } from "@/components/layout/DashboardShell";
+import React, { useState } from "react";
+import Link from "next/link";
+import ThemeToggle from "@/components/ThemeToggle";
 import { useLanguage } from "@/context/LanguageContext";
 
-interface FormData {
-  portraitId: string;
-  type: string;
-  description: string;
-  detectedUrl: string;
-  evidenceUrls: string;
-  originalImageUrl: string;
+const INFRINGEMENT_TYPES = [
+  { value: "AI_FACE_CLONE", label: "AI Face Clone / Digital Human" },
+  { value: "VOICE_CLONE", label: "Voice Clone" },
+  { value: "AI_SHORT_DRAMA", label: "AI Short Drama Infringement" },
+  { value: "UNAUTHORIZED_USE", label: "Unauthorized Use" },
+  { value: "DEEPFAKE", label: "Synthetic Media / Deepfake" },
+  { value: "OTHER", label: "Other" },
+];
+
+const PLATFORMS = [
+  { value: "youtube", label: "YouTube" },
+  { value: "douyin", label: "Douyin" },
+  { value: "kuaishou", label: "Kuaishou" },
+  { value: "xiaohongshu", label: "Xiaohongshu" },
+  { value: "bilibili", label: "Bilibili" },
+  { value: "weibo", label: "Weibo" },
+  { value: "toutiao", label: "Toutiao" },
+  { value: "weixin", label: "WeChat Video" },
+  { value: "instagram", label: "Instagram" },
+  { value: "tiktok", label: "TikTok" },
+  { value: "other", label: "Other" },
+];
+
+function makeReportNumber(): string {
+  const year = new Date().getFullYear();
+  const seq = Math.floor(Math.random() * 999999).toString().padStart(6, "0");
+  return `PP-IR-${year}-${seq}`;
+}
+
+function typeLabel(v: string) {
+  return INFRINGEMENT_TYPES.find((t) => t.value === v)?.label ?? v;
+}
+function platformLabel(v: string) {
+  return PLATFORMS.find((p) => p.value === v)?.label ?? v;
 }
 
 export default function ReportPage() {
-  const router = useRouter();
   const { t } = useLanguage();
 
-  const INFRINGEMENT_TYPES = t.report?.infringementTypes || [
-    { value: "UNAUTHORIZED_USE", label: "Unauthorized Use" },
-    { value: "EXPIRED_LICENSE", label: "License Expired" },
-    { value: "SCOPE_VIOLATION", label: "Scope Violation" },
-    { value: "RESALE", label: "Resale/Illegal Transfer" },
-    { value: "DEEPFAKE", label: "Deepfake" },
-  ];
-
-  const [form, setForm] = useState<FormData>({
-    portraitId: "",
-    type: "UNAUTHORIZED_USE",
+  const [form, setForm] = useState({
+    reporterName: "",
+    reporterEmail: "",
+    reporterPhone: "",
+    infringerName: "",
+    infringerEmail: "",
+    infringementType: "AI_FACE_CLONE",
+    platformName: "",
+    platformUrl: "",
     description: "",
-    detectedUrl: "",
     evidenceUrls: "",
-    originalImageUrl: "",
   });
-  const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const [reportNumber, setReportNumber] = useState("");
+  const [reportUrl, setReportUrl] = useState("");
+  const [copied, setCopied] = useState(false);
 
-  const evidenceUrls = form.evidenceUrls
-    .split("\n")
-    .map((u) => u.trim())
-    .filter(Boolean);
+  const set = (key: keyof typeof form, value: string) =>
+    setForm((p) => ({ ...p, [key]: value }));
 
-  const isValid = form.portraitId && form.type && form.description.length >= 10 && evidenceUrls.length > 0;
+  const evidenceUrls = form.evidenceUrls.split("\n").map((u) => u.trim()).filter(Boolean);
+
+  function validate() {
+    const errs: Record<string, string> = {};
+    if (!form.reporterName.trim()) errs.reporterName = "Your name is required";
+    if (!form.reporterEmail.trim()) errs.reporterEmail = "Your email is required";
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.reporterEmail)) errs.reporterEmail = "Invalid email address";
+    if (!form.infringerName.trim()) errs.infringerName = "Infringer name is required";
+    if (!form.infringerEmail.trim()) errs.infringerEmail = "Infringer email is required";
+    if (!form.description.trim() || form.description.length < 10) errs.description = "Please describe in at least 10 characters";
+    setErrors(errs);
+    return Object.keys(errs).length === 0;
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!isValid || submitting) return;
-
-    setSubmitting(true);
-    setError(null);
-    setSuccess(null);
-
+    if (!validate()) return;
+    setLoading(true);
     try {
-      const res = await fetch("/api/infringements", {
+      const res = await fetch("/api/report/submit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          portraitId: form.portraitId,
-          type: form.type,
-          description: form.description,
-          detectedUrl: form.detectedUrl,
+          reporterName: form.reporterName.trim(),
+          reporterEmail: form.reporterEmail.trim(),
+          reporterPhone: form.reporterPhone.trim() || undefined,
+          infringerName: form.infringerName.trim(),
+          infringerEmail: form.infringerEmail.trim(),
+          infringementType: form.infringementType,
+          platformName: form.platformName || undefined,
+          platformUrl: form.platformUrl.trim() || undefined,
+          description: form.description.trim() || undefined,
           evidenceUrls,
-          originalImageUrl: form.originalImageUrl,
         }),
       });
-
       const json = await res.json();
-
-      if (!res.ok) {
-        setError(json.error ?? t.report.error);
+      if (!res.ok || !json.success) {
+        setErrors({ submit: json.error || "Submission failed, please try again" });
         return;
       }
-
-      setSuccess(`${t.report.submitSuccess.replace("{id}", json.data.id)}`);
-      setTimeout(() => router.push(`/infringements/${json.data.id}`), 2000);
+      setReportNumber(json.data.reportNumber);
+      setReportUrl(json.data.reportUrl || "");
+      setSuccess(true);
     } catch {
-      setError(t.report.networkError);
+      setErrors({ submit: "Network error, please check your connection" });
     } finally {
-      setSubmitting(false);
+      setLoading(false);
     }
   }
 
-  return (
-    <DashboardShell
-      title={t.report.title}
-      subtitle={t.report.subtitle}
-    >
-      <div className="max-w-2xl mx-auto">
-        {/* Form */}
-        <form onSubmit={handleSubmit} className="space-y-6 rounded-xl bg-white dark:bg-gray-900 p-6 sm:p-8 shadow-sm">
-          {/* Portrait ID */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-              {t.report.portraitIdRequired} <span className="text-red-500">*</span>
-            </label>
-            <p className="mb-1 text-xs text-gray-500 dark:text-gray-400">
-              {t.report.portraitIdHint}
+  function buildReportText() {
+    const lines = [
+      "INFRINGEMENT REPORT",
+      "====================",
+      "",
+      `Report ID: ${reportNumber}`,
+      `Generated: ${new Date().toLocaleString("en-US", { timeZone: "Asia/Shanghai" })}`,
+      "",
+      "--- REPORTER INFORMATION ---",
+      `Reporter Name: ${form.reporterName}`,
+      `Reporter Email: ${form.reporterEmail}`,
+      form.reporterPhone ? `Reporter Phone: ${form.reporterPhone}` : null,
+      "",
+      "--- INFRINGER INFORMATION ---",
+      `Infringer Name: ${form.infringerName}`,
+      `Infringer Email: ${form.infringerEmail}`,
+      "",
+      "--- INFRINGEMENT DETAILS ---",
+      `Infringement Type: ${typeLabel(form.infringementType)}`,
+      `Platform Found On: ${platformLabel(form.platformName) || "Not specified"}`,
+      form.platformUrl ? `Content URL: ${form.platformUrl}` : null,
+      evidenceUrls.length > 0 ? `Evidence URLs: ${evidenceUrls.join(", ")}` : null,
+      "",
+      "--- DESCRIPTION ---",
+      form.description || "(No description provided)",
+      "",
+      "--- LEGAL DISCLAIMER ---",
+      "This report is generated by PortraitPay AI for reference only.",
+      "It does not constitute legal advice.",
+      "For formal legal action, consult a licensed attorney or file a police report.",
+      "",
+      "Issued by PortraitPay AI — www.portraitpayai.com",
+    ];
+    return lines.filter(Boolean).join("\n");
+  }
+
+  function handleCopy() {
+    navigator.clipboard.writeText(buildReportText()).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  }
+
+  if (success) {
+    const reportText = buildReportText();
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
+        <header className="sticky top-0 z-30 bg-white/80 dark:bg-gray-900/80 backdrop-blur border-b border-gray-200 dark:border-gray-800">
+          <div className="max-w-2xl mx-auto px-6 h-14 flex items-center justify-between">
+            <Link href="/dashboard" className="text-sm text-gray-500 hover:text-gray-900 dark:hover:text-white">← Back</Link>
+            <ThemeToggle />
+          </div>
+        </header>
+        <main className="max-w-2xl mx-auto px-6 py-12">
+          <div className="text-center mb-6">
+            <div className="w-16 h-16 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center mx-auto mb-4">
+              <span className="text-3xl">📋</span>
+            </div>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-1">
+              Your Infringement Report is Ready
+            </h1>
+            <p className="text-gray-500 dark:text-gray-400 text-sm">
+              Report ID: <span className="font-mono font-semibold text-purple-600">{reportNumber}</span>
             </p>
+          </div>
+
+          <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden mb-6">
+            <div className="bg-purple-50 dark:bg-purple-900/20 px-6 py-4 border-b border-purple-100 dark:border-purple-800">
+              <div className="flex items-center justify-between">
+                <h2 className="font-semibold text-purple-700 dark:text-purple-300">Report Summary</h2>
+                <button
+                  onClick={handleCopy}
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white text-xs font-medium rounded-lg transition-colors"
+                >
+                  {copied ? (
+                    <><svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg> Copied!</>
+                  ) : (
+                    <><svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg> Copy Report</>
+                  )}
+                </button>
+              </div>
+            </div>
+            <div className="p-6">
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                  <p className="text-xs text-gray-400 mb-0.5">Reporter</p>
+                  <p className="font-medium text-gray-900 dark:text-white">{form.reporterName}</p>
+                  <p className="text-xs text-gray-500">{form.reporterEmail}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-gray-400 mb-0.5">Infringer</p>
+                  <p className="font-medium text-gray-900 dark:text-white">{form.infringerName}</p>
+                  <p className="text-xs text-gray-500">{form.infringerEmail}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-gray-400 mb-0.5">Type</p>
+                  <p className="font-medium text-gray-900 dark:text-white">{typeLabel(form.infringementType)}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-gray-400 mb-0.5">Platform</p>
+                  <p className="font-medium text-gray-900 dark:text-white">{platformLabel(form.platformName) || "—"}</p>
+                </div>
+              </div>
+              {form.description && (
+                <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700">
+                  <p className="text-xs text-gray-400 mb-1">Description</p>
+                  <p className="text-sm text-gray-700 dark:text-gray-300">{form.description}</p>
+                </div>
+              )}
+              {evidenceUrls.length > 0 && (
+                <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700">
+                  <p className="text-xs text-gray-400 mb-1">Evidence ({evidenceUrls.length})</p>
+                  {evidenceUrls.map((u, i) => (
+                    <p key={i} className="text-xs font-mono text-purple-600 dark:text-purple-400 truncate">{u}</p>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 p-6">
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="font-semibold text-gray-900 dark:text-white text-sm">Full Report Text — Copy & Paste Below</h2>
+              <button
+                onClick={handleCopy}
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 text-xs font-medium rounded-lg transition-colors"
+              >
+                {copied ? "Copied!" : "Copy All"}
+              </button>
+            </div>
+            <textarea
+              readOnly
+              value={reportText}
+              rows={20}
+              className="w-full text-xs font-mono bg-gray-50 dark:bg-gray-800 text-gray-800 dark:text-gray-200 rounded-xl border border-gray-200 dark:border-gray-700 p-4 resize-none"
+            />
+          </div>
+
+          {reportUrl && (
+            <div className="mt-4 text-center">
+              <a
+                href={reportUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm text-purple-600 hover:underline font-medium"
+              >
+                View Report Online →
+              </a>
+            </div>
+          )}
+
+          <p className="text-xs text-center text-gray-400 mt-6">
+            This report is for reference only and does not constitute legal advice.
+            For formal legal action, consult a licensed attorney or file a police report.
+          </p>
+        </main>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
+      <header className="sticky top-0 z-30 bg-white/80 dark:bg-gray-900/80 backdrop-blur border-b border-gray-200 dark:border-gray-800">
+        <div className="max-w-2xl mx-auto px-6 h-14 flex items-center justify-between">
+          <Link href="/dashboard" className="text-sm text-gray-500 hover:text-gray-900 dark:hover:text-white">← Back</Link>
+          <ThemeToggle />
+        </div>
+      </header>
+
+      <main className="max-w-2xl mx-auto px-6 py-10">
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center gap-2 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 text-sm px-4 py-1.5 rounded-full mb-4">
+            <span>📋</span>
+            <span>Infringement Report</span>
+          </div>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+            Submit Infringement Report
+          </h1>
+          <p className="text-gray-500 dark:text-gray-400 max-w-md mx-auto">
+            AI face clone, voice clone, or unauthorized use? Fill out the form below to generate a formal report for your legal complaint or attorney review.
+          </p>
+        </div>
+
+        <form onSubmit={handleSubmit} className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 p-6 space-y-6">
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+              Your Name <span className="text-red-500">*</span>
+            </label>
             <input
               type="text"
-              value={form.portraitId}
-              onChange={(e) => setForm((f) => ({ ...f, portraitId: e.target.value }))}
-              placeholder={t.report.portraitIdPlaceholder}
-              className="mt-1 block w-full rounded-lg border border-gray-300 dark:border-gray-700 px-4 py-2.5 text-sm focus:border-blue-500 dark:focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:focus:ring-blue-500 bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
-              required
+              value={form.reporterName}
+              onChange={(e) => set("reporterName", e.target.value)}
+              placeholder="Your full name"
+              className={`w-full px-4 py-2.5 rounded-xl border ${errors.reporterName ? "border-red-500" : "border-gray-200 dark:border-gray-700"} bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white`}
             />
+            {errors.reporterName && <p className="text-red-500 text-xs mt-1">{errors.reporterName}</p>}
           </div>
 
-          {/* Infringement Type */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-              {t.report.infringementTypeRequired} <span className="text-red-500">*</span>
-            </label>
-            <select
-              value={form.type}
-              onChange={(e) => setForm((f) => ({ ...f, type: e.target.value }))}
-              className="mt-1 block w-full rounded-lg border border-gray-300 dark:border-gray-700 px-4 py-2.5 text-sm focus:border-blue-500 dark:focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:focus:ring-blue-500 bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
-            >
-              {INFRINGEMENT_TYPES.map((t_item) => (
-                <option key={t_item.value} value={t_item.value}>{t_item.label}</option>
-              ))}
-            </select>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+                Your Email <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="email"
+                value={form.reporterEmail}
+                onChange={(e) => set("reporterEmail", e.target.value)}
+                placeholder="your@email.com"
+                className={`w-full px-4 py-2.5 rounded-xl border ${errors.reporterEmail ? "border-red-500" : "border-gray-200 dark:border-gray-700"} bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white`}
+              />
+              {errors.reporterEmail && <p className="text-red-500 text-xs mt-1">{errors.reporterEmail}</p>}
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+                Phone <span className="text-gray-400 font-normal">(optional)</span>
+              </label>
+              <input
+                type="tel"
+                value={form.reporterPhone}
+                onChange={(e) => set("reporterPhone", e.target.value)}
+                placeholder="+1 555 000 0000"
+                className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white"
+              />
+            </div>
           </div>
 
-          {/* Infringing URL */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-              {t.report.detectedUrl}
-            </label>
-            <p className="mb-1 text-xs text-gray-500 dark:text-gray-400">{t.report.detectedUrlHint}</p>
-            <input
-              type="url"
-              value={form.detectedUrl}
-              onChange={(e) => setForm((f) => ({ ...f, detectedUrl: e.target.value }))}
-              placeholder="https://..."
-              className="mt-1 block w-full rounded-lg border border-gray-300 dark:border-gray-700 px-4 py-2.5 text-sm focus:border-blue-500 dark:focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:focus:ring-blue-500 bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
-            />
+          <div className="border-t border-gray-100 dark:border-gray-700 pt-5">
+            <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide mb-4">
+              Infringer Information
+            </h2>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+                  Infringer Name <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={form.infringerName}
+                  onChange={(e) => set("infringerName", e.target.value)}
+                  placeholder="Name or nickname of the infringer"
+                  className={`w-full px-4 py-2.5 rounded-xl border ${errors.infringerName ? "border-red-500" : "border-gray-200 dark:border-gray-700"} bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white`}
+                />
+                {errors.infringerName && <p className="text-red-500 text-xs mt-1">{errors.infringerName}</p>}
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+                  Infringer Email <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="email"
+                  value={form.infringerEmail}
+                  onChange={(e) => set("infringerEmail", e.target.value)}
+                  placeholder="Infringer contact email"
+                  className={`w-full px-4 py-2.5 rounded-xl border ${errors.infringerEmail ? "border-red-500" : "border-gray-200 dark:border-gray-700"} bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white`}
+                />
+                {errors.infringerEmail && <p className="text-red-500 text-xs mt-1">{errors.infringerEmail}</p>}
+              </div>
+            </div>
           </div>
 
-          {/* Evidence URLs */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-              {t.report.evidenceUrlsRequired} <span className="text-red-500">*</span>
-            </label>
-            <p className="mb-1 text-xs text-gray-500 dark:text-gray-400">
-              {t.report.evidenceUrlsHint}
-            </p>
-            <textarea
-              value={form.evidenceUrls}
-              onChange={(e) => setForm((f) => ({ ...f, evidenceUrls: e.target.value }))}
-              placeholder={t.report.evidenceUrlsPlaceholder}
-              rows={4}
-              className="mt-1 block w-full rounded-lg border border-gray-300 dark:border-gray-700 px-4 py-2.5 text-sm focus:border-blue-500 dark:focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:focus:ring-blue-500 bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
-              required
-            />
-            {evidenceUrls.length > 0 && (
-              <p className="mt-1 text-xs text-green-600 dark:text-green-400">
-                {t.report.evidenceCount?.replace("{count}", String(evidenceUrls.length))}
-              </p>
-            )}
+          <div className="border-t border-gray-100 dark:border-gray-700 pt-5">
+            <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide mb-4">
+              Infringement Details
+            </h2>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+                  Infringement Type
+                </label>
+                <select
+                  value={form.infringementType}
+                  onChange={(e) => set("infringementType", e.target.value)}
+                  className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white"
+                >
+                  {INFRINGEMENT_TYPES.map((t) => (
+                    <option key={t.value} value={t.value}>{t.label}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+                  Platform Found On
+                </label>
+                <select
+                  value={form.platformName}
+                  onChange={(e) => set("platformName", e.target.value)}
+                  className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white"
+                >
+                  <option value="">Select platform</option>
+                  {PLATFORMS.map((p) => (
+                    <option key={p.value} value={p.value}>{p.label}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="col-span-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+                  Content URL <span className="text-gray-400 font-normal">(optional)</span>
+                </label>
+                <input
+                  type="url"
+                  value={form.platformUrl}
+                  onChange={(e) => set("platformUrl", e.target.value)}
+                  placeholder="https://..."
+                  className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white"
+                />
+              </div>
+              <div className="col-span-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+                  Description <span className="text-red-500">*</span>
+                </label>
+                <textarea
+                  value={form.description}
+                  onChange={(e) => set("description", e.target.value)}
+                  rows={4}
+                  placeholder="Describe the infringement in detail..."
+                  className={`w-full px-4 py-2.5 rounded-xl border ${errors.description ? "border-red-500" : "border-gray-200 dark:border-gray-700"} bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white resize-none`}
+                />
+                {errors.description && <p className="text-red-500 text-xs mt-1">{errors.description}</p>}
+              </div>
+              <div className="col-span-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+                  Evidence URLs <span className="text-gray-400 font-normal">(one per line, optional)</span>
+                </label>
+                <textarea
+                  value={form.evidenceUrls}
+                  onChange={(e) => set("evidenceUrls", e.target.value)}
+                  rows={3}
+                  placeholder="https://... (one link per line)"
+                  className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white resize-none"
+                />
+                {evidenceUrls.length > 0 && (
+                  <p className="text-xs text-green-600 dark:text-green-400 mt-1">{evidenceUrls.length} evidence link(s) entered</p>
+                )}
+              </div>
+            </div>
           </div>
 
-          {/* Original Image URL */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-              {t.report.originalImageUrl}
-            </label>
-            <p className="mb-1 text-xs text-gray-500 dark:text-gray-400">{t.report.originalImageUrlHint}</p>
-            <input
-              type="url"
-              value={form.originalImageUrl}
-              onChange={(e) => setForm((f) => ({ ...f, originalImageUrl: e.target.value }))}
-              placeholder="https://..."
-              className="mt-1 block w-full rounded-lg border border-gray-300 dark:border-gray-700 px-4 py-2.5 text-sm focus:border-blue-500 dark:focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:focus:ring-blue-500 bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
-            />
-          </div>
-
-          {/* Description */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-              {t.report.descriptionRequired} <span className="text-red-500">*</span>
-            </label>
-            <p className="mb-1 text-xs text-gray-500 dark:text-gray-400">{t.report.descriptionHint}</p>
-            <textarea
-              value={form.description}
-              onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
-              placeholder={t.report.descriptionPlaceholder}
-              rows={5}
-              className="mt-1 block w-full rounded-lg border border-gray-300 dark:border-gray-700 px-4 py-2.5 text-sm focus:border-blue-500 dark:focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:focus:ring-blue-500 bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
-              required
-            />
-            <p className={`mt-1 text-xs ${form.description.length >= 10 ? "text-green-600 dark:text-green-400" : "text-gray-400 dark:text-gray-500"}`}>
-              {(t.report.charCount || "{count} / 10 characters (minimum required)").replace("{count}", String(form.description.length))}
-            </p>
-          </div>
-
-          {/* Error / Success */}
-          {error && (
-            <div className="rounded-lg bg-red-50 dark:bg-red-900/30 p-4 text-sm text-red-700 dark:text-red-400">{error}</div>
+          {errors.submit && (
+            <div className="rounded-lg bg-red-50 dark:bg-red-900/30 p-4 text-sm text-red-700 dark:text-red-400">{errors.submit}</div>
           )}
-          {success && (
-            <div className="rounded-lg bg-green-50 dark:bg-green-900/30 p-4 text-sm text-green-700 dark:text-green-400">{success}</div>
-          )}
 
-          {/* Submit */}
           <button
             type="submit"
-            disabled={!isValid || submitting}
-            className="w-full rounded-lg bg-blue-600 px-4 py-3 text-sm font-medium text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-gray-300 dark:disabled:bg-gray-700"
+            disabled={loading}
+            className="w-full py-3 bg-purple-600 hover:bg-purple-700 disabled:opacity-60 text-white font-medium rounded-xl transition-colors flex items-center justify-center gap-2"
           >
-            {submitting ? t.report.submitting : t.report.submit}
+            {loading ? (
+              <>
+                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                Submitting...
+              </>
+            ) : (
+              <>
+                <span>📋</span>
+                Generate Infringement Report
+              </>
+            )}
           </button>
-        </form>
 
-        {/* Disclaimer */}
-        <p className="mt-4 text-center text-xs text-gray-400 dark:text-gray-500">
-          {t.report.disclaimer}{" "}
-          <a href="/terms" className="underline">
-            {t.report.infringementRules}
-          </a>
-          。
-        </p>
-      </div>
-    </DashboardShell>
+          <p className="text-xs text-center text-gray-400">
+            This report is for reference only. No login required beyond this page. For legal action, consult an attorney.
+          </p>
+        </form>
+      </main>
+    </div>
   );
 }
