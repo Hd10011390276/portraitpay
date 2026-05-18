@@ -5,11 +5,10 @@ const PUBLIC_PATHS = [
   "/login",
   "/register",
   "/forgot-password",
+  "/reset-password",
   "/terms",
   "/privacy",
   "/contact",
-  "/celebrity",
-  "/enterprise",
   "/enterprise/authorization/apply",
   "/enterprise/lawyer-registration",
   "/contracts",
@@ -18,6 +17,10 @@ const PUBLIC_PATHS = [
   "/verify",
   "/consent-passport",
   "/verify-batch",
+  "/lawyers",
+  "/lawyer/apply",
+  "/infringement-report",
+  "/report",
 ];
 
 export async function middleware(req: NextRequest) {
@@ -34,6 +37,7 @@ export async function middleware(req: NextRequest) {
     pathname.startsWith("/api/auth/register") ||
     pathname.startsWith("/api/auth/otp/") ||
     pathname.startsWith("/api/auth/forgot-password") ||
+    pathname.startsWith("/api/auth/reset-password") ||
     pathname.startsWith("/api/auth/verify-email") ||
     pathname.startsWith("/api/auth/refresh") ||
     pathname.startsWith("/api/lawyers/apply") ||
@@ -43,7 +47,8 @@ export async function middleware(req: NextRequest) {
     pathname.startsWith("/api/public-report") ||
     pathname.startsWith("/api/portraits/") && pathname.includes("/mint") ||
     (pathname.startsWith("/api/lawyers") && req.method === "GET") ||
-    pathname.startsWith("/api/consent-passport")
+    pathname.startsWith("/api/consent-passport") ||
+    (pathname.startsWith("/api/report/") && !pathname.endsWith("/submit"))
   ) {
     return NextResponse.next();
   }
@@ -66,13 +71,12 @@ export async function middleware(req: NextRequest) {
     return NextResponse.redirect(loginUrl);
   }
 
-  // ── Lawyer route protection ─────────────────────────────────────
-  if (pathname.startsWith("/lawyer")) {
-    // verifyToken already validated the token above, reuse it to get role
+  // ── Admin route protection ─────────────────────────────────────
+  if (pathname.startsWith("/admin")) {
     const jwtPayload = await verifyToken(token!);
     const userRole = jwtPayload?.role ?? "";
-    if (userRole !== "LAWYER") {
-      // Not a lawyer → redirect to user dashboard
+    const adminRoles = ["SUPER_ADMIN", "ADMIN", "VERIFIER"];
+    if (!adminRoles.includes(userRole)) {
       return NextResponse.redirect(new URL("/dashboard", req.url));
     }
   }
