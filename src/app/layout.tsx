@@ -16,7 +16,7 @@ export const metadata: Metadata = {
     default: "PortraitPay AI — Your Portrait, Your Rights",
     template: "%s | PortraitPay AI",
   },
-  description: "AI-powered portrait rights protection and licensing platform. Protect your digital identity and authorize portrait usage with timestamped certificates.",
+  description: "AI consent management platform for actors and creators.",
   keywords: ["portrait rights", "portrait licensing", "AI copyright protection", "digital identity", "IP protection", "consent management"],
   authors: [{ name: "PortraitPay AI" }],
   icons: {
@@ -29,12 +29,12 @@ export const metadata: Metadata = {
     url: "https://portraitpayai.com",
     siteName: "PortraitPay AI",
     title: "PortraitPay AI — Your Portrait, Your Rights",
-    description: "AI-powered face tracing and portrait copyright protection platform",
+    description: "AI consent management platform for actors and creators.",
   },
   twitter: {
     card: "summary_large_image",
     title: "PortraitPay AI — Your Portrait, Your Rights",
-    description: "AI-powered face tracing and portrait copyright protection platform",
+    description: "AI consent management platform for actors and creators.",
   },
 };
 
