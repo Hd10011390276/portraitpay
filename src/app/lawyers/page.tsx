@@ -98,7 +98,7 @@ export default function LawyersPage() {
           <Link href="/" className="text-xl font-bold text-gray-900 dark:text-white">
             PortraitPay AI
           </Link>
-          <nav className="flex items-center gap-6">
+          <nav className="hidden md:flex items-center gap-6">
             <Link href="/faq" className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white">
               {nav.faq || "FAQ"}
             </Link>
@@ -116,6 +116,10 @@ export default function LawyersPage() {
             </Link>
             <ThemeToggle />
           </nav>
+          <div className="flex md:hidden items-center gap-3">
+            <Link href="/login" className="text-sm text-gray-600 dark:text-gray-400">Sign In</Link>
+            <Link href="/register" className="text-sm bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-lg font-medium">Get Started</Link>
+          </div>
         </div>
       </header>
 

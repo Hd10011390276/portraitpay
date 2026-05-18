@@ -76,14 +76,17 @@ export default function ActorsPage() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Header */}
-      <header className="nav-glass sticky top-0 z-30">
-        <div className="container" style={{ height: "var(--header-height)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <Link href="/" style={{ display: "flex", alignItems: "center", gap: "10px", textDecoration: "none" }}>
-            <img src="/logo.png" alt="Logo" className="logo-light" style={{ width: "32px", height: "32px", objectFit: "contain", borderRadius: "6px" }} />
-            <img src="/logo-dark.png" alt="Logo" className="logo-dark" style={{ width: "32px", height: "32px", objectFit: "contain", borderRadius: "6px" }} />
-            <span style={{ fontSize: "17px", fontWeight: 700, color: "var(--text-primary)", letterSpacing: "-0.02em" }}>PortraitPay AI</span>
+      <header className="bg-white/80 dark:bg-gray-900/80 backdrop-blur border-b border-gray-200 dark:border-gray-800 sticky top-0 z-30">
+        <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
+          <Link href="/" className="flex items-center gap-3">
+            <img src="/logo.png" alt="Logo" className="logo-light w-8 h-8 object-contain" />
+            <img src="/logo-dark.png" alt="Logo" className="logo-dark w-8 h-8 object-contain hidden" />
+            <span className="text-lg font-bold text-gray-900 dark:text-white">PortraitPay AI</span>
           </Link>
-          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+          <div className="flex items-center gap-4">
+            <Link href="/lawyers" className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white">
+              Find Lawyers
+            </Link>
             <ThemeToggle />
           </div>
         </div>
@@ -134,14 +137,14 @@ export default function ActorsPage() {
       </main>
 
       {/* Footer */}
-      <footer style={{ background: "var(--bg-primary)", borderTop: "1px solid var(--border-default)", padding: "24px 0" }}>
-        <div className="container" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "12px" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-            <img src="/logo.png" alt="PortraitPay AI Logo" className="logo-light" style={{ width: "24px", height: "24px", objectFit: "contain", borderRadius: "4px" }} />
-            <img src="/logo-dark.png" alt="PortraitPay AI Logo" className="logo-dark" style={{ width: "24px", height: "24px", objectFit: "contain", borderRadius: "4px" }} />
-            <span style={{ fontSize: "14px", fontWeight: 600, color: "var(--text-primary)" }}>PortraitPay AI</span>
+      <footer className="bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800 py-6">
+        <div className="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row justify-between items-center gap-4">
+          <div className="flex items-center gap-2">
+            <img src="/logo.png" alt="PortraitPay AI Logo" className="logo-light w-6 h-6 object-contain" />
+            <img src="/logo-dark.png" alt="PortraitPay AI Logo" className="logo-dark w-6 h-6 object-contain hidden" />
+            <span className="text-sm font-semibold text-gray-900 dark:text-white">PortraitPay AI</span>
           </div>
-          <p style={{ fontSize: "13px", color: "var(--text-tertiary)", margin: 0 }}>{t.footer?.copyright ?? "© 2024 PortraitPay AI. All rights reserved."}</p>
+          <p className="text-xs text-gray-400">{t.footer?.copyright ?? "© 2024 PortraitPay AI. All rights reserved."}</p>
         </div>
       </footer>
     </div>
