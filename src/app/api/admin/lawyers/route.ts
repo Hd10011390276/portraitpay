@@ -7,15 +7,16 @@ import { prisma } from "@/lib/prisma";
 import { getSessionFromRequest } from "@/lib/auth/session";
 export const dynamic = "force-dynamic";
 
+const ADMIN_ROLES = ["SUPER_ADMIN", "ADMIN", "VERIFIER"];
+
 export async function GET(req: NextRequest) {
   try {
     const session = await getSessionFromRequest(req);
     if (!session?.userId) {
       return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
     }
-    // Check admin role
-    if (session.role !== "ADMIN") {
-      return NextResponse.json({ success: false, error: "需要管理员权限" }, { status: 403 });
+    if (!ADMIN_ROLES.includes(session.role)) {
+      return NextResponse.json({ success: false, error: "Admin access required" }, { status: 403 });
     }
 
     const { searchParams } = new URL(req.url);
@@ -45,6 +46,6 @@ export async function GET(req: NextRequest) {
     });
   } catch (err) {
     console.error("[/api/admin/lawyers GET]", err);
-    return NextResponse.json({ success: false, error: "服务器内部错误" }, { status: 500 });
+    return NextResponse.json({ success: false, error: "Internal server error" }, { status: 500 });
   }
 }

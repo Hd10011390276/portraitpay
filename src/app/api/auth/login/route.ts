@@ -78,6 +78,13 @@ export async function POST(req: NextRequest) {
       role: user.role,
     });
 
+    const redirectTo =
+      user.role === "LAWYER"
+        ? "/lawyer/dashboard"
+        : user.role === "SUPER_ADMIN" || user.role === "ADMIN" || user.role === "VERIFIER"
+        ? "/admin"
+        : "/dashboard";
+
     const response = NextResponse.json({
       success: true,
       message: "Login successful",
@@ -90,6 +97,7 @@ export async function POST(req: NextRequest) {
         },
         accessToken: tokens.accessToken,
         refreshToken: tokens.refreshToken,
+        redirectTo,
       },
     });
 

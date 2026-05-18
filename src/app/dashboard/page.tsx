@@ -25,7 +25,7 @@ interface Stat {
 
 function DashboardContent({ user }: { user: User }) {
   const { t, locale } = useLanguage();
-  const isZh = locale === "zh-CN" || locale === "zh-Hant";
+  const isZh = false;
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState<Stat[]>([]);
   const [recentPortraits, setRecentPortraits] = useState<any[]>([]);

@@ -1,10 +1,10 @@
 /**
  * GET /api/actors — List actors for discovery
- * Returns ACTOR users with media kit info filtered by visibility rules
+ * Returns TALENT users with media kit info filtered by visibility rules
  *
  * Visibility rules:
  * - PUBLIC       → any logged-in user can see mediaKitUrl
- * - VERIFIED_CREATORS → only CREATOR role users can see mediaKitUrl
+ * - VERIFIED_CREATORS → only buyer roles (AGENCY, ENTERPRISE) and TALENT can see mediaKitUrl
  * - PRIVATE      → only the actor themselves can see mediaKitUrl (shown as hidden)
  */
 
@@ -37,7 +37,7 @@ const ACTOR_SELECT = {
       productionType: true,
       status: true,
     },
-    orderBy: { createdAt: "desc" },
+    orderBy: { createdAt: "desc" as const },
     take: 5,
   },
 };
@@ -65,9 +65,15 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Fetch all ACTOR users
+    // Fetch TALENT users who:
+    // 1. Have verified their email (not test accounts)
+    // 2. Have at least one active portrait (real listing)
     const actors = await prisma.user.findMany({
-      where: { role: "ACTOR" },
+      where: {
+        role: "TALENT",
+        emailVerified: true,
+        portraits: { some: { status: "ACTIVE", deletedAt: null } },
+      },
       select: ACTOR_SELECT,
       orderBy: { createdAt: "desc" },
     });
@@ -88,10 +94,11 @@ export async function GET(request: NextRequest) {
       }
 
       if (visibility === "VERIFIED_CREATORS") {
-        if (currentUser.role === "TALENT") {
+        // VERIFIED_CREATORS visible to buyer roles (AGENCY/ENTERPRISE) and TALENT (actor viewing peer)
+        const buyerRoles = ["AGENCY", "ENTERPRISE"];
+        if (currentUser.role === "TALENT" || buyerRoles.includes(currentUser.role)) {
           return actor;
         }
-        // CREATOR sees actor without mediaKitUrl
         const { mediaKitUrl, ...rest } = actor;
         return { ...rest, mediaKitUrl: null };
       }

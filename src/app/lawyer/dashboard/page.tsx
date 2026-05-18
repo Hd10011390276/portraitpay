@@ -44,10 +44,12 @@ function StatusBadge({ status }: { status: string }) {
   const config: Record<string, { label: string; color: string }> = {
     PENDING: { label: "", color: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400" },
     IN_PROGRESS: { label: "", color: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400" },
-    RESOLVED: { label: "", color: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400" },
+    WON: { label: "", color: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400" },
+    LOST: { label: "", color: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400" },
+    CLOSED: { label: "", color: "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400" },
     REJECTED: { label: "", color: "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400" },
   };
-  const c = config[status] || { label: status, color: "bg-gray-100 text-gray-600" };
+  const c = config[status] || { label: status, color: "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400" };
   return (
     <span className={`px-2.5 py-0.5 text-xs font-medium rounded-full ${c.color}`}>{c.label}</span>
   );
@@ -65,7 +67,7 @@ function getStatusLabel(status: string, t: any): string {
 
 export default function LawyerDashboard() {
   const { t, locale } = useLanguage();
-  const isZh = locale === "zh-CN" || locale === "zh-Hant";
+  const isZh = false;
   const [cases, setCases] = useState<LawyerCase[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");

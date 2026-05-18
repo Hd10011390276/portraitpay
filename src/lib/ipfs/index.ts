@@ -42,8 +42,8 @@ export async function uploadToIpfs(
   }
 
   const formData = new FormData();
-  const uint8Data = Buffer.isBuffer(data) ? new Uint8Array(data.buffer, data.byteOffset, data.byteLength) : data;
-  const blob = new Blob([uint8Data], { type: mimeType });
+  const uint8Data = Buffer.isBuffer(data) ? new Uint8Array(data.buffer as ArrayBuffer, data.byteOffset, data.byteLength) : Buffer.from(data);
+  const blob = new Blob([uint8Data.buffer as ArrayBuffer], { type: mimeType });
   formData.append("file", blob, fileName);
 
   const metadata = JSON.stringify({ name: fileName });

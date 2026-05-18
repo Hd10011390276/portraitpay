@@ -1,33 +1,15 @@
 
-/**
- * /api/admin/contacts — 管理员获取所有联系记录
- * GET ?page=1&limit=20&status=&type=
- * PATCH  { id, status, adminNotes } 更新状态/备注
- */
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { getSessionFromRequest } from "@/lib/auth/session";
 export const dynamic = "force-dynamic";
 
-
-// Simple admin auth check — in production use proper session middleware
-async function requireAdmin(token?: string | null): Promise<boolean> {
-  if (!token) return false;
-  // Token format: stored in localStorage as pp_access_token
-  // Decode JWT to check role (simplified — use proper JWT verify in production)
-  try {
-    const payload = JSON.parse(Buffer.from(token.split(".")[1] ?? "", "base64").toString());
-    return payload.role === "ADMIN";
-  } catch {
-    return false;
-  }
-}
+const ADMIN_ROLES = ["SUPER_ADMIN", "ADMIN", "VERIFIER"];
 
 export async function GET(req: NextRequest) {
-  const token = req.headers.get("authorization")?.replace("Bearer ", "") ?? req.nextUrl.searchParams.get("token");
-  const adminToken = req.cookies.get("pp_access_token")?.value ?? token;
-
-  if (!adminToken) {
-    return NextResponse.json({ success: false, error: "未授权" }, { status: 401 });
+  const session = await getSessionFromRequest(req);
+  if (!session?.userId || !ADMIN_ROLES.includes(session.role)) {
+    return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
   }
 
   const { searchParams } = req.nextUrl;
@@ -54,7 +36,7 @@ export async function GET(req: NextRequest) {
   // Stats
   const [newCount, processingCount] = await Promise.all([
     prisma.contactSubmission.count({ where: { ...where, status: "NEW" } }),
-    prisma.contactSubmission.count({ ...where, status: "PROCESSING" }),
+    prisma.contactSubmission.count({ where: { ...where, status: "PROCESSING" } }),
   ]);
 
   return NextResponse.json({
@@ -74,9 +56,9 @@ export async function GET(req: NextRequest) {
 }
 
 export async function PATCH(req: NextRequest) {
-  const token = req.headers.get("authorization")?.replace("Bearer ", "") ?? req.cookies.get("pp_access_token")?.value;
-  if (!token) {
-    return NextResponse.json({ success: false, error: "未授权" }, { status: 401 });
+  const session = await getSessionFromRequest(req);
+  if (!session?.userId || !ADMIN_ROLES.includes(session.role)) {
+    return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
   }
 
   try {
@@ -112,6 +94,6 @@ export async function PATCH(req: NextRequest) {
       return NextResponse.json({ success: false, error: "记录不存在" }, { status: 404 });
     }
     console.error("[Admin/Contacts] PATCH error:", err);
-    return NextResponse.json({ success: false, error: "服务器错误" }, { status: 500 });
+    return NextResponse.json({ success: false, error: "Server error" }, { status: 500 });
   }
 }

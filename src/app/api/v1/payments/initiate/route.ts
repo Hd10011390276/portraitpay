@@ -63,9 +63,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (auth.status !== "PENDING") {
+    if (!["PENDING", "PENDING_PAYMENT"].includes(auth.status)) {
       return NextResponse.json(
-        { success: false, error: "Authorization is not in PENDING status" },
+        { success: false, error: "Authorization is not payable (current status: " + auth.status + ")" },
         { status: 400 }
       );
     }

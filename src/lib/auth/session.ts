@@ -9,7 +9,7 @@ export interface SessionUser {
   name: string | null;
   role: string;
   image: string | null;
-  emailVerified: Date | null;
+  emailVerified: boolean;
 }
 
 const ACCESS_TOKEN_COOKIE = "pp_access_token";

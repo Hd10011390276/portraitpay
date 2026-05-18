@@ -50,40 +50,55 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
     const lawyerFee = Number(lawyerCase.lawyerFee);
     const portraitOwnerPayout = Number(lawyerCase.portraitOwnerPayout);
 
-    // 生成律师费 Transaction
+    // Generate lawyer fee payout (use lawyerRegistration.userId, not the registration ID)
     if (lawyerFee > 0) {
-      await prisma.transaction.create({
-        data: {
-          userId: lawyerCase.lawyerRegistrationId,
-          type: "LAWYER_PAYOUT",
-          status: "COMPLETED",
-          amount: lawyerFee,
-          currency: "CNY",
-          metadata: {
-            lawyerCaseId: lawyerCase.id,
-            infringementReportId: lawyerCase.infringementReportId,
-            compensation: comp,
-          },
-        },
+      const lawyerReg = await prisma.lawyerRegistration.findUnique({
+        where: { id: lawyerCase.lawyerRegistrationId },
+        select: { userId: true },
       });
+      if (lawyerReg?.userId && lawyerReg.userId !== "") {
+        await prisma.transaction.create({
+          data: {
+            userId: lawyerReg.userId,
+            type: "LAWYER_PAYOUT",
+            status: "COMPLETED",
+            amount: lawyerFee,
+            currency: "CNY",
+            metadata: {
+              lawyerCaseId: lawyerCase.id,
+              infringementReportId: lawyerCase.infringementReportId,
+              compensation: comp,
+            },
+          },
+        });
+      }
     }
 
-    // 生成肖像主 payout Transaction
+    // Generate portrait owner payout (not reporter — reporter may not be the owner)
     if (portraitOwnerPayout > 0) {
-      await prisma.transaction.create({
-        data: {
-          userId: lawyerCase.infringementReport.reporterId,
-          type: "PORTRAIT_OWNER_PAYOUT",
-          status: "COMPLETED",
-          amount: portraitOwnerPayout,
-          currency: "CNY",
-          metadata: {
-            lawyerCaseId: lawyerCase.id,
-            infringementReportId: lawyerCase.infringementReportId,
-            compensation: comp,
-          },
-        },
+      const portrait = await prisma.infringementReport.findUnique({
+        where: { id: lawyerCase.infringementReportId },
+        select: { portraitId: true },
       });
+      const portraitOwnerId = portrait?.portraitId
+        ? (await prisma.portrait.findUnique({ where: { id: portrait.portraitId }, select: { ownerId: true } }))?.ownerId
+        : null;
+      if (portraitOwnerId) {
+        await prisma.transaction.create({
+          data: {
+            userId: portraitOwnerId,
+            type: "PORTRAIT_OWNER_PAYOUT",
+            status: "COMPLETED",
+            amount: portraitOwnerPayout,
+            currency: "CNY",
+            metadata: {
+              lawyerCaseId: lawyerCase.id,
+              infringementReportId: lawyerCase.infringementReportId,
+              compensation: comp,
+            },
+          },
+        });
+      }
     }
   }
 

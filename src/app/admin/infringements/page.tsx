@@ -128,7 +128,7 @@ export default function AdminInfringementsPage() {
             </div>
           ) : (
             reports.map((r) => {
-              const s = STATUS_CONFIG[r.status] ?? { label: r.status, color: "bg-gray-100" };
+              const s = STATUS_CONFIG[r.status as keyof typeof STATUS_CONFIG] ?? { label: r.status, color: "bg-gray-100" };
               return (
                 <div key={r.id}
                   onClick={() => setSelectedId(r.id)}
@@ -143,7 +143,7 @@ export default function AdminInfringementsPage() {
                     <span className="text-xs text-gray-400">{r.source}</span>
                   </div>
                   <p className="text-sm font-medium text-gray-900 truncate">{r.portrait?.title}</p>
-                  <p className="text-xs text-gray-500">{TYPE_CONFIG[r.type] ?? r.type}</p>
+                  <p className="text-xs text-gray-500">{TYPE_CONFIG[r.type as keyof typeof TYPE_CONFIG] ?? r.type}</p>
                   <p className="mt-1 text-xs text-gray-400 truncate">{r.reporter?.displayName}</p>
                 </div>
               );
@@ -161,6 +161,8 @@ export default function AdminInfringementsPage() {
               onSubmit={() => submitReview(selectedId)}
               submitting={submitting}
               tc={tc}
+              locale={(tc as any).locale || "en-US"}
+              TYPE_CONFIG={TYPE_CONFIG}
             />
           ) : (
             <div className="flex h-full items-center justify-center rounded-xl bg-white p-12 text-gray-400 text-sm">
@@ -180,6 +182,8 @@ function ReportDetailPanel({
   onSubmit,
   submitting,
   tc,
+  locale,
+  TYPE_CONFIG,
 }: {
   report: any;
   reviewForm: { decision: string; resolution: string };
@@ -187,6 +191,8 @@ function ReportDetailPanel({
   onSubmit: () => void;
   submitting: boolean;
   tc: any;
+  locale: string;
+  TYPE_CONFIG: Record<string, string>;
 }) {
   if (!report) return null;
 
@@ -206,7 +212,7 @@ function ReportDetailPanel({
 
       <dl className="grid grid-cols-2 gap-3 text-sm">
         <div><dt className="text-gray-500">{tc.reporter || "Reporter"}</dt><dd className="font-medium">{report.reporter?.displayName}</dd></div>
-        <div><dt className="text-gray-500">{tc.infringementType || "Type"}</dt><dd className="font-medium">{(tc[report.type] || TYPE_CONFIG[report.type]) ?? report.type}</dd></div>
+        <div><dt className="text-gray-500">{tc.infringementType || "Type"}</dt><dd className="font-medium">{(tc[report.type as keyof typeof tc] || TYPE_CONFIG[report.type as keyof typeof TYPE_CONFIG]) ?? report.type}</dd></div>
         <div className="col-span-2"><dt className="text-gray-500">{tc.detectedUrl || "Detected URL"}</dt>
           <dd>{report.detectedUrl
             ? <a href={report.detectedUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline text-xs">{report.detectedUrl}</a>

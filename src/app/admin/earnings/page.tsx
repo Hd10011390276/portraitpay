@@ -143,7 +143,7 @@ export default function AdminEarningsPage() {
     new Intl.NumberFormat("en-US", { style: "currency", currency: c }).format(v);
 
   const formatDate = (d: string) =>
-    new Date(d).toLocaleDateString(locale === "zh-CN" || locale === "zh-Hant" ? "zh-CN" : "en-US", { year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit" });
+    new Date(d).toLocaleDateString(false ? "zh-CN" : "en-US", { year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit" });
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">

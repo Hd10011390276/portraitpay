@@ -169,7 +169,7 @@ function WithdrawPageContent() {
     new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(v);
 
   const formatDate = (d: string) =>
-    new Date(d).toLocaleDateString(locale === "zh-CN" || locale === "zh-Hant" ? "zh-TW" : "en-US", {
+    new Date(d).toLocaleDateString(false ? "zh-TW" : "en-US", {
       year: "numeric",
       month: "2-digit",
       day: "2-digit",

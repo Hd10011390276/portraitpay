@@ -63,13 +63,6 @@ export async function GET(request: NextRequest) {
             allowAiLicensing: true,
             aiLicenseScopes: true,
             aiProhibitedScopes: true,
-            portraitSettings: {
-              select: {
-                allowLicensing: true,
-                allowedScopes: true,
-                prohibitedContent: true,
-              },
-            },
           },
         },
       },

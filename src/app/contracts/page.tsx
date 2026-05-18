@@ -44,7 +44,7 @@ const CONTRACT_FILES = [
 
 export default function ContractsPage() {
   const { t, locale } = useLanguage();
-  const isZh = locale === "zh-CN" || locale === "zh-Hant";
+  const isZh = false;
 
   const [downloadingPdf, setDownloadingPdf] = useState<string | null>(null);
   const [downloadingWord, setDownloadingWord] = useState<string | null>(null);

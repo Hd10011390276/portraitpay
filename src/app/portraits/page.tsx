@@ -95,7 +95,7 @@ export default function PortraitsPage() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!window.confirm("确认删除此肖像？")) return;
+    if (!window.confirm("Confirm archive this portrait?")) return;
     try {
       const res = await fetch(`/api/portraits/${id}`, { method: "DELETE", credentials: "include" });
       const json = await res.json();
@@ -104,18 +104,18 @@ export default function PortraitsPage() {
       } else {
         // 409 = already certified (cannot delete), 404 = not found, 403 = not yours
         if (res.status === 409) {
-          alert("无法删除：已认证的肖像需要在详情页取消认证后才能删除");
+          alert("Cannot delete: already certified portraits must be de-certified from the detail page first.");
         } else if (res.status === 403) {
-          alert("无法删除：您不是此肖像的拥有者");
+          alert("Cannot delete: you are not the owner of this portrait.");
         } else if (res.status === 401) {
-          alert("无法删除：请重新登录后再试");
+          alert("Cannot delete: please re-login and try again.");
         } else {
           console.error("[handleDelete] unexpected error", res.status, json.error);
-          alert(`删除失败 (${res.status}): ${json.error || "未知错误"}`);
+          alert(`Delete failed (${res.status}): ${json.error || "Unknown error"}`);
         }
       }
     } catch {
-      alert("删除失败：网络错误");
+      alert("Delete failed: network error");
     }
   };
 

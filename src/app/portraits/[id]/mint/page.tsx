@@ -72,7 +72,7 @@ export default function MintPage() {
 
   useEffect(() => {
     fetch(`/api/portraits/${id}`)
-      .then((r) => r.json())
+      .then((r) => { if (!r.ok) throw new Error(String(r.status)); return r.json(); })
       .then((j) => {
         if (j.success) setPortrait(j.data);
         else router.push("/portraits");
@@ -108,6 +108,7 @@ export default function MintPage() {
       setMintResult({
         txHash: json.data.blockchainTxHash,
         network: json.data.network,
+        certifiedAt: json.data.certifiedAt ?? "",
       });
       setMintStep("success");
     } catch {

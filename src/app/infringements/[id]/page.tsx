@@ -10,11 +10,11 @@ import { useLanguage } from "@/context/LanguageContext";
 import ThemeToggle from "@/components/ThemeToggle";
 
 const STATUS_COLORS: Record<string, string> = {
-  PENDING_REVIEW: "bg-yellow-100 text-yellow-800",
-  VALIDATED: "bg-red-100 text-red-800",
-  REJECTED: "bg-gray-100 text-gray-600",
-  SETTLED: "bg-blue-100 text-blue-800",
-  LEGAL_ACTION: "bg-purple-100 text-purple-800",
+  PENDING_REVIEW: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400",
+  VALIDATED: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400",
+  REJECTED: "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400",
+  SETTLED: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400",
+  LEGAL_ACTION: "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400",
 };
 
 export default function InfringementDetailPage() {
@@ -39,7 +39,7 @@ export default function InfringementDetailPage() {
   useEffect(() => {
     if (!id) return;
     fetch(`/api/infringements/${id}`)
-      .then((r) => r.json())
+      .then((r) => { if (!r.ok) throw new Error(String(r.status)); return r.json(); })
       .then((j) => { if (j.success) setReport(j.data); })
       .finally(() => setLoading(false));
   }, [id]);

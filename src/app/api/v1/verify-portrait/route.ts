@@ -88,7 +88,6 @@ export async function GET(request: NextRequest) {
               role: true,
             },
           },
-          portraitSettings: true,
         },
       });
     } else if (faceId) {
@@ -107,7 +106,6 @@ export async function GET(request: NextRequest) {
               role: true,
             },
           },
-          portraitSettings: true,
         },
       });
     }
@@ -136,30 +134,7 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    // Check if licensing is allowed
-    const settings = portrait.portraitSettings;
-    const allowLicensing = settings?.allowLicensing ?? true;
-    const defaultLicenseFee = settings?.defaultLicenseFee?.toNumber() ?? 0;
-    const allowedScopes = settings?.allowedScopes ?? [];
-    const prohibitedContent = settings?.prohibitedContent ?? [];
-    const territorialScope = settings?.defaultTerritorialScope ?? "global";
-
-    if (!allowLicensing) {
-      return NextResponse.json({
-        success: true,
-        data: {
-          exists: true,
-          portraitId: portrait.id,
-          title: portrait.title,
-          ownerId: portrait.ownerId,
-          ownerName: portrait.owner.displayName,
-          usageAllowed: false,
-          reason: "Portrait owner has disabled licensing",
-          territorialScope,
-        },
-      });
-    }
-
+    // Portrait settings no longer exist — licensing always allowed by default
     return NextResponse.json({
       success: true,
       data: {
@@ -172,11 +147,11 @@ export async function GET(request: NextRequest) {
         ownerRole: portrait.owner.role,
         status: portrait.status,
         usageAllowed: true,
-        licenseFee: defaultLicenseFee,
+        licenseFee: 0,
         currency: "USD",
-        allowedScopes: allowedScopes.length > 0 ? allowedScopes : ["FILM", "ANIMATION", "ADVERTISING", "GAMING", "PRINT", "MERCHANDISE", "SOCIAL_MEDIA", "EDUCATION", "NEWS"],
-        prohibitedContent,
-        territorialScope,
+        allowedScopes: ["FILM", "ANIMATION", "ADVERTISING", "GAMING", "PRINT", "MERCHANDISE", "SOCIAL_MEDIA", "EDUCATION", "NEWS"],
+        prohibitedContent: [],
+        territorialScope: "global",
         blockchainTxHash: portrait.blockchainTxHash,
         certifiedAt: portrait.certifiedAt,
         message: "Portrait is available for licensing",

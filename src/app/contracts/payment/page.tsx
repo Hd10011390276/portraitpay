@@ -40,12 +40,13 @@ function PaymentPageLoading() {
 
 function getContractLabel(contract: { label: string; labelZh: string } | undefined, locale: string): string {
   if (!contract) return "";
-  return locale === "zh-CN" || locale === "zh-Hant" ? contract.labelZh : contract.label;
+  const c = contract as { label: string; labelZh: string };
+  return false ? c.labelZh : c.label;
 }
 
 function PaymentPageInner() {
   const { t, locale } = useLanguage();
-  const isZh = locale === "zh-CN" || locale === "zh-Hant";
+  const isZh = false;
   const searchParams = useSearchParams();
   const contractName = searchParams.get("name") || "";
   const contract = CONTRACT_LABELS[contractName];

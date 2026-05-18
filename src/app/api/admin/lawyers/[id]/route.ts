@@ -7,14 +7,16 @@ import { prisma } from "@/lib/prisma";
 import { getSessionFromRequest } from "@/lib/auth/session";
 export const dynamic = "force-dynamic";
 
+const ADMIN_ROLES = ["SUPER_ADMIN", "ADMIN", "VERIFIER"];
+
 export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
   try {
     const session = await getSessionFromRequest(req);
     if (!session?.userId) {
       return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
     }
-    if (session.role !== "ADMIN") {
-      return NextResponse.json({ success: false, error: "需要管理员权限" }, { status: 403 });
+    if (!ADMIN_ROLES.includes(session.role)) {
+      return NextResponse.json({ success: false, error: "Admin access required" }, { status: 403 });
     }
 
     const { id } = params;
@@ -27,7 +29,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
 
     const registration = await prisma.lawyerRegistration.findUnique({ where: { id } });
     if (!registration) {
-      return NextResponse.json({ success: false, error: "申请不存在" }, { status: 404 });
+      return NextResponse.json({ success: false, error: "Application not found" }, { status: 404 });
     }
 
     const updated = await prisma.lawyerRegistration.update({
@@ -43,6 +45,6 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     return NextResponse.json({ success: true, data: updated });
   } catch (err) {
     console.error("[/api/admin/lawyers/[id] PATCH]", err);
-    return NextResponse.json({ success: false, error: "服务器内部错误" }, { status: 500 });
+    return NextResponse.json({ success: false, error: "Internal server error" }, { status: 500 });
   }
 }

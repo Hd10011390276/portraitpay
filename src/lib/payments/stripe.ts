@@ -85,7 +85,7 @@ export async function createPaymentIntent(
       grossAmount: String(split.gross),
       platformFee: String(split.platformFee),
       ownerRevenue: String(split.ownerRevenue),
-      splitRate: "99/1",
+      splitRate: "90/10",
     },
     automatic_payment_methods: { enabled: true },
   };
@@ -109,6 +109,7 @@ export async function createPaymentIntent(
 /**
  * Called after Stripe confirms payment succeeded
  * Records the transaction and royalty payout
+ * Idempotent: uses stripePaymentIntentId unique constraint to prevent duplicates
  */
 export async function onPaymentSuccess(paymentIntentId: string) {
   const paymentIntent = await getStripe().paymentIntents.retrieve(paymentIntentId);
@@ -117,57 +118,72 @@ export async function onPaymentSuccess(paymentIntentId: string) {
     throw new Error(`Payment not succeeded: ${paymentIntent.status}`);
   }
 
-  const { ownerId, granteeId, authorizationId, ownerRevenue, platformFee, grossAmount } =
+  const { ownerId, granteeId, authorizationId } =
     paymentIntent.metadata;
 
-  if (!ownerId || !granteeId) {
+  if (!ownerId || !granteeId || !authorizationId) {
     throw new Error("Missing metadata in payment intent");
   }
 
-  const amount = Number(paymentIntent.amount) / 100; // from cents
+  const split = calculateSplit(Number(paymentIntent.amount) / 100);
 
-  // Create payout transaction for portrait owner
-  await prisma.transaction.create({
-    data: {
-      userId: ownerId,
-      type: "ROYALTY_PAYOUT",
-      status: "COMPLETED",
-      amount: Number(ownerRevenue),
-      currency: paymentIntent.currency.toUpperCase(),
-      authorizationId,
-      stripePaymentIntentId: paymentIntentId,
-      metadata: {
-        grossAmount: Number(grossAmount),
-        platformFee: Number(platformFee),
-        splitRate: "99%",
-        payerUserId: granteeId,
-        paymentIntentId,
-      },
-    },
+  // Idempotency: skip if transaction already exists for this payment intent
+  const existingTx = await prisma.transaction.findUnique({
+    where: { stripePaymentIntentId: paymentIntentId },
   });
+  if (existingTx) {
+    return { success: true, duplicated: true };
+  }
 
-  // Create platform commission record (stored against grantee)
+  // Single LICENSE_PURCHASE transaction for the payer with full payment details
   await prisma.transaction.create({
     data: {
       userId: granteeId,
-      type: "PLATFORM_COMMISSION",
+      type: "LICENSE_PURCHASE",
       status: "COMPLETED",
-      amount: Number(platformFee),
+      amount: split.gross,
       currency: paymentIntent.currency.toUpperCase(),
       authorizationId,
       stripePaymentIntentId: paymentIntentId,
       metadata: {
-        grossAmount: Number(grossAmount),
-        ownerRevenue: Number(ownerRevenue),
-        splitRate: "1%",
+        grossAmount: split.gross,
+        platformFee: split.platformFee,
+        ownerRevenue: split.ownerRevenue,
+        splitRate: "90/10",
         portraitOwnerId: ownerId,
-        payerUserId: granteeId,
-        paymentIntentId,
       },
     },
   });
 
-  return { success: true };
+  // Idempotent: activate authorization regardless of PENDING or PENDING_PAYMENT
+  await prisma.authorization.updateMany({
+    where: { id: authorizationId, status: { in: ["PENDING", "PENDING_PAYMENT"] } },
+    data: { status: "ACTIVE" },
+  });
+
+  // Create License record if none exists
+  const existingLicense = await prisma.license.findFirst({
+    where: { authorizationId },
+  });
+  if (!existingLicense) {
+    const auth = await prisma.authorization.findUnique({
+      where: { id: authorizationId },
+      select: { portraitId: true, granteeId: true, startDate: true, endDate: true },
+    });
+    if (auth) {
+      await prisma.license.create({
+        data: {
+          authorizationId,
+          portraitId: auth.portraitId,
+          licenseeId: auth.granteeId,
+          startDate: auth.startDate ?? new Date(),
+          endDate: auth.endDate ?? null,
+        },
+      });
+    }
+  }
+
+  return { success: true, transactionId: authorizationId };
 }
 
 // ─── Stripe Webhook Handler ───────────────────────────────────────────────────

@@ -34,7 +34,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
         id: true, ownerId: true, title: true, originalImageUrl: true, thumbnailUrl: true,
         portraitImageHash: true, idCardFrontHash: true, blockchainTxHash: true, status: true,
         idCardType: true, idCardName: true, idCardNumber: true,
-        owner: { select: { walletAddress: true, email: true, name: true } },
+        owner: { select: { walletAddress: true, email: true, name: true, displayName: true } },
       },
     });
 
@@ -154,7 +154,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
         idCardNumberMasked: idCardNumber ? idCardNumber.replace(/^(.{4}).+(.{4})$/, "$1****$2") : "****",
         blockchainTxHash: certificationResult.txHash,
         network,
-        certifiedAt: certificationResult.certifiedAt,
+        certifiedAt: String(certificationResult.certifiedAt),
         certificateBuffer: pngBuffer || undefined,
         certificateUrl: certificateUrl || undefined,
       });

@@ -19,7 +19,7 @@ const STATUS_LABELS: Record<string, { label: string; color: string }> = {
 
 export default function OwnerAuthorizationsPage() {
   const { t, locale } = useLanguage();
-  const isZh = locale === "zh-CN" || locale === "zh-Hant";
+  const isZh = false;
 
   // Fill status labels from translations
   STATUS_LABELS.PENDING_PORTRAIT_OWNER.label = t.ownerAuth?.statusPendingOwner || "Pending Confirmation";
@@ -134,7 +134,7 @@ export default function OwnerAuthorizationsPage() {
             applications.map(app => {
               const status = STATUS_LABELS[app.status] ?? { label: app.status, color: "bg-gray-100" };
               const isPending = app.status === "PENDING_PORTRAIT_OWNER";
-              const daysLabel = tc.days || (locale === "zh-CN" || locale === "zh-Hant" ? "天" : "days");
+              const daysLabel = tc.days || (false ? "天" : "days");
               return (
                 <div key={app.id} className="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
                   <div className="flex gap-4">

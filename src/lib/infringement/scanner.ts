@@ -153,7 +153,7 @@ export async function runMonitoringCycle(config?: Partial<MonitorConfig>): Promi
       // Load all ACTIVE portraits for this owner
       const portraits = await prisma.portrait.findMany({
         where: { ownerId, status: "ACTIVE", deletedAt: null },
-        select: { id: true, title: true, faceEmbedding: true, ownerId: true },
+        select: { id: true, title: true, ownerId: true },
       });
 
       if (!portraits.length) continue;
@@ -205,7 +205,7 @@ export async function runMonitoringCycle(config?: Partial<MonitorConfig>): Promi
  */
 async function processUrlForInfringement(
   url: string,
-  portraits: Array<{ id: string; title: string; faceEmbedding: number[]; ownerId: string }>,
+  portraits: Array<{ id: string; title: string; ownerId: string }>,
   threshold: number
 ): Promise<string | null> {
   // Extract face embedding from the crawled image

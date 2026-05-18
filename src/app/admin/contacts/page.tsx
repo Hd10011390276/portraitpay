@@ -160,25 +160,25 @@ export default function AdminContactsPage() {
   }
 
   function formatDate(d: string) {
-    return new Date(d).toLocaleString(locale === "zh-CN" || locale === "zh-Hant" ? "zh-CN" : "en-US", {
+    return new Date(d).toLocaleString(false ? "zh-CN" : "en-US", {
       year: "numeric", month: "2-digit", day: "2-digit",
       hour: "2-digit", minute: "2-digit",
     });
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       {/* Header */}
-      <header className="bg-white border-b border-gray-100 sticky top-0 z-20">
+      <header className="bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800 sticky top-0 z-20">
         <div className="max-w-7xl mx-auto px-4 h-16 flex items-center gap-4">
-          <button onClick={() => router.push("/dashboard")} className="text-gray-500 hover:text-gray-700 text-sm">
+          <button onClick={() => router.push("/dashboard")} className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 text-sm">
             ← {tc.backToConsole}
           </button>
-          <div className="w-px h-5 bg-gray-200" />
-          <h1 className="text-lg font-bold text-gray-900">
+          <div className="w-px h-5 bg-gray-200 dark:bg-gray-700" />
+          <h1 className="text-lg font-bold text-gray-900 dark:text-white">
             {tc.pageTitle}
           </h1>
-          <span className="ml-auto text-xs text-gray-400">
+          <span className="ml-auto text-xs text-gray-400 dark:text-gray-500">
             {tc.totalRecords} {meta?.total ?? 0} {tc.records}
           </span>
           <div className="flex items-center gap-2 ml-4">
@@ -202,16 +202,16 @@ export default function AdminContactsPage() {
                 onClick={() => {
                   setFilterStatus(s.key);
                 }}
-                className={`bg-white rounded-xl p-4 border text-left transition ${
-                  filterStatus === s.key ? "border-purple-400 ring-1 ring-purple-100" : "border-gray-100 hover:border-gray-200"
+                className={`bg-white dark:bg-gray-900 rounded-xl p-4 border text-left transition ${
+                  filterStatus === s.key ? "border-purple-400 ring-1 ring-purple-100 dark:border-purple-600 dark:ring-purple-900" : "border-gray-100 dark:border-gray-800 hover:border-gray-200 dark:hover:border-gray-700"
                 }`}
               >
                 <div className="flex items-center gap-2">
                   {s.icon && <span>{s.icon}</span>}
-                  <span className="text-xs text-gray-500">{s.label}</span>
+                  <span className="text-xs text-gray-500 dark:text-gray-400">{s.label}</span>
                 </div>
                 {(s.count !== undefined || s.key === "") && (
-                  <p className="text-xl font-bold text-gray-900 mt-1">
+                  <p className="text-xl font-bold text-gray-900 dark:text-white mt-1">
                     {s.count ?? meta?.total ?? 0}
                   </p>
                 )}
@@ -221,10 +221,10 @@ export default function AdminContactsPage() {
         )}
 
         {/* Filters */}
-        <div className="bg-white rounded-xl p-4 flex flex-wrap gap-3 items-center">
-          <span className="text-sm font-medium text-gray-700">{tc.filter}</span>
+        <div className="bg-white dark:bg-gray-900 rounded-xl p-4 flex flex-wrap gap-3 items-center">
+          <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{tc.filter}</span>
           <select
-            className="border border-gray-200 rounded-lg px-3 py-2 text-sm"
+            className="border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value)}
           >
@@ -234,7 +234,7 @@ export default function AdminContactsPage() {
             ))}
           </select>
           <select
-            className="border border-gray-200 rounded-lg px-3 py-2 text-sm"
+            className="border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
             value={filterType}
             onChange={(e) => setFilterType(e.target.value)}
           >
@@ -243,7 +243,7 @@ export default function AdminContactsPage() {
             <option value="ENTERPRISE">{TYPE_MAP.ENTERPRISE}</option>
           </select>
           <button
-            className="ml-auto px-4 py-2 bg-gray-100 rounded-lg text-sm hover:bg-gray-200 transition"
+            className="ml-auto px-4 py-2 bg-gray-100 dark:bg-gray-800 rounded-lg text-sm hover:bg-gray-200 dark:hover:bg-gray-700 transition"
             onClick={() => load(meta?.page ?? 1)}
           >
             🔄 {tc.refresh}
@@ -251,10 +251,10 @@ export default function AdminContactsPage() {
         </div>
 
         {/* Table */}
-        <div className="bg-white rounded-xl overflow-hidden border border-gray-100">
+        <div className="bg-white dark:bg-gray-900 rounded-xl overflow-hidden border border-gray-100 dark:border-gray-800">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
-              <thead className="bg-gray-50 border-b">
+              <thead className="bg-gray-50 dark:bg-gray-800 border-b">
                 <tr>
                   {[
                     tc.colType,
@@ -266,18 +266,18 @@ export default function AdminContactsPage() {
                     tc.colSubmitTime,
                     tc.colAction,
                   ].map((h) => (
-                    <th key={h} className="text-left px-4 py-3 font-medium text-gray-600 whitespace-nowrap">{h}</th>
+                    <th key={h} className="text-left px-4 py-3 font-medium text-gray-600 dark:text-gray-400 whitespace-nowrap">{h}</th>
                   ))}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-50">
+              <tbody className="divide-y divide-gray-50 dark:divide-gray-800">
                 {loading ? (
                   <tr>
-                    <td colSpan={8} className="text-center py-12 text-gray-400">{tc.loading}</td>
+                    <td colSpan={8} className="text-center py-12 text-gray-400 dark:text-gray-500">{tc.loading}</td>
                   </tr>
                 ) : contacts.length === 0 ? (
                   <tr>
-                    <td colSpan={8} className="text-center py-12 text-gray-400">{tc.noData}</td>
+                    <td colSpan={8} className="text-center py-12 text-gray-400 dark:text-gray-500">{tc.noData}</td>
                   </tr>
                 ) : (
                   contacts.map((c) => {
@@ -285,8 +285,8 @@ export default function AdminContactsPage() {
                     return (
                       <tr
                         key={c.id}
-                        className={`hover:bg-gray-50 cursor-pointer transition ${
-                          c.status === "NEW" ? "bg-red-50/30" : ""
+                        className={`hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer transition ${
+                          c.status === "NEW" ? "bg-red-50/30 dark:bg-red-900/10" : ""
                         }`}
                         onClick={() => openDetail(c)}
                       >
@@ -294,8 +294,8 @@ export default function AdminContactsPage() {
                         <td className="px-4 py-3">
                           <span className={`text-xs px-2 py-1 rounded-full font-medium ${
                             c.type === "ENTERPRISE"
-                              ? "bg-indigo-100 text-indigo-700"
-                              : "bg-gray-100 text-gray-600"
+                              ? "bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300"
+                              : "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400"
                           }`}>
                             {TYPE_MAP[c.type] ?? c.type}
                           </span>
@@ -303,17 +303,17 @@ export default function AdminContactsPage() {
 
                         {/* Name/Email */}
                         <td className="px-4 py-3">
-                          <p className="font-medium text-gray-900">{c.name}</p>
-                          <p className="text-xs text-gray-400">{c.email}</p>
+                          <p className="font-medium text-gray-900 dark:text-white">{c.name}</p>
+                          <p className="text-xs text-gray-400 dark:text-gray-500">{c.email}</p>
                         </td>
 
                         {/* Company */}
-                        <td className="px-4 py-3 text-gray-700 max-w-[160px] truncate">
+                        <td className="px-4 py-3 text-gray-700 dark:text-gray-300 max-w-[160px] truncate">
                           {c.enterpriseName ?? c.company ?? "—"}
                         </td>
 
                         {/* Subject / Use */}
-                        <td className="px-4 py-3 text-gray-700 max-w-[200px] truncate">
+                        <td className="px-4 py-3 text-gray-700 dark:text-gray-300 max-w-[200px] truncate">
                           {c.subject ?? c.intendedUse?.slice(0, 40) ?? "—"}
                         </td>
 
@@ -334,7 +334,7 @@ export default function AdminContactsPage() {
                         </td>
 
                         {/* Created */}
-                        <td className="px-4 py-3 text-gray-500 whitespace-nowrap text-xs">
+                        <td className="px-4 py-3 text-gray-500 dark:text-gray-400 whitespace-nowrap text-xs">
                           {formatDate(c.createdAt)}
                         </td>
 
@@ -357,19 +357,19 @@ export default function AdminContactsPage() {
 
           {/* Pagination */}
           {meta && meta.totalPages > 1 && (
-            <div className="px-4 py-3 border-t flex items-center justify-between text-sm text-gray-500">
+            <div className="px-4 py-3 border-t border-gray-100 dark:border-gray-800 flex items-center justify-between text-sm text-gray-500 dark:text-gray-400">
               <span>{tc.pageInfo} {meta.total} {tc.records}，{tc.page} {meta.page} / {meta.totalPages} {tc.pages}</span>
               <div className="flex gap-2">
                 <button
                   disabled={meta.page <= 1}
-                  className="px-3 py-1.5 border rounded-lg disabled:opacity-40 hover:bg-gray-50"
+                  className="px-3 py-1.5 border rounded-lg disabled:opacity-40 hover:bg-gray-50 dark:hover:bg-gray-800"
                   onClick={() => load(meta.page - 1)}
                 >
                   {tc.prevPage}
                 </button>
                 <button
                   disabled={meta.page >= meta.totalPages}
-                  className="px-3 py-1.5 border rounded-lg disabled:opacity-40 hover:bg-gray-50"
+                  className="px-3 py-1.5 border rounded-lg disabled:opacity-40 hover:bg-gray-50 dark:hover:bg-gray-800"
                   onClick={() => load(meta.page + 1)}
                 >
                   {tc.nextPage}
@@ -384,14 +384,14 @@ export default function AdminContactsPage() {
       {selected && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4" onClick={closeDetail}>
           <div
-            className="bg-white rounded-2xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+            className="bg-white dark:bg-gray-900 rounded-2xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Modal header */}
-            <div className="sticky top-0 bg-white border-b border-gray-100 px-6 py-4 flex items-center justify-between rounded-t-2xl">
+            <div className="sticky top-0 bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800 px-6 py-4 flex items-center justify-between rounded-t-2xl">
               <div className="flex items-center gap-3">
                 <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${
-                  selected.type === "ENTERPRISE" ? "bg-indigo-100 text-indigo-700" : "bg-gray-100 text-gray-600"
+                  selected.type === "ENTERPRISE" ? "bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300" : "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400"
                 }`}>
                   {TYPE_MAP[selected.type]}
                 </span>
@@ -403,11 +403,11 @@ export default function AdminContactsPage() {
                     </span>
                   );
                 })()}
-                <span className="text-xs text-gray-400">
+                <span className="text-xs text-gray-400 dark:text-gray-500">
                   {formatDate(selected.createdAt)}
                 </span>
               </div>
-              <button onClick={closeDetail} className="text-gray-400 hover:text-gray-600 text-xl leading-none">×</button>
+              <button onClick={closeDetail} className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-200 text-xl leading-none">×</button>
             </div>
 
             <div className="p-6 space-y-6">
@@ -422,8 +422,8 @@ export default function AdminContactsPage() {
                   [tc.expectedScale, selected.expectedScale ?? "—"],
                 ].map(([label, value]) => (
                   <div key={label as string}>
-                    <p className="text-xs text-gray-400 mb-0.5">{label}</p>
-                    <p className="text-sm font-medium text-gray-800">{value}</p>
+                    <p className="text-xs text-gray-400 dark:text-gray-500 mb-0.5">{label}</p>
+                    <p className="text-sm font-medium text-gray-800 dark:text-gray-200">{value}</p>
                   </div>
                 ))}
               </div>
@@ -431,56 +431,56 @@ export default function AdminContactsPage() {
               {/* Subject */}
               {selected.subject && (
                 <div>
-                  <p className="text-xs text-gray-400 mb-0.5">{tc.subject}</p>
-                  <p className="text-sm font-medium text-gray-800">{selected.subject}</p>
+                  <p className="text-xs text-gray-400 dark:text-gray-500 mb-0.5">{tc.subject}</p>
+                  <p className="text-sm font-medium text-gray-800 dark:text-gray-200">{selected.subject}</p>
                 </div>
               )}
 
               {/* Intended use */}
               {selected.intendedUse && (
                 <div>
-                  <p className="text-xs text-gray-400 mb-0.5">{tc.intendedUse}</p>
-                  <p className="text-sm text-gray-700 bg-gray-50 rounded-xl p-4 whitespace-pre-wrap">{selected.intendedUse}</p>
+                  <p className="text-xs text-gray-400 dark:text-gray-500 mb-0.5">{tc.intendedUse}</p>
+                  <p className="text-sm text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-800 rounded-xl p-4 whitespace-pre-wrap">{selected.intendedUse}</p>
                 </div>
               )}
 
               {/* Message */}
               <div>
-                <p className="text-xs text-gray-400 mb-0.5">
+                <p className="text-xs text-gray-400 dark:text-gray-500 mb-0.5">
                   {selected.type === "ENTERPRISE" ? tc.supplementInfo : tc.message}
                 </p>
-                <p className="text-sm text-gray-700 bg-gray-50 rounded-xl p-4 whitespace-pre-wrap">
+                <p className="text-sm text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-800 rounded-xl p-4 whitespace-pre-wrap">
                   {selected.message || "（无）"}
                 </p>
               </div>
 
               {/* Admin notes */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">{tc.adminNotes}</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">{tc.adminNotes}</label>
                 <textarea
                   value={adminNotes}
                   onChange={(e) => setAdminNotes(e.target.value)}
                   placeholder={tc.adminNotesPlaceholder}
                   rows={3}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 resize-none"
+                  className="w-full px-4 py-3 border border-gray-200 dark:border-gray-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 resize-none bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500"
                 />
               </div>
 
               {/* Reply */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">{tc.replyContent}</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">{tc.replyContent}</label>
                 <textarea
                   value={replyText}
                   onChange={(e) => setReplyText(e.target.value)}
                   placeholder={tc.replyPlaceholder}
                   rows={3}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 resize-none"
+                  className="w-full px-4 py-3 border border-gray-200 dark:border-gray-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 resize-none bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500"
                 />
               </div>
 
               {/* Status actions */}
               <div>
-                <p className="text-sm font-medium text-gray-700 mb-2">{tc.updateStatus}</p>
+                <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{tc.updateStatus}</p>
                 <div className="flex flex-wrap gap-2">
                   {Object.entries(STATUS_MAP).map(([k, v]) => (
                     <button
@@ -490,7 +490,7 @@ export default function AdminContactsPage() {
                       className={`px-4 py-2 rounded-lg text-xs font-medium border transition disabled:opacity-40 ${
                         selected.status === k
                           ? `${v.bg} ${v.color} border-current`
-                          : "bg-white text-gray-600 border-gray-200 hover:border-gray-300"
+                          : "bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600"
                       }`}
                     >
                       {v.label}
@@ -500,7 +500,7 @@ export default function AdminContactsPage() {
               </div>
 
               {/* Save notes */}
-              <div className="flex gap-3 pt-2 border-t border-gray-100">
+              <div className="flex gap-3 pt-2 border-t border-gray-100 dark:border-gray-800">
                 <button
                   onClick={handleSaveNotes}
                   disabled={updateLoading}
@@ -509,21 +509,21 @@ export default function AdminContactsPage() {
                   {updateLoading ? tc.saving : `💾 ${tc.saveNotes}`}
                 </button>
                 {selected.repliedAt && (
-                  <span className="text-xs text-gray-400 self-center">
+                  <span className="text-xs text-gray-400 dark:text-gray-500 self-center">
                     {tc.repliedAt} {formatDate(selected.repliedAt)}
                   </span>
                 )}
               </div>
 
               {/* Meta info */}
-              <div className="text-xs text-gray-400 space-y-1 pt-2 border-t border-gray-100">
+              <div className="text-xs text-gray-400 dark:text-gray-500 space-y-1 pt-2 border-t border-gray-100 dark:border-gray-800">
                 <p>{tc.submitTime}：{formatDate(selected.createdAt)}</p>
                 <p>{tc.updateTime}：{formatDate(selected.updatedAt)}</p>
                 <p>
                   {tc.emailNotify}：
                   {selected.emailSent
-                    ? <span className="text-green-600">✅ {tc.sent} {selected.emailSentAt ? formatDate(selected.emailSentAt) : ""}</span>
-                    : <span className="text-red-500">❌ {tc.notSent} {selected.emailError ? `- ${selected.emailError}` : ""}</span>
+                    ? <span className="text-green-600 dark:text-green-400">✅ {tc.sent} {selected.emailSentAt ? formatDate(selected.emailSentAt) : ""}</span>
+                    : <span className="text-red-500 dark:text-red-400">❌ {tc.notSent} {selected.emailError ? `- ${selected.emailError}` : ""}</span>
                   }
                 </p>
                 {selected.handledAt && <p>{tc.lastHandle}：{formatDate(selected.handledAt)}</p>}

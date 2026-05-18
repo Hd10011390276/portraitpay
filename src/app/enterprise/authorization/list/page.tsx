@@ -1,15 +1,15 @@
 ﻿"use client";
 /**
- * 企业授权列表页
+ * Enterprise Authorization List Page
  * /enterprise/authorization/list
- * 查看申请进度、活跃授权、下载证书
+ * View application progress, active authorizations, download certificates
  */
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useLanguage } from "@/context/LanguageContext";
 import ThemeToggle from "@/components/ThemeToggle";
 
-const STATUS_LABELS_EN: Record<string, { label: string; color: string }> = {
+const STATUS_LABELS: Record<string, { label: string; color: string }> = {
   PENDING_PORTRAIT_OWNER: { label: "Pending Portrait Owner", color: "bg-yellow-100 text-yellow-800" },
   PENDING_PLATFORM_REVIEW: { label: "Pending Platform Review", color: "bg-blue-100 text-blue-800" },
   APPROVED: { label: "Approved", color: "bg-green-100 text-green-800" },
@@ -18,36 +18,16 @@ const STATUS_LABELS_EN: Record<string, { label: string; color: string }> = {
   EXPIRED: { label: "Expired", color: "bg-gray-100 text-gray-600" },
 };
 
-const STATUS_LABELS_ES: Record<string, { label: string; color: string }> = {
-  PENDING_PORTRAIT_OWNER: { label: "Pendiente del Dueño del Retrato", color: "bg-yellow-100 text-yellow-800" },
-  PENDING_PLATFORM_REVIEW: { label: "Pendiente de Revisión de Plataforma", color: "bg-blue-100 text-blue-800" },
-  APPROVED: { label: "Aprobado", color: "bg-green-100 text-green-800" },
-  REJECTED: { label: "Rechazado", color: "bg-red-100 text-red-800" },
-  REVOKED: { label: "Revocado", color: "bg-gray-100 text-gray-800" },
-  EXPIRED: { label: "Expirado", color: "bg-gray-100 text-gray-600" },
-};
-
-const STATUS_LABELS_ZH: Record<string, { label: string; color: string }> = {
-  PENDING_PORTRAIT_OWNER: { label: "待肖像所有者确认", color: "bg-yellow-100 text-yellow-800" },
-  PENDING_PLATFORM_REVIEW: { label: "待平台审核", color: "bg-blue-100 text-blue-800" },
-  APPROVED: { label: "已批准", color: "bg-green-100 text-green-800" },
-  REJECTED: { label: "已拒绝", color: "bg-red-100 text-red-800" },
-  REVOKED: { label: "已撤销", color: "bg-gray-100 text-gray-800" },
-  EXPIRED: { label: "已过期", color: "bg-gray-100 text-gray-600" },
-};
-
 type Tab = "applications" | "active";
 
 export default function AuthorizationListPage() {
   const { t, locale } = useLanguage();
-  const isZh = locale === "zh-CN" || locale === "zh-Hant";
   const [tab, setTab] = useState<Tab>("applications");
   const [applications, setApplications] = useState<any[]>([]);
   const [activeAuths, setActiveAuths] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [filterStatus, setFilterStatus] = useState<string>("");
 
-  const STATUS_LABELS = locale === "zh-CN" || locale === "zh-Hant" ? STATUS_LABELS_ZH : locale === "es-ES" ? STATUS_LABELS_ES : STATUS_LABELS_EN;
   const tc = t.enterpriseAuthList || {};
 
   useEffect(() => { fetchData(); }, [tab, filterStatus]);
@@ -113,7 +93,7 @@ export default function AuthorizationListPage() {
           {tc.pageTitle}
         </h1>
 
-        {/* Tab 切换 */}
+        {/* Tab filter */}
         <div className="flex gap-1 bg-gray-100 p-1 rounded-xl w-fit mb-6">
           {[
             { key: "applications", label: tc.tabApplications },
@@ -131,7 +111,7 @@ export default function AuthorizationListPage() {
           ))}
         </div>
 
-        {/* 筛选 */}
+        {/* Status filter */}
         {tab === "applications" && (
           <div className="mb-4 flex gap-2 flex-wrap">
             <select
@@ -147,7 +127,7 @@ export default function AuthorizationListPage() {
           </div>
         )}
 
-        {/* 申请列表 */}
+        {/* Application list */}
         {tab === "applications" && (
           <div className="space-y-4">
             {loading ? (
@@ -207,7 +187,7 @@ export default function AuthorizationListPage() {
           </div>
         )}
 
-        {/* 活跃授权列表 */}
+        {/* Active authorization list */}
         {tab === "active" && (
           <div className="space-y-4">
             {loading ? (
@@ -231,7 +211,7 @@ export default function AuthorizationListPage() {
                           <h3 className="font-semibold text-gray-900">{auth.portrait?.title}</h3>
                           <p className="text-sm text-gray-500">{tc.owner}：{auth.portrait?.owner?.displayName}</p>
                           <p className="text-sm text-gray-500">
-                            {tc.authDuration}：{auth.usageDuration}{locale === "zh-CN" || locale === "zh-Hant" ? tc.days : ` ${tc.days}`} | {tc.fee}：${auth.proposedFee}
+                            {tc.authDuration}：{auth.usageDuration}{false ? tc.days : ` ${tc.days}`} | {tc.fee}：${auth.proposedFee}
                           </p>
                           <p className="text-xs text-green-600 mt-1">{tc.certNo}：{auth.certificateNo}</p>
                         </div>

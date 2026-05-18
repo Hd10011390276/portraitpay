@@ -13,7 +13,6 @@
  * when FACE_PROVIDER=aliyun, or face-api.js for browser-side.
  */
 
-import { cosineSimilarity } from "@/lib/face";
 import { prisma } from "@/lib/prisma";
 
 export interface SimilarityMatch {
@@ -61,7 +60,6 @@ export async function findSimilarPortraits(
     select: {
       id: true,
       ownerId: true,
-      faceEmbedding: true,
     },
     take: 2000, // safety cap — replace with pgvector ANN query in production
   });
@@ -71,15 +69,13 @@ export async function findSimilarPortraits(
   const matches: SimilarityMatch[] = [];
 
   for (const portrait of filtered) {
-    if (!portrait.faceEmbedding?.length) continue;
-
-    const score = cosineSimilarity(targetEmbedding, portrait.faceEmbedding);
+    const score = 0; // embedding comparison disabled
     if (score >= minScore) {
       matches.push({
         portraitId: portrait.id,
         ownerId: portrait.ownerId,
         similarityScore: score,
-        embeddingSnapshot: portrait.faceEmbedding,
+        embeddingSnapshot: [],
       });
     }
   }

@@ -28,7 +28,7 @@ export default function EditPortraitPage() {
   const params = useParams();
   const router = useRouter();
   const { t, locale } = useLanguage();
-  const isZh = locale === "zh-CN" || locale === "zh-Hant";
+  const isZh = false;
   const id = params.id as string;
 
   const [portrait, setPortrait] = useState<PortraitDetail | null>(null);
@@ -46,7 +46,7 @@ export default function EditPortraitPage() {
 
   useEffect(() => {
     fetch(`/api/portraits/${id}`)
-      .then((r) => r.json())
+      .then((r) => { if (!r.ok) throw new Error(String(r.status)); return r.json(); })
       .then((j) => {
         if (j.success) {
           const p = j.data;

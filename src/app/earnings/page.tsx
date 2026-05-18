@@ -140,9 +140,9 @@ export default function EarningsPage() {
           currency: "USD",
         });
         setTransactions([
-          { id: "1", type: "LICENSE_PURCHASE", status: "COMPLETED", amount: 2400, currency: "USD", createdAt: new Date().toISOString(), portrait: { id: "1", title: "Official Portrait — Jane D." }, granteeName: "某科技公司", grossAmount: 2800, platformFee: 400 },
-          { id: "2", type: "ROYALTY_PAYOUT", status: "COMPLETED", amount: 480, currency: "USD", createdAt: new Date(Date.now() - 86400000).toISOString(), portrait: { id: "2", title: "Studio Portrait — S.K." }, granteeName: "版权池", grossAmount: 600, platformFee: 120 },
-          { id: "3", type: "LICENSE_RENEWAL", status: "COMPLETED", amount: 960, currency: "USD", createdAt: new Date(Date.now() - 172800000).toISOString(), portrait: { id: "1", title: "Official Portrait — Jane D." }, granteeName: "某科技公司", grossAmount: 1200, platformFee: 240 },
+          { id: "1", type: "LICENSE_PURCHASE", status: "COMPLETED", amount: 2400, currency: "USD", createdAt: new Date().toISOString(), portrait: { id: "1", title: "Official Portrait — Jane D." }, granteeName: "Tech Corp Ltd", grossAmount: 2800, platformFee: 400 },
+          { id: "2", type: "ROYALTY_PAYOUT", status: "COMPLETED", amount: 480, currency: "USD", createdAt: new Date(Date.now() - 86400000).toISOString(), portrait: { id: "2", title: "Studio Portrait — S.K." }, granteeName: "Royalty Pool", grossAmount: 600, platformFee: 120 },
+          { id: "3", type: "LICENSE_RENEWAL", status: "COMPLETED", amount: 960, currency: "USD", createdAt: new Date(Date.now() - 172800000).toISOString(), portrait: { id: "1", title: "Official Portrait — Jane D." }, granteeName: "Tech Corp Ltd", grossAmount: 1200, platformFee: 240 },
         ]);
         setMeta({ page: 1, limit: 20, total: 3, totalPages: 1 });
       } finally {

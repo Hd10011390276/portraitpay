@@ -38,7 +38,7 @@ function AccordionItem({ question, answer, isOpen, onToggle }: { question: strin
 
 export default function FaqPage() {
   const { t, locale } = useLanguage();
-  const isZh = locale === "zh-CN" || locale === "zh-Hant";
+  const isZh = false;
   const [openIndex, setOpenIndex] = useState<number | null>(0);
 
   const items = (t.faq.items || [
@@ -96,7 +96,7 @@ export default function FaqPage() {
               <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-6">
                 {t.faq.commonTitle || "Common Questions"}
               </h2>
-              {items.map((item, i) => (
+              {items.map((item: any, i: number) => (
                 <AccordionItem
                   key={i}
                   question={item.q}

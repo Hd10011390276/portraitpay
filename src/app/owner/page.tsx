@@ -281,7 +281,7 @@ export default function OwnerPage() {
                       {t.owner.to}: {transfer.toEmail}
                     </p>
                     <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
-                      {new Date(transfer.createdAt).toLocaleDateString(locale === "zh-CN" || locale === "zh-Hant" ? "zh-CN" : "en-US", {
+                      {new Date(transfer.createdAt).toLocaleDateString(false ? "zh-CN" : "en-US", {
                         timeZone: "Asia/Shanghai",
                       })}
                     </p>

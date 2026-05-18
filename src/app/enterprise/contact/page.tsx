@@ -66,13 +66,13 @@ interface FieldError {
 const SCALE_KEYS = ["scale1", "scale2", "scale3", "scale4", "scale5"] as const;
 
 const USE_CASES = [
-  { key: "useCaseMarketing", zh: "品牌营销与广告" },
-  { key: "useCaseProduct", zh: "产品包装与设计" },
-  { key: "useCaseContent", zh: "内容创作与媒体" },
-  { key: "useCaseEcommerce", zh: "电商与零售" },
-  { key: "useCaseEducation", zh: "教育培训" },
-  { key: "useCaseAiTraining", zh: "AI模型训练" },
-  { key: "useCaseOther", zh: "其他" },
+  { key: "useCaseMarketing" },
+  { key: "useCaseProduct" },
+  { key: "useCaseContent" },
+  { key: "useCaseEcommerce" },
+  { key: "useCaseEducation" },
+  { key: "useCaseAiTraining" },
+  { key: "useCaseOther" },
 ] as const;
 
 export default function EnterpriseContactPage() {

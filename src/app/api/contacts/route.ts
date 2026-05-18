@@ -12,20 +12,20 @@ export const dynamic = "force-dynamic";
 
 const GeneralContactSchema = z.object({
   type: z.literal("GENERAL"),
-  name: z.string().min(1, "姓名不能为空").max(100),
-  email: z.string().email("邮箱格式不正确"),
+  name: z.string().min(1, "Name is required").max(100),
+  email: z.string().email("Invalid email format"),
   company: z.string().max(200).optional(),
   subject: z.string().max(200).optional(),
-  message: z.string().min(10, "留言至少10个字符").max(5000),
+  message: z.string().min(10, "Message must be at least 10 characters").max(5000),
 });
 
 const EnterpriseContactSchema = z.object({
   type: z.literal("ENTERPRISE"),
-  name: z.string().min(1, "姓名不能为空").max(100),
-  email: z.string().email("邮箱格式不正确"),
+  name: z.string().min(1, "Name is required").max(100),
+  email: z.string().email("Invalid email format"),
   company: z.string().max(200).optional(),
-  enterpriseName: z.string().min(1, "企业名称不能为空").max(200),
-  intendedUse: z.string().min(10, "用途说明至少10个字符").max(2000),
+  enterpriseName: z.string().min(1, "Company name is required").max(200),
+  intendedUse: z.string().min(10, "Please describe intended use (min 10 characters)").max(2000),
   expectedScale: z.string().max(100).optional(),
   contactPhone: z.string().max(30).optional(),
   message: z.string().max(5000).optional(),
@@ -33,16 +33,12 @@ const EnterpriseContactSchema = z.object({
 
 const CelebrityContactSchema = z.object({
   type: z.literal("CELEBRITY"),
-  name: z.string().min(1, "姓名不能为空").max(100),
-  email: z.string().email("邮箱格式不正确"),
+  name: z.string().min(1, "Name is required").max(100),
+  email: z.string().email("Invalid email format"),
   contactPhone: z.string().max(30).optional(),
-  // stage name / 艺名
-  subject: z.string().min(1, "请填写艺名/艺名").max(200),
-  // category: celebrity | artist | influencer
-  enterpriseName: z.string().min(1, "请选择艺人类型").max(50),
-  // social media handles
+  subject: z.string().min(1, "Stage name is required").max(200),
+  enterpriseName: z.string().min(1, "Please select a category").max(50),
   intendedUse: z.string().max(1000).optional(),
-  // agency info
   company: z.string().max(200).optional(),
   message: z.string().max(5000).optional(),
 });
@@ -132,12 +128,12 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      message: "提交成功，我们会尽快与您联系",
+      message: "Your message has been received. We will contact you shortly.",
       data: { id: submission.id },
     });
   } catch (err) {
     if (err instanceof z.ZodError) {
-      const firstError = err.issues?.[0]?.message ?? "数据格式不正确";
+      const firstError = err.issues?.[0]?.message ?? "Invalid data format";
       return NextResponse.json(
         { success: false, error: firstError },
         { status: 400 }
@@ -145,7 +141,7 @@ export async function POST(req: NextRequest) {
     }
     console.error("[Contact] POST error:", err);
     return NextResponse.json(
-      { success: false, error: "服务器内部错误，请稍后重试" },
+      { success: false, error: "Internal server error. Please try again later." },
       { status: 500 }
     );
   }

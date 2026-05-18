@@ -13,7 +13,7 @@ function ResetPasswordContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { t, locale } = useLanguage();
-  const isZh = locale === "zh-CN" || locale === "zh-Hant";
+  const isZh = false;
   const token = searchParams.get("token") ?? "";
 
   const tc = t.resetPassword || {};

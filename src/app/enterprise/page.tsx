@@ -22,7 +22,7 @@ interface FieldError {
 
 export default function EnterprisePage() {
   const { t, locale } = useLanguage();
-  const isZh = locale === "zh-CN" || locale === "zh-Hant";
+  const isZh = false;
 
   const [form, setForm] = useState<FormData>({
     name: "",
@@ -237,7 +237,7 @@ export default function EnterprisePage() {
               {t.pricing.sub}
             </p>
             <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
-              {plans.map((plan, i) => (
+              {plans.map((plan: any, i: number) => (
                 <div
                   key={i}
                   className={`rounded-2xl p-6 border-2 transition-all ${
@@ -260,7 +260,7 @@ export default function EnterprisePage() {
                   </div>
                   <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">{plan.desc}</p>
                   <ul className="space-y-3 mb-8">
-                    {plan.features.map((feature, j) => (
+                    {plan.features.map((feature: any, j: number) => (
                       <li key={j} className="flex items-start gap-2 text-sm text-gray-700 dark:text-gray-300">
                         <span className="text-green-500 mt-0.5">✓</span>
                         {feature}

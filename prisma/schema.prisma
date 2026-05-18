@@ -22,9 +22,9 @@ model User {
   phone        String? @unique
 
   // Role: USER, ARTIST, AGENCY, ENTERPRISE, CELEBRITY, ADMIN, VERIFIER
-  role           String  @default("USER")
+  role           String    @default("USER")
   // KYC Status: NOT_STARTED, PENDING, APPROVED, REJECTED, EXPIRED
-  kycStatus      String  @default("NOT_STARTED")
+  kycStatus      String    @default("NOT_STARTED")
   kycProviderRef String?
   kycVerifiedAt  DateTime?
   kycExpiredAt   DateTime?
@@ -37,36 +37,37 @@ model User {
   bio         String?
 
   // Actor Media Kit — external URL for headshots, demo reel, casting profile
-  mediaKitUrl                   String?
-  mediaKitShareConfirmed         Boolean  @default(false)
-  mediaKitReviewOnlyAcknowledged Boolean  @default(false)
+  mediaKitUrl                    String?
+  mediaKitShareConfirmed         Boolean @default(false)
+  mediaKitReviewOnlyAcknowledged Boolean @default(false)
   // Visibility: PUBLIC, VERIFIED_CREATORS, PRIVATE
-  mediaKitVisibility            String   @default("PRIVATE")
+  mediaKitVisibility             String  @default("PRIVATE")
 
   // OTP fields
   otpCode    String?
   otpExpires DateTime?
 
   // Password reset fields
-  resetToken    String?
-  resetExpires  DateTime?
+  resetToken   String?
+  resetExpires DateTime?
 
   // Email verification fields
   verificationCode    String?
   verificationExpires DateTime?
-  emailVerified       Boolean  @default(false)
+  emailVerified       Boolean   @default(false)
 
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   deletedAt DateTime?
 
   portraits             Portrait[]
-  authorizations        Authorization[]      @relation("AuthGranter")
-  granteeAuthorizations Authorization[]      @relation("AuthGrantee")
+  authorizations        Authorization[]        @relation("AuthGranter")
+  granteeAuthorizations Authorization[]        @relation("AuthGrantee")
   licenses              License[]
   transactions          Transaction[]
-  infringementReports   InfringementReport[] @relation("ReportDefendant")
-  myReports             InfringementReport[] @relation("ReportPlaintiff")
+  infringementReports   InfringementReport[]   @relation("ReportDefendant")
+  reportsAsVictim       InfringementReport[] @relation("ReportVictim")
+  quickReports         InfringementReportQuick[]
   kycLogs               KYCLog[]
   celebrityApplications CelebrityApplication[]
 
@@ -75,6 +76,10 @@ model User {
   auditLogs   AuditLog[]   @relation("AuditAdmin")
 
   monitorConfig InfringementMonitorConfig?
+
+  lawyerRegistrations        LawyerRegistration[]
+  messages                   Message[]
+  conversationParticipations ConversationParticipant[]
 
   accounts        Account[]
   sessions        Session[]
@@ -86,8 +91,17 @@ model User {
   aicontents      AIContent[]
   ipregistrations IPRegistration[]
 
-  portraitSettings PortraitSettings?
+  portraitSettings     PortraitSettings?
   digitalHumanLicenses DigitalHumanLicense[]
+
+  licensePackages  LicensePackage[]
+  marketplaceRequests  MarketplaceRequest[]  @relation("Requester")
+  marketplaceRequestsTarget MarketplaceRequest[] @relation("RequestTarget")
+  offersFrom        Offer[] @relation("OfferFromUser")
+  offersTo         Offer[] @relation("OfferToUser")
+  dealsAsPayer     Deal[] @relation("DealPayer")
+  dealsAsPayee     Deal[] @relation("DealPayee")
+  balanceTransactions BalanceTransaction[]
 
   @@index([walletAddress])
   @@index([kycStatus])
@@ -136,13 +150,13 @@ model Portrait {
 
   title       String
   description String?
-  category    String   @default("general")
+  category    String  @default("general")
 
   // Actor classification
-  gender          String?  // male, female, non_binary, not_specified
-  roleType        String?  // actor, model, influencer, celebrity, voice_actor, stunt_performer
-  productionType  String?  // live_action, animation, vfx, cgi, mixed_media
-  tags        String[] @default([])
+  gender         String? // male, female, non_binary, not_specified
+  roleType       String? // actor, model, influencer, celebrity, voice_actor, stunt_performer
+  productionType String? // live_action, animation, vfx, cgi, mixed_media
+  tags           String[] @default([])
 
   originalImageUrl String?
   thumbnailUrl     String?
@@ -155,47 +169,50 @@ model Portrait {
   certificateNumber Int?      @unique
 
   // Status: DRAFT, ACTIVE, SUSPENDED, ARCHIVED
-  status        String @default("DRAFT")
+  status String @default("DRAFT")
 
   // SHA-256 hashes of uploaded photos (computed server-side at upload time)
   portraitImageHash String?
   idCardFrontHash   String?
 
   // Three-view photos for celebrity/actor portraits (正面/侧面/后面)
-  frontViewUrl   String?  // 正面照
-  sideViewUrl    String?  // 侧面照
-  backViewUrl    String?  // 后面照
-  threeViewHash  String?  // Combined hash of all three views
+  frontViewUrl  String? // 正面照
+  sideViewUrl   String? // 侧面照
+  backViewUrl   String? // 后面照
+  threeViewHash String? // Combined hash of all three views
 
   // Google Drive links for three-view reference materials (用户上传到 Google Drive 的三视图资料链接)
-  threeViewFront String?  // 正视图 Google Drive 链接
-  threeViewSide  String?  // 侧视图 Google Drive 链接
-  threeViewTop   String?  // 仰视图 Google Drive 链接
+  threeViewFront String? // 正视图 Google Drive 链接
+  threeViewSide  String? // 侧视图 Google Drive 链接
+  threeViewTop   String? // 仰视图 Google Drive 链接
 
   // ID card info — captured at mint time
-  idCardType   String?  // driver_license | us_id | passport | other
-  idCardName   String?  // real name as shown on ID card
-  idCardNumber String?  // ID card number (stored encrypted/masked in responses)
+  idCardType   String? // driver_license | us_id | passport | other
+  idCardName   String? // real name as shown on ID card
+  idCardNumber String? // ID card number (stored encrypted/masked in responses)
 
   isPublic Boolean @default(false)
 
   // AI Licensing settings (per-portrait override)
   // null means use PortraitSettings default; true = allow AI licensing, false = block
-  allowAiLicensing  Boolean?
-  aiLicenseFee      Decimal?  @db.Decimal(12, 2)  // Override fee (null = use default)
-  aiLicenseScopes   String[]  @default([])         // Empty = all scopes allowed
-  aiProhibitedScopes String[] @default([])         // Blocked scopes for this portrait
-  aiTerritorialScope String  @default("global")   // Override territorial scope
+  allowAiLicensing   Boolean?
+  aiLicenseFee       Decimal? @db.Decimal(12, 2) // Override fee (null = use default)
+  aiLicenseScopes    String[] @default([]) // Empty = all scopes allowed
+  aiProhibitedScopes String[] @default([]) // Blocked scopes for this portrait
+  aiTerritorialScope String   @default("global") // Override territorial scope
 
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   deletedAt DateTime?
 
-  authorizations Authorization[]
-  licenses       License[]
-  reports        InfringementReport[]
-  entAuthApplications EntAuthApplication[]
+  authorizations       Authorization[]
+  conversations        Conversation[]
+  licenses             License[]
+  reports              InfringementReport[]
+  entAuthApplications  EntAuthApplication[]
   digitalHumanLicenses DigitalHumanLicense[]
+  licensePackages      LicensePackage[]
+  marketplaceRequests  MarketplaceRequest[]
 
   @@index([ownerId])
   @@index([status])
@@ -218,9 +235,9 @@ model Authorization {
 
   // License Type: EXCLUSIVE, NON_EXCLUSIVE, SEMI_EXCLUSIVE, EDITORIAL, PERSONAL
   licenseType      String
-  usageScope       String[]    @default([])
-  exclusivity      Boolean     @default(false)
-  territorialScope String      @default("global")
+  usageScope       String[] @default([])
+  exclusivity      Boolean  @default(false)
+  territorialScope String   @default("global")
 
   startDate DateTime
   endDate   DateTime?
@@ -242,9 +259,11 @@ model Authorization {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  licenses    License[]
-  transaction Transaction?
+  licenses           License[]
+  transaction        Transaction?
   entAuthApplication EntAuthApplication?
+  conversations      Conversation[]
+  deals             Deal[]
 
   @@index([portraitId])
   @@index([granteeId])
@@ -270,7 +289,7 @@ model ConsentPassport {
   prohibitedUses String[] @default([])
 
   // Optional
-  contactInfo    String?
+  contactInfo     String?
   additionalTerms String?
 
   // Three-view Google Drive links
@@ -328,7 +347,7 @@ model InfringementReport {
   id String @id @default(cuid())
 
   reporterId String
-  reporter   User   @relation("ReportPlaintiff", fields: [reporterId], references: [id])
+  reporter   User   @relation("ReportVictim", fields: [reporterId], references: [id])
 
   defendantId String?
   defendant   User?   @relation("ReportDefendant", fields: [defendantId], references: [id])
@@ -367,8 +386,9 @@ model InfringementReport {
 
   alertId String? @unique
 
-  notices InfringementNotice[]
-  lawyerCases LawyerCase[]
+  notices       InfringementNotice[]
+  lawyerCases   LawyerCase[]
+  conversations Conversation[]
 
   @@index([portraitId])
   @@index([reporterId])
@@ -392,10 +412,10 @@ model PublicReport {
   portraitTitle String?
 
   // Infringement details
-  type           String   // UNAUTHORIZED_USE, EXPIRED_LICENSE, SCOPE_VIOLATION, RESALE, DEEPFAKE
-  description    String   @db.Text
-  detectedUrl    String?
-  evidenceUrls   String[] @default([])
+  type             String // UNAUTHORIZED_USE, EXPIRED_LICENSE, SCOPE_VIOLATION, RESALE, DEEPFAKE
+  description      String   @db.Text
+  detectedUrl      String?
+  evidenceUrls     String[] @default([])
   originalImageUrl String?
 
   // Status: PENDING_REVIEW, VALIDATED, REJECTED, CONVERTED
@@ -405,8 +425,8 @@ model PublicReport {
   convertedToId String? @unique
 
   // Extensibility: stored raw metadata + webhook delivery record
-  metadata   Json?   // free-form: { source, userAgent, landingPage, ... }
-  webhookLog Json?   // { attemptedAt, status, response, retries }
+  metadata   Json? // free-form: { source, userAgent, landingPage, ... }
+  webhookLog Json? // { attemptedAt, status, response, retries }
 
   // Hash for deduplication
   reportHash String? @unique
@@ -614,14 +634,14 @@ model CelebrityApplication {
   userId String
   user   User   @relation(fields: [userId], references: [id])
 
-  stageName       String
-  realName        String
-  idCardNumber    String
-  idCardFrontUrl  String
-  idCardBackUrl   String
-  authLetterUrl   String
-  authLetterHash  String?
-  notaryCertUrl   String?
+  stageName      String
+  realName       String
+  idCardNumber   String
+  idCardFrontUrl String
+  idCardBackUrl  String
+  authLetterUrl  String
+  authLetterHash String?
+  notaryCertUrl  String?
 
   agencyName    String?
   agencyContact String?
@@ -694,18 +714,18 @@ model Enterprise {
   contactEmail String
 
   // Status: PENDING, APPROVED, REJECTED, EXPIRED
-  status          String @default("PENDING")
+  status          String    @default("PENDING")
   reviewerId      String?
   reviewedAt      DateTime?
-  rejectionReason String?          @db.Text
+  rejectionReason String?   @db.Text
 
   isAgency         Boolean @default(false)
   agencyLicenseUrl String?
 
   validUntil DateTime?
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
   entAuthApplications EntAuthApplication[]
 
   @@index([userId])
@@ -726,7 +746,7 @@ model AgencyArtist {
   proxyStartDate    DateTime?
   proxyEndDate      DateTime?
   // Status: ACTIVE, EXPIRED, REVOKED
-  proxyStatus String @default("ACTIVE")
+  proxyStatus       String    @default("ACTIVE")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -747,7 +767,7 @@ model EntAuthApplication {
   enterprise   Enterprise @relation(fields: [enterpriseId], references: [id])
 
   portraitId String
-  portrait   Portrait   @relation(fields: [portraitId], references: [id])
+  portrait   Portrait @relation(fields: [portraitId], references: [id])
 
   purpose          String   @db.Text
   usageScope       String[] @default([])
@@ -768,8 +788,8 @@ model EntAuthApplication {
   platformReviewedAt      DateTime?
   platformRejectionReason String?   @db.Text
 
-  authorizationId String?   @unique
-  authorization  Authorization? @relation(fields: [authorizationId], references: [id])
+  authorizationId String?        @unique
+  authorization   Authorization? @relation(fields: [authorizationId], references: [id])
 
   contractHash    String? @unique
   contractIpfsCid String?
@@ -837,7 +857,7 @@ model Withdrawal {
   region String @default("CN")
 
   // Status: PENDING, PROCESSING, APPROVED, REJECTED, COMPLETED, FAILED
-  status          String @default("PENDING")
+  status          String    @default("PENDING")
   rejectionReason String?
   approvedAt      DateTime?
   approvedBy      String?
@@ -906,7 +926,7 @@ model AuditLog {
   id String @id @default(cuid())
 
   adminId    String
-  admin      User        @relation("AuditAdmin", fields: [adminId], references: [id])
+  admin      User    @relation("AuditAdmin", fields: [adminId], references: [id])
   targetType String
   targetId   String
   // Action: WITHDRAWAL_APPROVE, WITHDRAWAL_REJECT, SETTLEMENT_GENERATE, SETTLEMENT_APPROVE, USER_BALANCE_ADJUST, TRANSACTION_FLAG
@@ -934,7 +954,7 @@ model Notification {
   // Type: SYSTEM, AUTHORIZATION, EARNING, INFRINGEMENT, KYC, SETTLEMENT, WITHDRAWAL
   type  String @default("SYSTEM")
   title String
-  body  String           @db.Text
+  body  String @db.Text
   data  Json?
 
   isRead Boolean   @default(false)
@@ -987,7 +1007,7 @@ model ApiKey {
 
   name String
 
-  keyHash String @unique
+  keyHash   String @unique
   keyPrefix String
 
   userId String
@@ -1013,7 +1033,52 @@ model ApiKey {
 }
 
 // ============================================================
-// RateLimitRecord
+// InfringementReportQuick — Quick intake for AI face theft victims
+// No portrait/account required. Simplified flow for quick report generation.
+// ============================================================
+
+model InfringementReportQuick {
+  id String @id @default(cuid())
+
+  // Report number: PP-IR-YYYY-NNNN
+  reportNumber String @unique
+  status       String @default("GENERATED") // GENERATED | UPGRADED
+
+  // The person filing the report (simplified registration)
+  userId       String
+  user         User   @relation(fields: [userId], references: [id])
+
+  // Filing info
+  reportedName  String
+  reportedEmail String
+  phone         String?
+
+  // Infringement details
+  infringementType String   // AI_FACE_CLONE | VOICE_CLONE | AI_SHORT_DRAMA | OTHER
+  platformUrl     String?
+  platformName    String?
+  description     String?  @db.Text
+
+  // Evidence
+  evidenceUrls     String[]
+  originalImageUrl String?
+
+  // Generated PDF
+  reportPdfUrl String?
+  generatedAt  DateTime @default(now())
+
+  // Blockchain upgrade
+  blockchainTxHash String?
+  upgradedAt       DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([reportNumber])
+  @@index([status])
+}
+
 // ============================================================
 
 model RateLimitRecord {
@@ -1076,9 +1141,9 @@ model AIContent {
   owner   User   @relation(fields: [ownerId], references: [id])
 
   title       String
-  description String?       @db.Text
+  description String? @db.Text
   // Content Type: CHARACTER, ARTWORK, MUSIC, TEXT, VIDEO, MODEL_3D, OTHER
-  contentType String @default("CHARACTER")
+  contentType String  @default("CHARACTER")
 
   generationTool   String
   generationPrompt String?   @db.Text
@@ -1148,7 +1213,7 @@ model IPRegistration {
   certifiedAt DateTime?
   expiresAt   DateTime?
   // Status: DRAFT, CERTIFIED, ACTIVE, REVOKED, EXPIRED
-  status      String @default("DRAFT")
+  status      String    @default("DRAFT")
 
   originalityDeclaration String? @db.Text
   generationToolConfirm  Boolean @default(false)
@@ -1194,8 +1259,8 @@ model ContactSubmission {
   contactPhone   String?
 
   // Status: NEW, READ, PROCESSING, REPLIED, RESOLVED, CLOSED
-  status     String @default("NEW")
-  adminNotes String? @db.Text
+  status     String    @default("NEW")
+  adminNotes String?   @db.Text
   handledBy  String?
   handledAt  DateTime?
 
@@ -1219,7 +1284,7 @@ model Celebrity {
   id        String   @id @default(cuid())
   name      String
   enName    String?
-  category  String   // film, music, sports, politics, tv
+  category  String // film, music, sports, politics, tv
   imageUrl  String?
   sourceUrl String?
   country   String   @default("CN")
@@ -1244,7 +1309,7 @@ model AiPlatformApiKey {
   platformName String
 
   // SHA-256 hash of the raw API key
-  keyHash String @unique
+  keyHash   String @unique
   // For display only (last 6 chars), e.g., "pp_live_...a1b2c3"
   keyPrefix String @default("pp_live_")
 
@@ -1290,10 +1355,10 @@ model CelebrityIntake {
   email        String
   contactPhone String?
   stageName    String
-  category     String   // star | actor | singer | influencer | athlete | artist | other
+  category     String // star | actor | singer | influencer | athlete | artist | other
   socialMedia  String?
   agency       String?
-  message      String?  @db.Text
+  message      String? @db.Text
 
   // Status: PENDING, REVIEWING, APPROVED, REJECTED
   status String @default("PENDING")
@@ -1316,10 +1381,13 @@ model CelebrityIntake {
 model LawyerRegistration {
   id String @id @default(cuid())
 
-  companyName String
-  region      String   // e.g. "北京市", "上海市", "广东省"
-  lawyerType  String @default("firm") // "firm" = 律师楼, "personal" = 个人律师
-  contactName String
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id])
+
+  companyName  String
+  region       String // e.g. "北京市", "上海市", "广东省"
+  lawyerType   String @default("firm") // "firm" = 律师楼, "personal" = 个人律师
+  contactName  String
   contactEmail String
   contactPhone String
 
@@ -1333,13 +1401,13 @@ model LawyerRegistration {
   reviewedAt      DateTime?
   rejectionReason String?   @db.Text
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  lawyerCases LawyerCase[]
 
   @@index([status])
   @@index([region])
   @@index([createdAt])
-  lawyerCases LawyerCase[]
 }
 
 // ============================================================
@@ -1350,11 +1418,11 @@ model LawyerCase {
   id String @id @default(cuid())
 
   // One case per infringement report (unique constraint)
-  infringementReportId String @unique
-  infringementReport InfringementReport @relation(fields: [infringementReportId], references: [id])
+  infringementReportId String             @unique
+  infringementReport   InfringementReport @relation(fields: [infringementReportId], references: [id])
 
   lawyerRegistrationId String
-  lawyerRegistration LawyerRegistration @relation(fields: [lawyerRegistrationId], references: [id])
+  lawyerRegistration   LawyerRegistration @relation(fields: [lawyerRegistrationId], references: [id])
 
   // 状态机
   // PENDING = 律师已接案，等待平台确认
@@ -1369,27 +1437,350 @@ model LawyerCase {
   platformConfirmed Boolean @default(false)
 
   // 赔偿金分配
-  compensation Decimal @db.Decimal(12,2) // 侵权方赔付总金额
-  platformFee Decimal @db.Decimal(12,2) // platformFeeRate × compensation
-  lawyerFee Decimal @db.Decimal(12,2) // (compensation - platformFee) × lawyerFeeRate
-  portraitOwnerPayout Decimal @db.Decimal(12,2) // compensation - platformFee - lawyerFee
+  compensation        Decimal @db.Decimal(12, 2) // 侵权方赔付总金额
+  platformFee         Decimal @db.Decimal(12, 2) // platformFeeRate × compensation
+  lawyerFee           Decimal @db.Decimal(12, 2) // (compensation - platformFee) × lawyerFeeRate
+  portraitOwnerPayout Decimal @db.Decimal(12, 2) // compensation - platformFee - lawyerFee
 
   // 案件描述/备注
   description String? @db.Text
 
   // 费率
-  lawyerFeeRate Decimal @default(0.20) @db.Decimal(5,4) // 20%
-  platformFeeRate Decimal @default(0.10) @db.Decimal(5,4) // 10%
+  lawyerFeeRate   Decimal @default(0.20) @db.Decimal(5, 4) // 20%
+  platformFeeRate Decimal @default(0.10) @db.Decimal(5, 4) // 10%
 
   // 结算信息
-  closedAt DateTime?
-  resolutionNotes String? @db.Text
+  closedAt        DateTime?
+  resolutionNotes String?   @db.Text
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  messages      Message[]
+  conversations Conversation[]
+  deals        Deal[]
+
   @@index([lawyerRegistrationId])
   @@index([status])
+}
+
+// ============================================================
+// Conversation — Marketplace messaging context
+// ============================================================
+
+model Conversation {
+  id String @id @default(cuid())
+
+  // Type: LICENSING | INFRINGEMENT | GENERAL | LAWYER_CASE
+  type String @default("GENERAL")
+
+  subject String?
+
+  // Context links (all nullable — any combination may be set)
+  portraitId           String?
+  authorizationId      String?
+  infringementReportId String?
+  lawyerCaseId         String?
+
+  // Status: OPEN | CLOSED | ARCHIVED
+  status String @default("OPEN")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  participants ConversationParticipant[]
+  messages     Message[]
+
+  portrait           Portrait?           @relation(fields: [portraitId], references: [id])
+  authorization      Authorization?      @relation(fields: [authorizationId], references: [id])
+  infringementReport InfringementReport? @relation(fields: [infringementReportId], references: [id])
+  lawyerCase         LawyerCase?         @relation(fields: [lawyerCaseId], references: [id])
+  offers             Offer[]
+  marketplaceRequests MarketplaceRequest[]
+
+  @@index([status])
+  @@index([portraitId])
+  @@index([authorizationId])
+  @@index([infringementReportId])
+  @@index([lawyerCaseId])
+  @@index([createdAt])
+}
+
+// ============================================================
+// LicensePackage — Actor-defined sellable license packages
+// ============================================================
+
+model LicensePackage {
+  id String @id @default(cuid())
+
+  portraitId String
+  portrait   Portrait @relation(fields: [portraitId], references: [id])
+
+  ownerId String
+  owner   User   @relation(fields: [ownerId], references: [id])
+
+  title       String
+  description String?
+  usageScope  String[]
+  prohibitedUses String[]
+  territory   String @default("global")
+  durationDays Int @default(365)
+  price        Decimal @db.Decimal(12, 2)
+  currency     String @default("USD")
+  isActive     Boolean @default(true)
+  requiresApproval Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  offers Offer[]
+
+  @@index([portraitId])
+  @@index([ownerId])
+  @@index([isActive])
+}
+
+// ============================================================
+// MarketplaceRequest — Structured buyer request
+// ============================================================
+
+model MarketplaceRequest {
+  id String @id @default(cuid())
+
+  // Type: LICENSING | CREATOR_PROJECT | LEGAL_HELP | INFRINGEMENT
+  type String @default("LICENSING")
+
+  requesterId String
+  requester   User   @relation("Requester", fields: [requesterId], references: [id])
+  targetUserId String?
+  targetUser  User?  @relation("RequestTarget", fields: [targetUserId], references: [id])
+  portraitId  String?
+  portrait    Portrait? @relation(fields: [portraitId], references: [id])
+  conversationId String?
+  conversation Conversation? @relation(fields: [conversationId], references: [id])
+
+  title       String
+  description String?
+  budget      Decimal? @db.Decimal(12, 2)
+  currency    String @default("USD")
+  usageScope  String[]
+  territory   String @default("global")
+  deadline    DateTime?
+
+  // Status: OPEN | OFFERED | ACCEPTED | CLOSED | CANCELLED
+  status String @default("OPEN")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  offers Offer[]
+
+  @@index([requesterId])
+  @@index([status])
+  @@index([portraitId])
+  @@index([type])
+}
+
+// ============================================================
+// Offer — Money from conversation/request
+// ============================================================
+
+model Offer {
+  id String @id @default(cuid())
+
+  requestId       String?
+  request         MarketplaceRequest? @relation(fields: [requestId], references: [id])
+  conversationId  String?
+  conversation   Conversation?        @relation(fields: [conversationId], references: [id])
+  licensePackageId String?
+  licensePackage  LicensePackage? @relation(fields: [licensePackageId], references: [id])
+
+  fromUserId String
+  fromUser   User   @relation("OfferFromUser", fields: [fromUserId], references: [id])
+  toUserId   String
+  toUser     User   @relation("OfferToUser", fields: [toUserId], references: [id])
+
+  // Type: LICENSE | LEGAL_SERVICE | CREATOR_SERVICE
+  type    String
+  title   String
+  terms   String   @db.Text
+  amount  Decimal  @db.Decimal(12, 2)
+  currency String @default("USD")
+  platformFee Decimal @db.Decimal(12, 2)
+  netPayout Decimal @db.Decimal(12, 2)
+
+  // Status: SENT | ACCEPTED | REJECTED | EXPIRED | PAID | CANCELLED
+  status   String @default("SENT")
+  expiresAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  deal Deal?
+
+  @@index([fromUserId])
+  @@index([toUserId])
+  @@index([status])
+  @@index([requestId])
+  @@index([conversationId])
+  @@index([licensePackageId])
+}
+
+// ============================================================
+// Deal — Accepted offer after payment
+// ============================================================
+
+model Deal {
+  id String @id @default(cuid())
+
+  offerId String @unique
+  offer   Offer  @relation(fields: [offerId], references: [id])
+
+  payerId String
+  payer   User   @relation("DealPayer", fields: [payerId], references: [id])
+  payeeId String
+  payee   User   @relation("DealPayee", fields: [payeeId], references: [id])
+
+  authorizationId String?
+  authorization  Authorization? @relation(fields: [authorizationId], references: [id])
+  lawyerCaseId   String?
+  lawyerCase     LawyerCase?   @relation(fields: [lawyerCaseId], references: [id])
+
+  // Status: PENDING_PAYMENT | PAID | ACTIVE | COMPLETED | DISPUTED | CANCELLED
+  status String @default("PENDING_PAYMENT")
+
+  amount      Decimal @db.Decimal(12, 2)
+  platformFee Decimal @db.Decimal(12, 2)
+  netPayout   Decimal @db.Decimal(12, 2)
+  currency    String  @default("USD")
+
+  stripePaymentIntentId String? @unique
+  paidAt     DateTime?
+  completedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([payerId])
+  @@index([payeeId])
+  @@index([status])
+  @@index([stripePaymentIntentId])
+}
+
+// ============================================================
+// FeePolicy — Platform fee rates
+// ============================================================
+
+model FeePolicy {
+  id String @id @default(cuid())
+
+  transactionType String @unique
+  platformFeeRate Decimal @db.Decimal(5, 4)
+  minFee          Decimal? @db.Decimal(12, 2)
+  currency        String @default("USD")
+  isActive        Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ============================================================
+// BalanceTransaction — User earnings ledger
+// ============================================================
+
+model BalanceTransaction {
+  id String @id @default(cuid())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  // Source: DEAL | LICENSE | LAWYER_CASE | MANUAL
+  sourceType String
+  sourceId   String?
+
+  // Type: CREDIT | DEBIT | HOLD | RELEASE
+  type   String
+  amount Decimal @db.Decimal(12, 2)
+  currency String @default("USD")
+
+  // Status: PENDING | AVAILABLE | WITHDRAWN | CANCELLED
+  status String @default("PENDING")
+
+  metadata Json?
+
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([status])
+  @@index([sourceType, sourceId])
+}
+
+// ============================================================
+// ConversationParticipant — Who is in a conversation
+// ============================================================
+
+model ConversationParticipant {
+  id String @id @default(cuid())
+
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  // Role in this conversation: ACTOR | CREATOR | LAWYER | ADMIN
+  roleInConversation String @default("CREATOR")
+
+  lastReadAt DateTime?
+  createdAt  DateTime  @default(now())
+
+  @@unique([conversationId, userId])
+  @@index([userId])
+  @@index([conversationId])
+}
+
+model Message {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Sender
+  senderId   String
+  senderType String // "USER" | "LAWYER" | "ADMIN"
+  senderRole String // "ACTOR" | "CREATOR" | "VERIFIER" | "ADMIN"
+
+  // Conversation context (replaces caseId as primary for marketplace messaging)
+  conversationId String?
+  conversation   Conversation? @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  // Legacy context (keep for lawyer notice compatibility)
+  caseId     String?
+  contractId String?
+
+  // Content
+  subject String?
+  body    String  @db.Text
+  isHtml  Boolean @default(false)
+
+  // Attachments
+  attachments Json?
+
+  // Read status
+  readAt DateTime?
+
+  // Soft delete
+  deletedAt String?
+  deletedBy String?
+
+  // Relations
+  sender     User        @relation(fields: [senderId], references: [id])
+  lawyerCase LawyerCase? @relation(fields: [caseId], references: [id])
+
+  @@index([senderId])
+  @@index([caseId])
+  @@index([conversationId])
+  @@index([contractId])
+  @@index([createdAt])
 }
 
 // ============================================================
@@ -1410,28 +1801,28 @@ model DigitalHumanLicense {
   licenseePhone String?
   licenseeOrg   String?
 
-  contractType  String
+  contractType String
 
-  usageScope       String[] @default([])
-  territory        String   @default("GLOBAL")
-  territoryDetail  String?
+  usageScope      String[] @default([])
+  territory       String   @default("GLOBAL")
+  territoryDetail String?
 
   durationMonths Int
   startDate      DateTime
   endDate        DateTime?
 
-  contractFee Decimal @db.Decimal(12, 2)
+  contractFee Decimal  @db.Decimal(12, 2)
   royaltyFee  Decimal? @db.Decimal(12, 2)
-  currency    String  @default("USD")
+  currency    String   @default("USD")
 
-  terms            String   @db.Text
-  exclusivity      Boolean  @default(false)
+  terms       String  @db.Text
+  exclusivity Boolean @default(false)
 
   digitalHumanPlatform String?
   digitalHumanPurpose  String
 
-  contractHash     String?   @unique
-  contractIpfsCid  String?
+  contractHash      String? @unique
+  contractIpfsCid   String?
   blockchainTxHash  String?
   blockchainNetwork String?
 

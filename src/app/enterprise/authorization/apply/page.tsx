@@ -1,8 +1,8 @@
 ﻿"use client";
 /**
- * 企业授权申请页面
+ * Enterprise Authorization Application Page
  * /enterprise/authorization
- * 企业选择肖像 + 填写用途 + 发起申请
+ * Select portrait + fill purpose + submit application
  */
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
@@ -10,49 +10,21 @@ import { useLanguage } from "@/context/LanguageContext";
 import ThemeToggle from "@/components/ThemeToggle";
 import Link from "next/link";
 
-const USAGE_SCOPES_ES = [
-  { value: "commercial", label: "Uso Comercial" },
-  { value: "advertising", label: "Publicidad" },
-  { value: "merchandise", label: "Mercancía" },
-  { value: "ai_training", label: "Entrenamiento de IA" },
-  { value: "editorial", label: "Uso Editorial" },
-];
-const TERRITORIES_ES = [
-  { value: "global", label: "Global" },
-  { value: "asia", label: "Asia" },
-];
-
-const USAGE_SCOPES_EN = [
+const USAGE_SCOPES = [
   { value: "commercial", label: "Commercial Use" },
   { value: "advertising", label: "Advertising" },
   { value: "merchandise", label: "Merchandise" },
   { value: "ai_training", label: "AI Training" },
   { value: "editorial", label: "Editorial Use" },
 ];
-const TERRITORIES_EN = [
+const TERRITORIES = [
   { value: "global", label: "Global" },
   { value: "asia", label: "Asia" },
 ];
 
-const USAGE_SCOPES_ZH = [
-  { value: "commercial", label: "商业用途" },
-  { value: "advertising", label: "广告宣传" },
-  { value: "merchandise", label: "商品周边" },
-  { value: "ai_training", label: "AI训练" },
-  { value: "editorial", label: "编辑用途" },
-];
-const TERRITORIES_ZH = [
-  { value: "global", label: "全球" },
-  { value: "asia", label: "亚洲" },
-];
-
 export default function EnterpriseAuthorizationPage() {
-  const { t, locale } = useLanguage();
-  const isZh = locale === "zh-CN" || locale === "zh-Hant";
+  const { t } = useLanguage();
   const router = useRouter();
-
-  const USAGE_SCOPES = locale === "zh-CN" || locale === "zh-Hant" ? USAGE_SCOPES_ZH : locale === "es-ES" ? USAGE_SCOPES_ES : USAGE_SCOPES_EN;
-  const TERRITORIES = locale === "zh-CN" || locale === "zh-Hant" ? TERRITORIES_ZH : locale === "es-ES" ? TERRITORIES_ES : TERRITORIES_EN;
 
   const [step, setStep] = useState<"select" | "apply" | "done">("select");
   const [portraits, setPortraits] = useState<any[]>([]);
@@ -72,6 +44,7 @@ export default function EnterpriseAuthorizationPage() {
   async function fetchPortraits() {
     try {
       const res = await fetch("/api/portraits?status=ACTIVE&limit=50");
+      if (!res.ok) return;
       const json = await res.json();
       if (json.success) setPortraits(json.data ?? []);
     } catch {}
@@ -225,7 +198,7 @@ export default function EnterpriseAuthorizationPage() {
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">{tc.usageScopeLabel}</label>
                   <div className="flex flex-wrap gap-2">
-                    {USAGE_SCOPES.map(scope => (
+                    {USAGE_SCOPES.map((scope: { value: string; label: string }) => (
                       <button
                         key={scope.value}
                         onClick={() => toggleScope(scope.value)}
@@ -259,7 +232,7 @@ export default function EnterpriseAuthorizationPage() {
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">{tc.territoryLabel}</label>
                   <div className="flex gap-3">
-                    {TERRITORIES.map(t => (
+                    {TERRITORIES.map((t: { value: string; label: string }) => (
                       <button
                         key={t.value}
                         onClick={() => setTerritorialScope(t.value)}
@@ -285,7 +258,7 @@ export default function EnterpriseAuthorizationPage() {
                           usageDuration === d ? "bg-purple-600 text-white border-purple-600" : "bg-white text-gray-700 border-gray-300"
                         }`}
                       >
-                        {d < 365 ? `${d}${locale === "zh-CN" || locale === "zh-Hant" ? tc.days : ` ${tc.days}`}` : tc.year}
+                        {d < 365 ? `${d}${false ? tc.days : ` ${tc.days}`}` : tc.year}
                       </button>
                     ))}
                   </div>

@@ -9,12 +9,12 @@ import { useLanguage } from "@/context/LanguageContext";
 import ThemeToggle from "@/components/ThemeToggle";
 
 const STATUS_COLORS: Record<string, string> = {
-  PENDING: "bg-yellow-100 text-yellow-800",
-  IN_PROGRESS: "bg-blue-100 text-blue-800",
-  WON: "bg-green-100 text-green-800",
-  LOST: "bg-red-100 text-red-800",
-  CLOSED: "bg-gray-100 text-gray-600",
-  REJECTED: "bg-gray-100 text-gray-500",
+  PENDING: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400",
+  IN_PROGRESS: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400",
+  WON: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400",
+  LOST: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400",
+  CLOSED: "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400",
+  REJECTED: "bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400",
 };
 
 const STATUS_LABELS: Record<string, string> = {
@@ -44,7 +44,7 @@ export default function LawyerCaseDetailPage() {
 
   useEffect(() => {
     fetch(`/api/lawyers/cases/${id}`)
-      .then((r) => r.json())
+      .then((r) => { if (!r.ok) throw new Error(String(r.status)); return r.json(); })
       .then((j) => {
         if (j.success) {
           setLawyerCase(j.data);
@@ -142,7 +142,7 @@ export default function LawyerCaseDetailPage() {
         <div className="bg-white border-b border-gray-200 sticky top-0 z-20">
           <div className="max-w-3xl mx-auto px-4 h-14 flex items-center justify-between">
             <Link href="/lawyer/cases" className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-900">
-              ‹ 返回案件列表
+              ‹ Back to Case List
             </Link>
             <ThemeToggle />
           </div>
@@ -164,7 +164,7 @@ export default function LawyerCaseDetailPage() {
       <div className="bg-white border-b border-gray-200 sticky top-0 z-20">
         <div className="max-w-3xl mx-auto px-4 h-14 flex items-center justify-between">
           <Link href="/lawyer/cases" className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-900">
-            ‹ 返回案件列表
+            ‹ Back to Case List
           </Link>
           <ThemeToggle />
         </div>
@@ -287,7 +287,7 @@ export default function LawyerCaseDetailPage() {
                   </>
                 )}
                 {lawyerCase.status === "PENDING" && (
-                  <p className="text-sm text-gray-500 py-2">等待平台确认后开始处理</p>
+                  <p className="text-sm text-gray-500 py-2">Awaiting platform confirmation before handling</p>
                 )}
                 {(lawyerCase.status === "WON" || lawyerCase.status === "LOST") && !isClosed && (
                   <div className="w-full space-y-3">
@@ -360,7 +360,7 @@ export default function LawyerCaseDetailPage() {
             </div>
           </div>
 
-          {/* 元信息 */}
+          {/* Metadata */}
           <div className="text-xs text-gray-400 space-y-1">
             <p>Case ID: {lawyerCase.id}</p>
             <p>Created: {new Date(lawyerCase.createdAt).toLocaleString()}</p>

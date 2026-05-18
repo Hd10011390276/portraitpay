@@ -114,6 +114,10 @@ export async function POST(request: NextRequest) {
       expiresAtDate
     );
 
+    if (!record) {
+      return NextResponse.json({ success: false, error: "Failed to create API key" }, { status: 500 });
+    }
+
     return NextResponse.json({
       success: true,
       data: {

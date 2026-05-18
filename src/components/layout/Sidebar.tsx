@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import ThemeToggle from "@/components/ThemeToggle";
@@ -15,14 +15,33 @@ interface NavItem {
 
 interface SidebarProps {
   onClose?: () => void;
+  userRole?: string;
 }
 
-export function Sidebar({ onClose }: SidebarProps) {
+export function Sidebar({ onClose, userRole }: SidebarProps) {
   const pathname = usePathname();
   const { t } = useLanguage();
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  useEffect(() => {
+    const fetchUnreadCount = async () => {
+      try {
+        const res = await fetch("/api/conversations/unread-count", { credentials: "include" });
+        if (res.ok) {
+          const json = await res.json();
+          setUnreadCount(json.count ?? 0);
+        }
+      } catch { /* silent */ }
+    };
+    fetchUnreadCount();
+    const interval = setInterval(fetchUnreadCount, 30000);
+    return () => clearInterval(interval);
+  }, []);
 
   const isActive = (href: string) =>
     pathname === href || pathname.startsWith(href + "/");
+
+  const isAdmin = userRole === "SUPER_ADMIN" || userRole === "ADMIN" || userRole === "VERIFIER";
 
   const navItems: NavItem[] = [
     {
@@ -33,6 +52,16 @@ export function Sidebar({ onClose }: SidebarProps) {
           <path strokeLinecap="round" strokeLinejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
         </svg>
       ),
+    },
+    {
+      label: t.sidebar.inbox,
+      href: "/inbox",
+      icon: (
+        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+        </svg>
+      ),
+      badge: unreadCount > 0 ? unreadCount : undefined,
     },
     {
       label: t.sidebar.myPortraits,
@@ -159,6 +188,32 @@ export function Sidebar({ onClose }: SidebarProps) {
           </Link>
         ))}
 
+        {/* Admin Operations section */}
+        {isAdmin && (
+          <>
+            <div className="pt-4 pb-2">
+              <div className="border-t border-gray-100 dark:border-gray-800 mb-2" />
+              <p className="px-3 mb-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                {t.sidebar.operations ?? "Operations"}
+              </p>
+            </div>
+            <Link
+              href="/admin"
+              onClick={onClose}
+              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all
+                ${isActive("/admin")
+                  ? "bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300"
+                  : "text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white"
+                }`}
+            >
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
+              </svg>
+              {t.sidebar.adminPanel ?? "Admin Panel"}
+            </Link>
+          </>
+        )}
+
         {/* Lawyer section */}
         {lawyerItems.some(item => isActive(item.href)) && (
           <>
@@ -185,6 +240,47 @@ export function Sidebar({ onClose }: SidebarProps) {
             ))}
           </>
         )}
+
+        {/* Discover section */}
+        <div className="pt-4 pb-2">
+          <div className="border-t border-gray-100 dark:border-gray-800 mb-2" />
+          <p className="px-3 mb-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">{t.sidebar.discover ?? "Discover"}</p>
+        </div>
+
+        {[
+          {
+            label: t.sidebar.findLawyer ?? "Find a Lawyer",
+            href: "/lawyers",
+            icon: (
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            ),
+          },
+          {
+            label: t.sidebar.discoverActors ?? "Discover Actors",
+            href: "/actors",
+            icon: (
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 7a4 4 0 100 8 4 4 0 000-8z" />
+              </svg>
+            ),
+          },
+        ].map((item) => (
+          <Link
+            key={item.href}
+            href={item.href}
+            onClick={onClose}
+            className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all
+              ${isActive(item.href)
+                ? "bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300"
+                : "text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white"
+              }`}
+          >
+            {item.icon}
+            {item.label}
+          </Link>
+        ))}
 
         <div className="pt-4 pb-2">
           <div className="border-t border-gray-100 dark:border-gray-800 mb-2" />

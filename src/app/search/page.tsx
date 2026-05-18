@@ -61,17 +61,17 @@ function SearchContent() {
     } catch {
       // Fallback mock data for demo
       setPortraits([
-        { id: "1", title: "Official Portrait — Jane D.", category: "celebrity", status: "ACTIVE", thumbnailUrl: null, originalImageUrl: null, imageHash: null, blockchainTxHash: "0x7a3f4b8c9e2d1a0f", ipfsCid: "QmXxx", certifiedAt: new Date().toISOString(), createdAt: new Date().toISOString(), isPublic: true, description: null },
-        { id: "2", title: "Studio Portrait — S.K.", category: "artist", status: "ACTIVE", thumbnailUrl: null, originalImageUrl: null, imageHash: null, blockchainTxHash: "0xb2d1f8a0e3c4", ipfsCid: "QmAbc", certifiedAt: new Date().toISOString(), createdAt: new Date(Date.now() - 86400000).toISOString(), isPublic: true, description: null },
-        { id: "3", title: "Concert Photo — M.W.", category: "artist", status: "ACTIVE", thumbnailUrl: null, originalImageUrl: null, imageHash: null, blockchainTxHash: "0xc3e2f9b1d4a5", ipfsCid: "QmDef", certifiedAt: new Date().toISOString(), createdAt: new Date(Date.now() - 172800000).toISOString(), isPublic: true, description: null },
-        { id: "4", title: "Corporate Headshot — A.L.", category: "business", status: "ACTIVE", thumbnailUrl: null, originalImageUrl: null, imageHash: "0xabc123", blockchainTxHash: "0xb2d1f8a0e3c4", ipfsCid: "QmAbc", certifiedAt: new Date(Date.now() - 259200000).toISOString(), createdAt: new Date(Date.now() - 604800000).toISOString(), isPublic: true, description: null },
-        { id: "5", title: "Event Photo — R.K.", category: "celebrity", status: "ACTIVE", thumbnailUrl: null, originalImageUrl: null, imageHash: null, blockchainTxHash: null, ipfsCid: null, certifiedAt: null, createdAt: new Date(Date.now() - 2592000000).toISOString(), isPublic: true, description: null },
-        { id: "6", title: "Modeling Portfolio — L.M.", category: "model", status: "ACTIVE", thumbnailUrl: null, originalImageUrl: null, imageHash: null, blockchainTxHash: "0xd4f3a2c1b5e6", ipfsCid: "QmGhi", certifiedAt: new Date().toISOString(), createdAt: new Date(Date.now() - 345600000).toISOString(), isPublic: true, description: null },
+        { id: "1", title: "Official Portrait — Jane D.", category: "celebrity", status: "ACTIVE" as const, thumbnailUrl: null, originalImageUrl: null, imageHash: null, blockchainTxHash: "0x7a3f4b8c9e2d1a0f", ipfsCid: "QmXxx", certifiedAt: new Date().toISOString(), createdAt: new Date().toISOString(), isPublic: true, description: null },
+        { id: "2", title: "Studio Portrait — S.K.", category: "artist", status: "ACTIVE" as const, thumbnailUrl: null, originalImageUrl: null, imageHash: null, blockchainTxHash: "0xb2d1f8a0e3c4", ipfsCid: "QmAbc", certifiedAt: new Date().toISOString(), createdAt: new Date(Date.now() - 86400000).toISOString(), isPublic: true, description: null },
+        { id: "3", title: "Concert Photo — M.W.", category: "artist", status: "ACTIVE" as const, thumbnailUrl: null, originalImageUrl: null, imageHash: null, blockchainTxHash: "0xc3e2f9b1d4a5", ipfsCid: "QmDef", certifiedAt: new Date().toISOString(), createdAt: new Date(Date.now() - 172800000).toISOString(), isPublic: true, description: null },
+        { id: "4", title: "Corporate Headshot — A.L.", category: "business", status: "ACTIVE" as const, thumbnailUrl: null, originalImageUrl: null, imageHash: "0xabc123", blockchainTxHash: "0xb2d1f8a0e3c4", ipfsCid: "QmAbc", certifiedAt: new Date(Date.now() - 259200000).toISOString(), createdAt: new Date(Date.now() - 604800000).toISOString(), isPublic: true, description: null },
+        { id: "5", title: "Event Photo — R.K.", category: "celebrity", status: "ACTIVE" as const, thumbnailUrl: null, originalImageUrl: null, imageHash: null, blockchainTxHash: null, ipfsCid: null, certifiedAt: null, createdAt: new Date(Date.now() - 2592000000).toISOString(), isPublic: true, description: null },
+        { id: "6", title: "Modeling Portfolio — L.M.", category: "model", status: "ACTIVE" as const, thumbnailUrl: null, originalImageUrl: null, imageHash: null, blockchainTxHash: "0xd4f3a2c1b5e6", ipfsCid: "QmGhi", certifiedAt: new Date().toISOString(), createdAt: new Date(Date.now() - 345600000).toISOString(), isPublic: true, description: null },
       ].filter((p) =>
         !searchQuery.trim() ||
         p.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         p.category.toLowerCase().includes(searchQuery.toLowerCase())
-      ));
+      ) as Portrait[]);
     } finally {
       setLoading(false);
       setSearched(true);
@@ -213,7 +213,7 @@ function SearchContent() {
               {portraits.map((portrait) => (
                 <PortraitCard
                   key={portrait.id}
-                  portrait={portrait}
+                  portrait={portrait as any}
                   onView={handleView}
                   onCertify={() => {}}
                   onDelete={() => {}}

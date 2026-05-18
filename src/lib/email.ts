@@ -555,6 +555,130 @@ export async function sendVerificationEmail(params: {
 }
 
 // ============================================================
+// Infringement Report email
+// ============================================================
+interface InfringementReportEmailParams {
+  name: string;
+  email: string;
+  reportNumber: string;
+  infringerName: string;
+  infringerEmail: string;
+  infringementType: string;
+  platformName: string | null;
+  platformUrl: string | null;
+  description: string | null;
+  evidenceUrls: string[];
+  reportUrl: string;
+  generatedAt: Date;
+}
+
+export async function sendInfringementReportEmail(params: InfringementReportEmailParams): Promise<void> {
+  const { name, email, reportNumber, infringerName, infringerEmail, infringementType, platformName, platformUrl, description, evidenceUrls, reportUrl, generatedAt } = params;
+
+  const typeLabel: Record<string, string> = {
+    AI_FACE_CLONE: "AI Face Clone / Digital Human",
+    VOICE_CLONE: "Voice Clone",
+    AI_SHORT_DRAMA: "AI Short Drama Infringement",
+    OTHER: "Other",
+    UNAUTHORIZED_USE: "Unauthorized Use",
+    EXPIRED_LICENSE: "Expired License",
+    SCOPE_VIOLATION: "Scope Violation",
+    RESALE: "Resale/Illegal Transfer",
+    DEEPFAKE: "Synthetic Media",
+  };
+  const platformLabel: Record<string, string> = {
+    youtube: "YouTube", douyin: "Douyin", kuaishou: "Kuaishou",
+    xiaohongshu: "Xiaohongshu", bilibili: "Bilibili", weibo: "Weibo",
+    toutiao: "Toutiao", weixin: "WeChat Video", instagram: "Instagram",
+    tiktok: "TikTok", other: "Other",
+  };
+
+  const typeDisplay = typeLabel[infringementType] ?? infringementType;
+  const platformDisplay = platformName ? (platformLabel[platformName] ?? platformName) : "Not specified";
+
+  const ts = new Date(generatedAt).toLocaleString("en-US", { timeZone: "Asia/Shanghai" });
+
+  const evidenceHtml = evidenceUrls.length > 0
+    ? `<div style="margin:16px 0;padding:12px;background:#f9f9f9;border-radius:8px">
+        <p style="margin:0 0 8px;font-size:12px;font-weight:bold;color:#666">EVIDENCE LINKS</p>
+        ${evidenceUrls.map((u, i) => `<p style="margin:2px 0;font-size:12px;font-family:monospace;color:#2563eb;word-break:break-all">[${i + 1}] <a href="${u}">${u}</a></p>`).join("<br>")}
+       </div>`
+    : "";
+
+  const html = `<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"></head>
+<body style="font-family:Arial,sans-serif;background:#f4f4f4;margin:0;padding:20px">
+<div style="max-width:600px;margin:0 auto;background:#fff;border-radius:8px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.08)">
+  <div style="background:#7c3aed;padding:20px 24px">
+    <h2 style="margin:0;color:#fff;font-size:18px">📋 Infringement Report Received</h2>
+    <p style="margin:4px 0 0;color:#e9d5ff;font-size:13px">PortraitPay AI · Report ID: ${reportNumber}</p>
+  </div>
+  <div style="padding:24px">
+    <p style="font-size:15px;color:#333;margin:0 0 16px">Hi <strong>${name}</strong>,</p>
+    <p style="font-size:14px;color:#555;line-height:1.6">We have received your infringement report. Your report ID is:</p>
+    <div style="text-align:center;margin:16px 0">
+      <span style="display:inline-block;font-size:20px;font-weight:bold;color:#7c3aed;background:#f3f0ff;padding:12px 24px;border-radius:8px;border:2px dashed #7c3aed">${reportNumber}</span>
+    </div>
+    <div style="margin:20px 0;padding:16px;background:#f9f9f9;border-radius:8px">
+      <table style="width:100%;border-collapse:collapse">
+        <tr><td style="padding:6px 0;color:#666;font-size:13px">Report ID</td><td style="padding:6px 0;font-size:13px;font-weight:bold;color:#7c3aed;font-family:monospace">${reportNumber}</td></tr>
+        <tr><td style="padding:6px 0;color:#666;font-size:13px">Infringement Type</td><td style="padding:6px 0;font-size:13px">${typeDisplay}</td></tr>
+        <tr><td style="padding:6px 0;color:#666;font-size:13px">Infringer</td><td style="padding:6px 0;font-size:13px">${infringerName} (${infringerEmail})</td></tr>
+        <tr><td style="padding:6px 0;color:#666;font-size:13px">Platform</td><td style="padding:6px 0;font-size:13px">${platformDisplay}</td></tr>
+        <tr><td style="padding:6px 0;color:#666;font-size:13px">Submitted</td><td style="padding:6px 0;font-size:13px">${ts}</td></tr>
+      </table>
+    </div>
+    ${description ? `<div style="margin:16px 0;padding:12px;background:#fef9c3;border-radius:8px;border-left:4px solid #ca8a04"><p style="margin:0 0 4px;font-size:12px;font-weight:bold;color:#92400e">DESCRIPTION</p><p style="margin:0;font-size:13px;color:#78350f">${description}</p></div>` : ""}
+    ${evidenceHtml}
+    <div style="text-align:center;margin:20px 0">
+      <a href="${reportUrl}" style="display:inline-block;padding:12px 24px;background:#7c3aed;color:#fff;text-decoration:none;border-radius:8px;font-size:14px">View Report →</a>
+    </div>
+    <p style="font-size:12px;color:#999;margin-top:16px">This report is for reference only and does not constitute legal advice. For formal legal action, consult a licensed attorney.</p>
+  </div>
+</div>
+</body>
+</html>`;
+
+  const text = [
+    `PortraitPay AI — Infringement Report Received`,
+    `Report ID: ${reportNumber}`,
+    `Submitted: ${ts}`,
+    ``,
+    `--- REPORTER ---`,
+    `Name: ${name}`,
+    `Email: ${email}`,
+    ``,
+    `--- INFRINGER ---`,
+    `Name: ${infringerName}`,
+    `Email: ${infringerEmail}`,
+    ``,
+    `--- INFRINGEMENT DETAILS ---`,
+    `Type: ${typeDisplay}`,
+    `Platform: ${platformDisplay}`,
+    platformUrl ? `URL: ${platformUrl}` : null,
+    description ? `Description: ${description}` : null,
+    evidenceUrls.length > 0 ? `Evidence: ${evidenceUrls.join(", ")}` : null,
+    ``,
+    `View report: ${reportUrl}`,
+    ``,
+    `This report is for reference only and does not constitute legal advice.`,
+  ].filter(Boolean).join("\n");
+
+  try {
+    await sendEmail({
+      to: email,
+      subject: `📋 Infringement Report Received — ${reportNumber}`,
+      html,
+      text,
+    });
+    console.log("[sendInfringementReportEmail] Sent to:", email);
+  } catch (err) {
+    console.error("[sendInfringementReportEmail] failed:", err instanceof Error ? err.message : String(err));
+  }
+}
+
+// ============================================================
 // Welcome email
 // ============================================================
 interface WelcomeEmailParams {

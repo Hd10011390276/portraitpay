@@ -12,19 +12,16 @@ const MEDIA_KIT_VISIBILITY = z.enum(["PUBLIC", "VERIFIED_CREATORS", "PRIVATE"]);
 type MediaKitVisibility = z.infer<typeof MEDIA_KIT_VISIBILITY>;
 
 export const RegisterSchema = z.object({
-  email: z
-    .string()
-    .min(1, "邮箱不能为空")
-    .email("请输入有效的邮箱地址"),
+  email: z.string().min(1, "Email is required").email("Invalid email address"),
   password: z
     .string()
-    .min(8, "密码至少8位")
-    .regex(/[A-Z]/, "密码需包含至少一个大写字母")
-    .regex(/[0-9]/, "密码需包含至少一个数字"),
-  confirmPassword: z.string().min(1, "请确认密码"),
-  name: z.string().min(1, "姓名不能为空").max(50, "姓名最多50字符"),
+    .min(8, "Password must be at least 8 characters")
+    .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
+    .regex(/[0-9]/, "Password must contain at least one number"),
+  confirmPassword: z.string().min(1, "Please confirm your password"),
+  name: z.string().min(1, "Name is required").max(50, "Name must be 50 characters or less"),
   role: z.enum(["TALENT", "AGENCY", "LAWYER"], {
-    error: "请选择角色",
+    error: "Please select a role",
   }),
   phone: z.string().optional(),
   // Portrait usage preferences
@@ -32,21 +29,20 @@ export const RegisterSchema = z.object({
   allowedScopes: z.array(z.string()).default([]),
   prohibitedContent: z.array(z.string()).default([]),
   // Actor Media Kit
-  mediaKitUrl: z.string().url("无效的 URL 格式").optional().or(z.literal("")),
+  mediaKitUrl: z.string().url("Invalid URL format").optional().or(z.literal("")),
   mediaKitShareConfirmed: z.boolean().default(false),
   mediaKitReviewOnlyAcknowledged: z.boolean().default(false),
   mediaKitVisibility: MEDIA_KIT_VISIBILITY.default("PRIVATE"),
 }).refine((data) => data.password === data.confirmPassword, {
-  message: "两次密码不一致",
+  message: "Passwords do not match",
   path: ["confirmPassword"],
 }).refine((data) => {
-  // If role is TALENT and mediaKitUrl is provided, both confirmations must be true
   if (data.role === "TALENT" && data.mediaKitUrl && data.mediaKitUrl.trim() !== "") {
     return data.mediaKitShareConfirmed === true && data.mediaKitReviewOnlyAcknowledged === true;
   }
   return true;
 }, {
-  message: "请确认 Media Kit 链接的使用权限",
+  message: "Please confirm Media Kit URL usage rights",
   path: ["mediaKitShareConfirmed"],
 });
 
@@ -54,8 +50,8 @@ export type RegisterInput = z.infer<typeof RegisterSchema>;
 
 // ─── Email Login ─────────────────────────────────────────────────────────────
 export const EmailLoginSchema = z.object({
-  email: z.string().min(1, "邮箱不能为空").email("请输入有效的邮箱地址"),
-  password: z.string().min(1, "密码不能为空"),
+  email: z.string().min(1, "Email is required").email("Invalid email address"),
+  password: z.string().min(1, "Password is required"),
 });
 
 export type EmailLoginInput = z.infer<typeof EmailLoginSchema>;
@@ -64,7 +60,7 @@ export type EmailLoginInput = z.infer<typeof EmailLoginSchema>;
 export const PhoneSchema = z.object({
   phone: z
     .string()
-    .regex(/^1[3-9]\d{9}$/, "请输入有效的中国大陆手机号"),
+    .regex(/^1[3-9]\d{9}$/, "Invalid Chinese mobile number"),
 });
 
 export const SendOtpSchema = PhoneSchema;
@@ -72,8 +68,8 @@ export const SendOtpSchema = PhoneSchema;
 export const VerifyOtpSchema = z.object({
   phone: z
     .string()
-    .regex(/^1[3-9]\d{9}$/, "请输入有效的中国大陆手机号"),
-  code: z.string().length(6, "验证码为6位数字").regex(/^\d{6}$/, "验证码为6位数字"),
+    .regex(/^1[3-9]\d{9}$/, "Invalid Chinese mobile number"),
+  code: z.string().length(6, "Verification code must be 6 digits").regex(/^\d{6}$/, "Verification code must be 6 digits"),
 });
 
 export type SendOtpInput = z.infer<typeof SendOtpSchema>;

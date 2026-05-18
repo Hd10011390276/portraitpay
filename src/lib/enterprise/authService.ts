@@ -159,7 +159,7 @@ export async function approveByPlatform(
       endDate,
       licenseFee: actualFee,
       currency: application.currency,
-      status: "ACTIVE",
+      status: "PENDING_PAYMENT",
       terms: application.purpose,
     },
   });

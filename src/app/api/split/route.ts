@@ -22,7 +22,7 @@ const SplitRecordSchema = z.object({
   payeeId: z.string().min(1, "Payee ID is required"),
   platformFee: z.number().min(0).default(0),
   royaltyAmount: z.number().positive("Royalty amount must be positive"),
-  metadata: z.record(z.unknown()).optional(),
+  metadata: z.record(z.string(), z.unknown()).optional(),
 });
 
 export async function GET(request: NextRequest) {

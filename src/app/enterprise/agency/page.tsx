@@ -1,8 +1,8 @@
 ﻿"use client";
 /**
- * 经纪公司代理管理页面
+ * Agency Management Page
  * /enterprise/agency
- * 添加艺人、批量发起授权申请
+ * Add artists and batch authorization applications
  */
 import { useState, useEffect } from "react";
 import Link from "next/link";
@@ -11,7 +11,7 @@ import { useLanguage } from "@/context/LanguageContext";
 
 export default function AgencyPage() {
   const { t, locale } = useLanguage();
-  const isZh = locale === "zh-CN" || locale === "zh-Hant";
+  const isZh = false;
   const ea = t.enterpriseAgency ?? {};
 
   const [tab, setTab] = useState<"artists" | "batch">("artists");
@@ -20,12 +20,12 @@ export default function AgencyPage() {
   const [addLoading, setAddLoading] = useState(false);
   const [batchLoading, setBatchLoading] = useState(false);
 
-  // 添加艺人
+  // Add artist
   const [artistEmail, setArtistEmail] = useState("");
   const [artistError, setArtistError] = useState<string | null>(null);
   const [artistSuccess, setArtistSuccess] = useState<string | null>(null);
 
-  // 批量授权
+  // Batch authorization
   const [selectedPortraitIds, setSelectedPortraitIds] = useState<string[]>([]);
   const [targetEnterpriseId, setTargetEnterpriseId] = useState("");
   const [purpose, setPurpose] = useState("");
@@ -60,26 +60,26 @@ export default function AgencyPage() {
       });
       const json = await res.json();
       if (!json.success) {
-        setArtistError(ea.addFailed ?? "添加失败");
+        setArtistError(ea.addFailed ?? "Failed to add artist");
       } else {
-        setArtistSuccess(ea.successAdd ?? "艺人添加成功！");
+        setArtistSuccess(ea.successAdd ?? "Artist added successfully!");
         setArtistEmail("");
         fetchArtists();
       }
     } catch {
-      setArtistError(ea.addFailed ?? "添加失败");
+      setArtistError(ea.addFailed ?? "Failed to add artist");
     } finally {
       setAddLoading(false);
     }
   }
 
   async function removeArtist(agencyArtistId: string) {
-    if (!confirm(ea.removeConfirm ?? "确定要移除该艺人的代理关系吗？")) return;
+    if (!confirm(ea.removeConfirm ?? "Confirm remove this artist's agency relationship?")) return;
     try {
       await fetch(`/api/v1/agency/artist/${agencyArtistId}`, { method: "DELETE" });
       setArtists(prev => prev.filter(a => a.id !== agencyArtistId));
     } catch {
-      alert(ea.removeFailed ?? "移除失败");
+      alert(ea.removeFailed ?? "Failed to remove");
     }
   }
 
@@ -91,7 +91,7 @@ export default function AgencyPage() {
 
   async function submitBatchAuth() {
     if (!targetEnterpriseId || selectedPortraitIds.length === 0 || !purpose.trim()) {
-      alert("请填写完整信息并选择至少一个肖像");
+      alert("Please fill in all fields and select at least one portrait");
       return;
     }
     setBatchLoading(true);
@@ -111,7 +111,7 @@ export default function AgencyPage() {
       const json = await res.json();
       if (json.success) {
         setBatchResult(json.data ?? []);
-        alert(`批量申请完成：成功 ${(json.data ?? []).filter((r: any) => !r.error).length} 个`);
+        alert(`Batch application completed: ${(json.data ?? []).filter((r: any) => !r.error).length} succeeded`);
       } else {
         alert(json.error);
       }
@@ -140,13 +140,13 @@ export default function AgencyPage() {
 
       <main className="py-8 px-4">
         <div className="max-w-5xl mx-auto">
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">{ea.title ?? "经纪公司管理"}</h1>
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">{ea.title ?? "Agency Management"}</h1>
           <p className="text-gray-500 mb-6">{ea.subtitle ?? "代理旗下艺人肖像，统一管理授权"}</p>
 
           <div className="flex gap-1 bg-white border border-gray-200 p-1 rounded-xl w-fit mb-6">
             {[
-              { key: "artists", label: ea.tabArtists ?? "代理艺人管理" },
-              { key: "batch", label: ea.tabBatch ?? "批量授权申请" },
+              { key: "artists", label: ea.tabArtists ?? "Artist Management" },
+              { key: "batch", label: ea.tabBatch ?? "Batch Authorization" },
             ].map(t => (
               <button
                 key={t.key}
@@ -160,12 +160,12 @@ export default function AgencyPage() {
             ))}
           </div>
 
-          {/* 代理艺人管理 */}
+          {/* Artist Management */}
           {tab === "artists" && (
             <div className="space-y-6">
               {/* 添加艺人 */}
               <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-                <h2 className="font-semibold text-gray-800 mb-4">{ea.addArtist ?? "添加代理艺人"}</h2>
+                <h2 className="font-semibold text-gray-800 mb-4">{ea.addArtist ?? "Add Managed Artist"}</h2>
                 {artistError && <div className="bg-red-50 text-red-700 px-4 py-2 rounded-lg mb-3 text-sm">{artistError}</div>}
                 {artistSuccess && <div className="bg-green-50 text-green-700 px-4 py-2 rounded-lg mb-3 text-sm">{artistSuccess}</div>}
                 <div className="flex gap-3">
@@ -173,17 +173,17 @@ export default function AgencyPage() {
                     value={artistEmail}
                     onChange={e => setArtistEmail(e.target.value)}
                     className="flex-1 border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-purple-500"
-                    placeholder={ea.artistEmailPlaceholder ?? "输入艺人的用户ID或邮箱"}
+                    placeholder={ea.artistEmailPlaceholder ?? "Enter artist's user ID or email"}
                   />
                   <button
                     onClick={addArtist}
                     disabled={addLoading}
                     className="px-6 py-2.5 bg-purple-600 text-white rounded-lg font-medium hover:bg-purple-700 disabled:opacity-50"
                   >
-                    {addLoading ? (ea.adding ?? "添加中...") : (ea.addBtn ?? "添加艺人")}
+                    {addLoading ? (ea.adding ?? "Adding...") : (ea.addBtn ?? "Add Artist")}
                   </button>
                 </div>
-                <p className="text-xs text-gray-400 mt-2">{ea.artistNote ?? "添加前请确保艺人已在平台注册并完成肖像上传"}</p>
+                <p className="text-xs text-gray-400 mt-2">{ea.artistNote ?? "Make sure the artist has registered and uploaded portraits on the platform"}</p>
               </div>
 
               {/* 艺人列表 */}
@@ -191,7 +191,7 @@ export default function AgencyPage() {
                 {loading ? (
                   <div className="text-center py-12 text-gray-400">Loading...</div>
                 ) : artists.length === 0 ? (
-                  <div className="text-center py-12 text-gray-400 bg-white rounded-xl">{ea.noArtists ?? "暂无代理艺人"}</div>
+                  <div className="text-center py-12 text-gray-400 bg-white rounded-xl">{ea.noArtists ?? "No managed artists yet"}</div>
                 ) : (
                   artists.map(relation => (
                     <div key={relation.id} className="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
@@ -200,19 +200,19 @@ export default function AgencyPage() {
                           <h3 className="font-semibold text-gray-900">{relation.artist?.displayName}</h3>
                           <p className="text-sm text-gray-500">{relation.artist?.email}</p>
                           <p className="text-xs text-gray-400 mt-1">
-                            {ea.proxyStatus ?? "代理状态"}：{relation.proxyStatus}
+                            {ea.proxyStatus ?? "Proxy Status"}：{relation.proxyStatus}
                           </p>
                         </div>
                         <button
                           onClick={() => removeArtist(relation.id)}
                           className="text-red-500 text-sm font-medium hover:underline"
                         >
-                          {ea.remove ?? "移除"}
+                          {ea.remove ?? "Remove"}
                         </button>
                       </div>
                       {relation.portraits?.length > 0 && (
                         <div className="mt-3">
-                          <p className="text-xs text-gray-500 mb-2">{ea.portraitsCount ?? "已上传肖像"}（{relation.portraits.length}）：</p>
+                          <p className="text-xs text-gray-500 mb-2">{ea.portraitsCount ?? "Uploaded Portraits"}（{relation.portraits.length}）：</p>
                           <div className="flex gap-2 flex-wrap">
                             {relation.portraits.map((p: any) => (
                               <div key={p.id} className="flex items-center gap-2 bg-gray-50 rounded-lg px-3 py-1.5">
@@ -234,36 +234,36 @@ export default function AgencyPage() {
             </div>
           )}
 
-          {/* 批量授权 */}
+          {/* Batch Authorization */}
           {tab === "batch" && (
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 space-y-5">
-              <h2 className="font-semibold text-gray-800">{ea.batchTitle ?? "批量发起授权申请"}</h2>
+              <h2 className="font-semibold text-gray-800">{ea.batchTitle ?? "Submit Batch Authorization"}</h2>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">{ea.enterpriseIdLabel ?? "申请企业ID *"}</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{ea.enterpriseIdLabel ?? "Target Enterprise ID *"}</label>
                 <input
                   value={targetEnterpriseId}
                   onChange={e => setTargetEnterpriseId(e.target.value)}
                   className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-purple-500"
-                  placeholder={ea.enterpriseIdPlaceholder ?? "输入目标企业的 Enterprise ID"}
+                  placeholder={ea.enterpriseIdPlaceholder ?? "Enter target enterprise's Enterprise ID"}
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">{ea.useCaseLabel ?? "用途说明 *"}</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{ea.useCaseLabel ?? "Usage Description *"}</label>
                 <textarea
                   value={purpose}
                   onChange={e => setPurpose(e.target.value)}
                   rows={3}
                   className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-purple-500"
-                  placeholder={ea.useCasePlaceholder ?? "批量授权的用途说明"}
+                  placeholder={ea.useCasePlaceholder ?? "Usage description for batch authorization"}
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">{ea.selectPortraits ?? "选择肖像"}（{selectedPortraitIds.length} {ea.selectedCount ?? "个已选"}）</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">{ea.selectPortraits ?? "Select Portraits"}（{selectedPortraitIds.length} {ea.selectedCount ?? "selected"}）</label>
                 {allPortraits.length === 0 ? (
-                  <div className="text-center py-8 text-gray-400 bg-gray-50 rounded-xl">{ea.addArtistFirst ?? "请先添加代理艺人"}</div>
+                  <div className="text-center py-8 text-gray-400 bg-gray-50 rounded-xl">{ea.addArtistFirst ?? "Please add managed artists first"}</div>
                 ) : (
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                     {allPortraits.map((p: any) => (
@@ -295,7 +295,7 @@ export default function AgencyPage() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">{ea.usageDurationLabel ?? "授权期限（天）"}</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">{ea.usageDurationLabel ?? "Authorization Duration (days)"}</label>
                   <input
                     type="number"
                     value={usageDuration}
@@ -305,7 +305,7 @@ export default function AgencyPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">{ea.proposedFeeLabel ?? "申请费用（CNY）"}</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">{ea.proposedFeeLabel ?? "Proposed Fee (CNY)"}</label>
                   <input
                     type="number"
                     value={proposedFee}
@@ -322,12 +322,12 @@ export default function AgencyPage() {
                 disabled={batchLoading || selectedPortraitIds.length === 0}
                 className="w-full bg-purple-600 text-white font-semibold py-3 rounded-xl hover:bg-purple-700 disabled:opacity-50 transition-colors"
               >
-                {batchLoading ? (ea.applying ?? "批量申请中...") : `${ea.applyBtn ?? "发起申请"}（${selectedPortraitIds.length} ${ea.selectedCount ?? "个肖像"}）`}
+                {batchLoading ? (ea.applying ?? "Submitting...") : `${ea.applyBtn ?? "Submit Application"}（${selectedPortraitIds.length} ${ea.selectedCount ?? "portraits"}）`}
               </button>
 
               {batchResult.length > 0 && (
                 <div className="mt-4">
-                  <h3 className="font-medium text-gray-800 mb-2">{ea.batchResultTitle ?? "批量申请结果"}</h3>
+                  <h3 className="font-medium text-gray-800 mb-2">{ea.batchResultTitle ?? "Batch Application Results"}</h3>
                   <div className="space-y-1">
                     {batchResult.map((r: any) => (
                       <div key={r.portraitId} className={`text-sm px-3 py-1.5 rounded ${r.error ? "bg-red-50 text-red-700" : "bg-green-50 text-green-700"}`}>

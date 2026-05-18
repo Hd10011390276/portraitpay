@@ -15,6 +15,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { verifyApiKey, checkRateLimit, isValidApiKeyFormat } from "@/lib/api-keys";
 import { createPaymentIntent } from "@/lib/payments/stripe";
+import { PLATFORM_FEE_RATE } from "@/lib/revenue/types";
 export const dynamic = "force-dynamic";
 
 
@@ -150,7 +151,6 @@ export async function POST(request: NextRequest) {
             stripeCustomerId: true,
           },
         },
-        portraitSettings: true,
       },
     });
 
@@ -168,42 +168,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check if licensing is allowed
-    const settings = portrait.portraitSettings;
-    if (settings && !settings.allowLicensing) {
-      return NextResponse.json(
-        { success: false, error: "Portrait owner has disabled licensing" },
-        { status: 403 }
-      );
-    }
-
-    // Check prohibited content
-    if (settings?.prohibitedContent && settings.prohibitedContent.length > 0) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: "Portrait has prohibited content restrictions",
-          prohibitedContent: settings.prohibitedContent,
-        },
-        { status: 400 }
-      );
-    }
-
-    // Check allowed scopes
-    if (settings?.allowedScopes && settings.allowedScopes.length > 0) {
-      const scopeIntersection = usageScope.filter((s) => settings.allowedScopes.includes(s));
-      if (scopeIntersection.length === 0) {
-        return NextResponse.json(
-          {
-            success: false,
-            error: "Requested usage scope is not allowed for this portrait",
-            allowedScopes: settings.allowedScopes,
-          },
-          { status: 400 }
-        );
-      }
-    }
-
+    // Check if licensing is allowed (default to true if no settings)
+    // Note: portraitSettings field removed from Portrait model — licensing always allowed
     // Cannot license your own portrait
     if (portrait.ownerId === user.id) {
       return NextResponse.json(
@@ -212,8 +178,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Calculate license fee
-    const baseFee = settings?.defaultLicenseFee?.toNumber() ?? 100; // Default 100 CNY/USD
+    // Calculate license fee (default 100 if no custom fee set)
+    const baseFee = 100; // Default 100 CNY/USD
     const scopeMultiplier = usageScope.length * 0.3 + 1; // 30% extra per scope
     const exclusivityMultiplier = exclusivity ? 2.0 : 1.0;
     const durationMultiplier = durationDays / 365;
@@ -226,9 +192,8 @@ export async function POST(request: NextRequest) {
     endDate.setDate(endDate.getDate() + durationDays);
 
     // Create authorization record (PENDING until payment succeeds)
-    const PLATFORM_FEE_PERCENT = 0.01;
-    const platformFee = Math.round(totalFee * PLATFORM_FEE_PERCENT * 100) / 100;
-    const actorPayment = Math.round((totalFee - platformFee) * 100) / 100;
+    const platformFee = Math.round(totalFee * PLATFORM_FEE_RATE * 100) / 100;
+    const ownerRevenue = Math.round((totalFee - platformFee) * 100) / 100;
 
     const authorization = await prisma.authorization.create({
       data: {
@@ -244,7 +209,7 @@ export async function POST(request: NextRequest) {
         licenseFee: totalFee,
         currency: currency.toUpperCase(),
         platformFee,
-        actorPayment,
+        actorPayment: ownerRevenue,
         terms: JSON.stringify({
           usageScope,
           exclusivity,
@@ -290,7 +255,7 @@ export async function POST(request: NextRequest) {
         licenseFee: totalFee,
         currency: currency.toUpperCase(),
         platformFee,
-        actorPayment,
+        ownerRevenue,
         payment: {
           clientSecret,
           paymentIntentId,

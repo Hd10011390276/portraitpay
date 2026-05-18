@@ -149,7 +149,7 @@ export default function AdminEnterprisePage() {
                         <p>{tc.unifiedCreditCode}：<span className="font-mono text-gray-800">{ent.unifiedCreditCode}</span></p>
                         <p>{tc.legalPerson}：{ent.legalPersonName}</p>
                         <p>{tc.registeredCapital}：{ent.registeredCapital ?? tc.unknown}</p>
-                        <p>{tc.establishedDate}：{ent.establishedDate ? new Date(ent.establishedDate).toLocaleDateString(locale === "zh-CN" || locale === "zh-Hant" ? "zh-CN" : "en-US") : tc.unknown}</p>
+                        <p>{tc.establishedDate}：{ent.establishedDate ? new Date(ent.establishedDate).toLocaleDateString(false ? "zh-CN" : "en-US") : tc.unknown}</p>
                         <p>{tc.businessTerm}：{ent.businessTerm ?? tc.longTerm}</p>
                         <p>{tc.contactPerson}：{ent.contactName} ({ent.contactPhone})</p>
                         <p>{tc.email}：{ent.contactEmail}</p>

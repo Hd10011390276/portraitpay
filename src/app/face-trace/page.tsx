@@ -129,7 +129,7 @@ export default function FaceTracePage() {
               <span className="px-1.5 py-0.5 text-xs font-medium rounded-full bg-gray-100 text-gray-500">{t.faceTrace.productionReady}</span>
             </h3>
             <p className="text-xs text-gray-500 leading-relaxed">
-              {t.faceTrace.replaceDesc.split("{code}").map((part, i) =>
+              {t.faceTrace.replaceDesc.split("{code}").map((part: string, i: number) =>
                 i === 0 ? part : <code key="code" className="bg-gray-100 px-1 rounded text-xs">celebrityDb.ts</code>
               )}
             </p>

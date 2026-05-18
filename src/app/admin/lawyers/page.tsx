@@ -174,7 +174,7 @@ export default function AdminLawyersPage() {
   }
 
   function formatDate(d: string) {
-    return new Date(d).toLocaleString(locale === "zh-CN" || locale === "zh-Hant" ? "zh-CN" : "en-US", {
+    return new Date(d).toLocaleString(false ? "zh-CN" : "en-US", {
       year: "numeric",
       month: "2-digit",
       day: "2-digit",

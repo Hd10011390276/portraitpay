@@ -124,7 +124,7 @@ async function signRequest(opts: {
 async function sha256Base64(data: string): Promise<string> {
   const buf = new TextEncoder().encode(data);
   const hash = await crypto.subtle.digest("SHA-256", buf);
-  return btoa(String.fromCharCode(...new Uint8Array(hash)));
+  return btoa(String.fromCharCode(...Array.from(new Uint8Array(hash))));
 }
 
 async function hmacSha1Base64(key: string, data: string): Promise<string> {
@@ -134,7 +134,7 @@ async function hmacSha1Base64(key: string, data: string): Promise<string> {
     "raw", keyBuf, { name: "HMAC", hash: "SHA-1" }, false, ["sign"]
   );
   const signature = await crypto.subtle.sign("HMAC", cryptoKey, dataBuf);
-  return btoa(String.fromCharCode(...new Uint8Array(signature)));
+  return btoa(String.fromCharCode(...Array.from(new Uint8Array(signature))));
 }
 
 // ============================================================
@@ -252,16 +252,16 @@ async function tencentSign(opts: {
   const kService = await hmacSha256(kDate, service);
   const kSigning = await hmacSha256(kService, "tc3_request");
   const signature = await hmacSha256(kSigning, stringToSign);
-  return btoa(String.fromCharCode(...new Uint8Array(signature)));
+  return btoa(String.fromCharCode(...Array.from(new Uint8Array(signature))));
 }
 
-async function hmacSha256(key: string, data: string): Promise<Uint8Array> {
-  const keyBuf = new TextEncoder().encode(key);
+async function hmacSha256(key: string | Uint8Array, data: string): Promise<Uint8Array> {
+  const keyBuf = typeof key === "string" ? new TextEncoder().encode(key) : key;
   const dataBuf = new TextEncoder().encode(data);
   const cryptoKey = await crypto.subtle.importKey(
-    "raw", keyBuf, { name: "HMAC", hash: "SHA-256" }, false, ["sign"]
+    "raw", keyBuf as BufferSource, { name: "HMAC", hash: "SHA-256" }, false, ["sign"]
   );
-  return new Uint8Array(await crypto.subtle.sign("HMAC", cryptoKey, dataBuf));
+  return new Uint8Array(await crypto.subtle.sign("HMAC", cryptoKey, dataBuf as BufferSource));
 }
 
 // ============================================================

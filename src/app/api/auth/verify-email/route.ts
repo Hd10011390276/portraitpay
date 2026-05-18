@@ -53,7 +53,7 @@ export async function POST(req: NextRequest) {
 
     if (!user.verificationExpires || user.verificationExpires < new Date()) {
       return NextResponse.json(
-        { success: false, error: "验证码已过期，请重新发送验证邮件" },
+        { success: false, error: "Verification code expired. Please request a new verification email." },
         { status: 400 }
       );
     }
@@ -71,7 +71,7 @@ export async function POST(req: NextRequest) {
     console.log(`[VERIFY_EMAIL] Email verified for user: ${user.id}`);
 
     // Send welcome email after successful verification (non-blocking)
-    sendWelcomeEmail({ email: user.email, name: user.name ?? user.email.split("@")[0] }).catch((err) => {
+    sendWelcomeEmail({ email: user.email, name: user.email.split("@")[0] }).catch((err) => {
       console.error("[VERIFY_EMAIL] Welcome email failed:", err instanceof Error ? err.message : String(err));
     });
 
@@ -86,7 +86,7 @@ export async function POST(req: NextRequest) {
     }
     console.error("[VERIFY_EMAIL] Unexpected error:", err);
     return NextResponse.json(
-      { success: false, error: "服务器错误，请稍后重试" },
+      { success: false, error: "Internal server error." },
       { status: 500 }
     );
   }

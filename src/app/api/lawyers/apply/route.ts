@@ -11,12 +11,12 @@ export const dynamic = "force-dynamic";
 
 const LawyerApplySchema = z.object({
   lawyerType: z.enum(["firm", "personal"]).default("firm"),
-  companyName: z.string().min(1, "公司名称不能为空").max(200),
-  country: z.string().min(1, "请选择地区").max(100),
-  contactName: z.string().min(1, "联系人不能为空").max(100),
-  contactEmail: z.string().email("请输入有效的邮箱地址"),
-  contactPhone: z.string().min(1, "联系电话不能为空").max(30),
-  licenseUrl: z.string().url("请输入有效的资质证明链接").optional().or(z.literal("")),
+  companyName: z.string().min(1, "Company name is required").max(200),
+  country: z.string().min(1, "Please select a region").max(100),
+  contactName: z.string().min(1, "Contact name is required").max(100),
+  contactEmail: z.string().email("Invalid email format"),
+  contactPhone: z.string().min(1, "Phone number is required").max(30),
+  licenseUrl: z.string().url("Invalid license URL format").optional().or(z.literal("")),
 }).transform((data) => ({
   lawyerType: data.lawyerType,
   companyName: data.companyName,
@@ -32,6 +32,14 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const data = LawyerApplySchema.parse(body);
 
+    const session = await getSessionFromRequest(req);
+    if (!session?.userId) {
+      return NextResponse.json(
+        { success: false, error: "Authentication required to apply as lawyer" },
+        { status: 401 }
+      );
+    }
+
     // Check for duplicate pending applications
     const existing = await prisma.lawyerRegistration.findFirst({
       where: {
@@ -41,7 +49,7 @@ export async function POST(req: NextRequest) {
     });
     if (existing) {
       return NextResponse.json(
-        { success: false, error: "该邮箱已有待审核的申请，请等待审核结果" },
+        { success: false, error: "An application is already pending for this email" },
         { status: 409 }
       );
     }
@@ -56,6 +64,7 @@ export async function POST(req: NextRequest) {
         contactPhone: data.contactPhone,
         licenseUrl: data.licenseUrl || null,
         status: "PENDING",
+        userId: session.userId,
       },
     });
 

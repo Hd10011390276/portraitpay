@@ -52,7 +52,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
       isEarlyContributor: portrait.certificateNumber != null && portrait.certificateNumber <= 1000,
     });
 
-    return new Response(pngBuffer, {
+    return new Response(new Uint8Array(pngBuffer), {
       headers: {
         "Content-Type": "image/png",
         "Content-Disposition": `attachment; filename="portrait-certificate-${id}.png"`,

@@ -173,13 +173,12 @@ export async function POST(request: NextRequest, context: RouteContext) {
 
     // Assign sequential certificate number atomically
     const counter = await prisma.$transaction(async (tx) => {
-      const updated = await tx.$executeRaw`
-        UPDATE "CertificateCounter"
-        SET "nextNumber" = "nextNumber" + 1
-        WHERE id = 'global'
-        RETURNING "nextNumber"
-      `;
-      return updated[0]?.nextNumber ?? null;
+      // Use $queryRaw to get the RETURNING result as typed rows
+      const rows = await tx.$queryRaw<{ nextNumber: bigint }[]>`SELECT "nextNumber" FROM "CertificateCounter" WHERE id = 'global' FOR UPDATE`;
+      if (!rows || rows.length === 0) return null;
+      // Increment atomically
+      await tx.$executeRaw`UPDATE "CertificateCounter" SET "nextNumber" = "nextNumber" + 1 WHERE id = 'global'`;
+      return rows[0].nextNumber;
     });
 
     if (!counter) {
@@ -189,9 +188,9 @@ export async function POST(request: NextRequest, context: RouteContext) {
       );
     }
 
-    const certificateNumber = counter - 1;
+    const certificateNumber = counter - BigInt(1);
     const certNo = `CERT-${new Date().getFullYear()}-${String(certificateNumber).padStart(5, "0")}`;
-    const isEarlyContributor = certificateNumber <= 1000;
+    const isEarlyContributor = certificateNumber <= BigInt(1000);
 
     const updated = await prisma.portrait.update({
       where: { id },
@@ -205,7 +204,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
         blockchainNetwork: network,
         certifiedAt: certificationResult.certifiedAt,
         status: "ACTIVE",
-        certificateNumber,
+        certificateNumber: Number(certificateNumber),
       },
     });
 
@@ -229,8 +228,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
             idCardName: ownerName,
             idCardType,
             idCardNumberMasked: maskedNumber,
-            portraitImageHash,
-            idCardFrontHash,
+            idCardHash: idCardFrontHash,
             blockchainTxHash: certificationResult.txHash,
             network,
             certifiedAt: certificationResult.certifiedAt,

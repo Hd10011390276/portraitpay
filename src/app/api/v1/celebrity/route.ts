@@ -9,11 +9,11 @@ import { getSessionFromRequest } from "@/lib/auth/session";
 export const dynamic = "force-dynamic";
 
 const CelebrityIntakeSchema = z.object({
-  name: z.string().min(1, "姓名为必填项").max(100),
-  email: z.string().email("邮箱格式不正确"),
+  name: z.string().min(1, "Full name is required").max(100),
+  email: z.string().email("Invalid email format"),
   contactPhone: z.string().max(30).optional(),
-  stageName: z.string().min(1, "艺名为必填项").max(200),
-  category: z.string().min(1, "请选择艺人类型").max(50),
+  stageName: z.string().min(1, "Stage name is required").max(200),
+  category: z.string().min(1, "Please select a category").max(50),
   socialMedia: z.string().max(1000).optional(),
   agency: z.string().max(200).optional(),
   message: z.string().max(5000).optional(),
@@ -39,7 +39,7 @@ export async function POST(req: NextRequest) {
     });
     if (existing) {
       return NextResponse.json(
-        { success: false, error: "该邮箱已有待审核的申请，请等待审核结果" },
+        { success: false, error: "An application is already pending for this email" },
         { status: 409 }
       );
     }
@@ -62,16 +62,16 @@ export async function POST(req: NextRequest) {
       success: true,
       data: {
         id: intake.id,
-        message: "申请已提交，我们会在 3-5 个工作日内完成审核",
+        message: "Application submitted. We will review within 3-5 business days",
       },
     });
   } catch (err) {
     if (err instanceof z.ZodError) {
-      const firstError = err.issues?.[0]?.message ?? "数据格式不正确";
+      const firstError = err.issues?.[0]?.message ?? "Invalid data format";
       return NextResponse.json({ success: false, error: firstError }, { status: 400 });
     }
     console.error("[/api/v1/celebrity POST]", err);
-    return NextResponse.json({ success: false, error: "服务器内部错误" }, { status: 500 });
+    return NextResponse.json({ success: false, error: "Internal server error" }, { status: 500 });
   }
 }
 
@@ -90,11 +90,11 @@ export async function GET(req: NextRequest) {
     });
 
     if (!intake) {
-      return NextResponse.json({ success: false, error: "未找到申请记录" }, { status: 404 });
+      return NextResponse.json({ success: false, error: "Application not found" }, { status: 404 });
     }
 
     return NextResponse.json({ success: true, data: intake });
   } catch (err) {
-    return NextResponse.json({ success: false, error: "查询失败" }, { status: 500 });
+    return NextResponse.json({ success: false, error: "Query failed" }, { status: 500 });
   }
 }

@@ -318,7 +318,7 @@ export default function AdminApiKeysPage() {
                   </tr>
                 ) : (
                   keys.map((key) => {
-                    const st = STATUS_MAP[key.status] ?? STATUS_MAP["ACTIVE"];
+                    const st = STATUS_MAP[key.status as keyof typeof STATUS_MAP] ?? STATUS_MAP["ACTIVE"];
                     return (
                       <tr key={key.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition">
                         <td className="px-4 py-3">
@@ -552,7 +552,7 @@ export default function AdminApiKeysPage() {
                 <div>
                   <p className="text-xs text-gray-400 mb-1">{tk.status || "Status"}</p>
                   {(() => {
-                    const st = STATUS_MAP[showDetail.status] ?? STATUS_MAP["ACTIVE"];
+                    const st = STATUS_MAP[showDetail.status as keyof typeof STATUS_MAP] ?? STATUS_MAP["ACTIVE"];
                     return <span className={`text-xs px-2.5 py-1 rounded-full border font-medium ${st.bg} ${st.color}`}>{st.label}</span>;
                   })()}
                 </div>

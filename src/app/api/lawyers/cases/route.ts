@@ -15,7 +15,7 @@ export async function GET(req: NextRequest) {
   if (!session?.userId) return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
 
   const lawyer = await prisma.lawyerRegistration.findFirst({
-    where: { contactEmail: session.email, status: "APPROVED" },
+    where: { userId: session.userId, status: "APPROVED" },
   });
   if (!lawyer) return NextResponse.json({ success: false, error: "Not an approved lawyer" }, { status: 403 });
 

@@ -88,7 +88,7 @@ export default function PortraitDetailPage() {
 
   useEffect(() => {
     fetch(`/api/portraits/${id}`)
-      .then((r) => r.json())
+      .then((r) => { if (!r.ok) throw new Error(String(r.status)); return r.json(); })
       .then((j) => {
         if (j.success) setPortrait(j.data);
         else router.push("/portraits");
@@ -98,13 +98,13 @@ export default function PortraitDetailPage() {
 
     // Load three-view links
     fetch(`/api/portraits/${id}/three-view`)
-      .then((r) => r.json())
+      .then((r) => { if (!r.ok) throw new Error(String(r.status)); return r.json(); })
       .then((j) => { if (j.success) setThreeView(j.data); })
       .catch(() => {});
 
     // Load current user
     fetch("/api/auth/me")
-      .then((r) => r.json())
+      .then((r) => { if (!r.ok) throw new Error(String(r.status)); return r.json(); })
       .then((j) => { if (j.success) setCurrentUserId(j.data?.user?.userId ?? null); })
       .catch(() => {});
   }, [id, router]);
@@ -202,9 +202,9 @@ export default function PortraitDetailPage() {
         const errMsg = json.error ?? (json.code ? `[${json.code}]` : "Unknown error");
         // Map API error codes to user-friendly messages
         if (errMsg.includes("Portrait not found")) {
-          setCertifyMsg("肖像不存在或已被删除，请在作品列表重新选择");
+          setCertifyMsg("Portrait not found or deleted. Please select again from the portraits list.");
         } else if (errMsg.includes("face") || errMsg.includes("人脸")) {
-          setCertifyMsg("人脸核验未通过，请上传清晰的肖像照片和身份证照片");
+          setCertifyMsg("Face verification failed. Please upload a clear portrait photo and ID photo.");
         } else {
           setCertifyMsg(`${tc.certifyFailed}${errMsg}`);
         }

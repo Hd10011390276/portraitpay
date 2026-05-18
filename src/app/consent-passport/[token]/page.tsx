@@ -48,7 +48,7 @@ export default function ConsentPassportViewPage() {
 
   useEffect(() => {
     fetch(`/api/consent-passport/${token}`)
-      .then((r) => r.json())
+      .then((r) => { if (!r.ok) throw new Error(String(r.status)); return r.json(); })
       .then((j) => {
         if (j.success) setPassport(j.data);
         else if (j.error === "Consent Passport not found") setNotFound(true);

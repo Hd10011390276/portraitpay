@@ -1,9 +1,11 @@
-import { NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
+import { NextResponse } from "next/server";
+import { PrismaClient } from "@prisma/client";
+import { getSessionFromRequest } from "@/lib/auth/session";
 export const dynamic = "force-dynamic";
 
-
 const prisma = new PrismaClient();
+
+const ADMIN_ROLES = ["SUPER_ADMIN", "ADMIN"];
 
 // Celebrity data - international celebrities for testing
 const celebrityData = [
@@ -83,7 +85,11 @@ const celebrityData = [
   { name: 'BTS', enName: 'BTS', category: 'music', country: 'KR', sourceUrl: 'https://en.wikipedia.org/wiki/BTS_(band)' },
 ];
 
-export async function POST() {
+export async function POST(req: Request) {
+  const session = await getSessionFromRequest(req as any);
+  if (!session?.userId || !ADMIN_ROLES.includes(session.role)) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
   try {
     // Create Celebrity table if not exists
     await prisma.$executeRawUnsafe(`
@@ -122,13 +128,17 @@ export async function POST() {
   } catch (error) {
     console.error('Seed error:', error);
     return NextResponse.json(
-      { error: 'Failed to seed celebrity data', details: String(error) },
+      { error: "Failed to seed celebrity data", details: String(error) },
       { status: 500 }
     );
   }
 }
 
-export async function GET() {
+export async function GET(req: Request) {
+  const session = await getSessionFromRequest(req as any);
+  if (!session?.userId || !ADMIN_ROLES.includes(session.role)) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
   const count = await prisma.celebrity.count();
   return NextResponse.json({ count });
 }

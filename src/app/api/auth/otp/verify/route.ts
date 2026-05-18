@@ -79,7 +79,7 @@ export async function POST(req: NextRequest) {
   } catch (error) {
     console.error("[OTP_VERIFY_ERROR]", error);
     return NextResponse.json(
-      { success: false, message: "服务器错误，请稍后重试" },
+      { success: false, message: "Server error. Please try again later." },
       { status: 500 }
     );
   }

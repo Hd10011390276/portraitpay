@@ -75,7 +75,7 @@ export function DashboardShell({ children, title, subtitle, action, forceLight }
     <div className={`min-h-screen ${forceLight ? "bg-white" : theme === "dark" ? "bg-gray-950" : "bg-gray-50"}`}>
       {/* Sidebar - hidden on mobile, shown on desktop */}
       <div className="hidden sm:block fixed inset-y-0 left-0 z-40">
-        <Sidebar />
+        <Sidebar userRole={user?.role} />
       </div>
 
       {/* Mobile sidebar overlay */}
@@ -89,7 +89,7 @@ export function DashboardShell({ children, title, subtitle, action, forceLight }
       {/* Mobile sidebar drawer */}
       {mobileMenuOpen && (
         <div className="fixed inset-y-0 left-0 z-40 sm:hidden">
-          <Sidebar onClose={() => setMobileMenuOpen(false)} />
+          <Sidebar onClose={() => setMobileMenuOpen(false)} userRole={user?.role} />
         </div>
       )}
 

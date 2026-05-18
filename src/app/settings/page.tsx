@@ -26,6 +26,13 @@ function SettingsContent() {
   const [prohibitedContent, setProhibitedContent] = useState<string[]>([]);
   const [defaultLicenseFee, setDefaultLicenseFee] = useState(0);
   const [defaultTerritorialScope, setDefaultTerritorialScope] = useState("global");
+  // Password change state
+  const [changingPassword, setChangingPassword] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [passwordError, setPasswordError] = useState("");
+  const [passwordSuccess, setPasswordSuccess] = useState(false);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -114,6 +121,40 @@ function SettingsContent() {
       }
     } catch {
       toast({ type: "error", title: "Failed to delete account" });
+    }
+  };
+
+  const handleChangePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setPasswordError("");
+    if (newPassword.length < 8) { setPasswordError("Password must be at least 8 characters"); return; }
+    if (!/[A-Z]/.test(newPassword)) { setPasswordError("Password must contain at least one uppercase letter"); return; }
+    if (!/[a-z]/.test(newPassword)) { setPasswordError("Password must contain at least one lowercase letter"); return; }
+    if (!/[0-9]/.test(newPassword)) { setPasswordError("Password must contain at least one number"); return; }
+    if (newPassword !== confirmPassword) { setPasswordError("Passwords do not match"); return; }
+
+    setChangingPassword(true);
+    try {
+      const res = await fetch("/api/auth/change-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ currentPassword, newPassword }),
+      });
+      const json = await res.json();
+      if (json.success) {
+        setPasswordSuccess(true);
+        setCurrentPassword("");
+        setNewPassword("");
+        setConfirmPassword("");
+        toast({ type: "success", title: t.settings.passwordChanged });
+      } else {
+        setPasswordError(json.error || "Failed to change password");
+      }
+    } catch {
+      setPasswordError("Network error, please try again");
+    } finally {
+      setChangingPassword(false);
     }
   };
 
@@ -208,6 +249,49 @@ function SettingsContent() {
                 />
               </div>
             </div>
+          </div>
+
+          {/* Password Change */}
+          <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 p-6">
+            <h2 className="text-base font-semibold text-gray-900 dark:text-white mb-5">{t.settings.changePassword || "Change Password"}</h2>
+            {passwordSuccess ? (
+              <div className="flex items-center gap-3 p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-xl">
+                <span className="text-green-600 dark:text-green-400 text-xl">✅</span>
+                <p className="text-sm text-green-700 dark:text-green-300">{t.settings.passwordChangedSuccess || "Password changed successfully!"}</p>
+              </div>
+            ) : (
+              <form onSubmit={handleChangePassword} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">{t.settings.currentPassword || "Current Password"}</label>
+                  <input type="password" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)}
+                    autoComplete="current-password"
+                    className="w-full px-4 py-2.5 border border-gray-200 dark:border-gray-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white dark:bg-gray-900 text-gray-900 dark:text-white" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">{t.settings.newPassword || "New Password"}</label>
+                  <input type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)}
+                    placeholder={t.settings.newPasswordHint || "Min 8 chars, uppercase, lowercase, number"}
+                    autoComplete="new-password"
+                    className="w-full px-4 py-2.5 border border-gray-200 dark:border-gray-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white dark:bg-gray-900 text-gray-900 dark:text-white" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">{t.settings.confirmNewPassword || "Confirm New Password"}</label>
+                  <input type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)}
+                    placeholder={t.settings.confirmPasswordHint || "Repeat new password"}
+                    autoComplete="new-password"
+                    className="w-full px-4 py-2.5 border border-gray-200 dark:border-gray-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white dark:bg-gray-900 text-gray-900 dark:text-white" />
+                </div>
+                {passwordError && (
+                  <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl text-sm text-red-600 dark:text-red-400">{passwordError}</div>
+                )}
+                <div className="flex justify-end">
+                  <button type="submit" disabled={changingPassword}
+                    className="px-5 py-2 text-sm font-medium bg-purple-600 text-white rounded-xl hover:bg-purple-700 disabled:opacity-50 transition">
+                    {changingPassword ? (t.settings.changing || "Changing...") : (t.settings.changePasswordBtn || "Change Password")}
+                  </button>
+                </div>
+              </form>
+            )}
           </div>
 
           {/* Talent Media Kit — only for TALENT role */}

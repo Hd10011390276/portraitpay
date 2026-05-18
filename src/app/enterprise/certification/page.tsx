@@ -1,8 +1,8 @@
 ﻿"use client";
 /**
- * 企业认证页面
+ * Enterprise Certification Page
  * /enterprise/certification
- * 营业执照 + 联系人信息提交 + 支付认证费用
+ * Business license + contact info + certification fee payment
  */
 import { useState } from "react";
 import Link from "next/link";
@@ -14,22 +14,22 @@ import ThemeToggle from "@/components/ThemeToggle";
 
 function createSchema(t: any) {
   return z.object({
-    companyName: z.string().min(2, t.companyNameMin2 || "公司名称至少2个字符"),
-    unifiedCreditCode: z.string().length(18, t.unifiedCreditCodeLen18 || "统一社会信用代码为18位"),
-    legalPersonName: z.string().min(2, t.legalPersonNameMin2 || "请输入法人姓名"),
-    legalPersonIdCard: z.string().length(18, t.legalPersonIdCardLen18 || "身份证号为18位"),
+    companyName: z.string().min(2, t.companyNameMin2 || "Company name must be at least 2 characters"),
+    unifiedCreditCode: z.string().length(18, t.unifiedCreditCodeLen18 || "Unified social credit code must be 18 digits"),
+    legalPersonName: z.string().min(2, t.legalPersonNameMin2 || "Please enter the legal representative name"),
+    legalPersonIdCard: z.string().length(18, t.legalPersonIdCardLen18 || "ID card number must be 18 digits"),
     registeredCapital: z.string().optional(),
     establishedDate: z.string().optional(),
     businessTerm: z.string().optional(),
     businessScope: z.string().optional(),
-    licenseImageUrl: z.string().url(t.uploadLicense || "请上传营业执照"),
-    legalPersonIdCardFrontUrl: z.string().url(t.uploadIdCardFront || "请上传法人身份证正面").optional(),
-    legalPersonIdCardBackUrl: z.string().url(t.uploadIdCardBack || "请上传法人身份证背面").optional(),
-    contactName: z.string().min(2, t.enterContactName || "请输入联系人姓名"),
-    contactPhone: z.string().min(11, t.phoneFormatInvalid || "手机号格式不正确"),
-    contactEmail: z.string().email(t.emailFormatInvalid || "邮箱格式不正确"),
+    licenseImageUrl: z.string().url(t.uploadLicense || "Please upload business license"),
+    legalPersonIdCardFrontUrl: z.string().url(t.uploadIdCardFront || "Please upload ID card front").optional(),
+    legalPersonIdCardBackUrl: z.string().url(t.uploadIdCardBack || "Please upload ID card back").optional(),
+    contactName: z.string().min(2, t.enterContactName || "Please enter contact name"),
+    contactPhone: z.string().min(11, t.phoneFormatInvalid || "Invalid phone number format"),
+    contactEmail: z.string().email(t.emailFormatInvalid || "Invalid email format"),
     isAgency: z.boolean().optional(),
-    agencyLicenseUrl: z.string().url(t.uploadAgencyLicense || "请上传经纪许可证").optional(),
+    agencyLicenseUrl: z.string().url(t.uploadAgencyLicense || "Please upload agency license").optional(),
   });
 }
 
@@ -245,7 +245,7 @@ export default function EnterpriseCertificationPage() {
               </div>
             </div>
 
-            {/* 公司基本信息 */}
+            {/* Basic Company Info */}
             <section>
               <h2 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
                 <span className="w-6 h-6 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center text-sm font-bold">1</span>
@@ -291,7 +291,7 @@ export default function EnterpriseCertificationPage() {
               </div>
             </section>
 
-            {/* 证照上传 */}
+            {/* Document Upload */}
             <section>
               <h2 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
                 <span className="w-6 h-6 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center text-sm font-bold">2</span>
@@ -317,7 +317,7 @@ export default function EnterpriseCertificationPage() {
               </div>
             </section>
 
-            {/* 联系信息 */}
+            {/* Contact Info */}
             <section>
               <h2 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
                 <span className="w-6 h-6 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center text-sm font-bold">3</span>
@@ -342,7 +342,7 @@ export default function EnterpriseCertificationPage() {
               </div>
             </section>
 
-            {/* 经纪公司 */}
+            {/* Agency Company */}
             <section className="bg-purple-50 rounded-xl p-4">
               <label className="flex items-center gap-3 cursor-pointer">
                 <input type="checkbox" {...register("isAgency")} className="w-5 h-5 text-purple-600 rounded" />

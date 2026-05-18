@@ -1,5 +1,23 @@
 # PortraitPay QA & Bug Fixing Skill
 
+## CRITICAL: Browser Verification Required
+
+**A task is NOT complete until a real browser has been opened and inspected.**
+
+Do not say "verified" unless:
+- Playwright or similar automation was run against the actual local URL, AND
+- The page rendered visibly with no crash/blank/error, AND
+- Console had no errors.
+
+Build passing, TypeScript passing, and curl returning 200 are all NOT sufficient alone.
+
+For every fix, you MUST report:
+1. http://localhost:3000/ - page loads, no crash, no console errors
+2. The changed page URL - same checks
+3. Any new navigation links added
+
+If browser automation fails: report "Browser verification not completed" and the reason clearly.
+
 ## When to Use This Skill
 
 Use when:
@@ -173,6 +191,45 @@ When adding a new Prisma model:
 | `DATABASE_URL` | Neon PostgreSQL | All DB operations fail |
 | `AUTH_SECRET` | Session encryption | Auth fails |
 | `KYC_ALIYUN_*` | Cloud KYC | KYC uses stub mode |
+
+---
+
+## Browser Verification Is Mandatory
+
+Before any task is considered complete, run Playwright or browser automation against:
+- http://localhost:3000/ (homepage must remain stable)
+- The page changed by the task
+- Any new navigation link added by the task
+
+Verification checklist per page:
+- [ ] Page loads visibly (not blank)
+- [ ] No crash or error in the browser
+- [ ] No console errors
+- [ ] Layout matches existing visual patterns
+- [ ] Homepage has not changed unexpectedly
+
+If the dev server is not running: start it with `npm run dev` first.
+
+## Required Verification Report
+
+Every final response must include:
+
+```
+Verification:
+- Build/typecheck: PASS/FAIL
+- Browser tested:
+  - http://localhost:3000/: [status] [result]
+  - [changed page URL]: [status] [result]
+- Console errors: none / [list errors]
+- Homepage unchanged: YES/NO
+- Forbidden UI files touched: YES/NO
+```
+
+## Git Safety
+
+- Do not use `git reset --hard`
+- Do not git push unless the user explicitly asks
+- If rollback is needed: revert only the specific file causing the issue
 
 ---
 

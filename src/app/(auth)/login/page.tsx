@@ -30,7 +30,7 @@ export default function LoginPage() {
   const [otpSentTo, setOtpSentTo] = useState("");
   const [otpCode, setOtpCode] = useState("");
 
-  const isZh = locale === "zh-CN" || locale === "zh-Hant";
+  const isZh = false;
 
   const validateEmailForm = () => {
     const errs: Record<string, string> = {};
@@ -126,8 +126,11 @@ export default function LoginPage() {
       }
 
       // Redirect based on explicit login type selection (button takes precedence over DB role)
+      const destination = data.data.redirectTo;
       if (loginAs === "lawyer") {
         router.push("/lawyer/dashboard");
+      } else if (destination) {
+        router.push(destination);
       } else {
         router.push("/dashboard");
       }

@@ -1,0 +1,68 @@
+// ============================================================
+// Message — Actor ↔ Lawyer ↔ Creator Communication
+// ============================================================
+// Purpose: Enable actors, lawyers, and creators to communicate
+// within the context of a specific case or contract.
+// Status: PROPOSAL — not yet applied to schema.prisma
+
+// model Message {
+//   id        String   @id @default(cuid())
+//   createdAt DateTime @default(now())
+//   updatedAt DateTime @updatedAt
+//
+//   // Who sent the message
+//   senderId   String
+//   senderType String  // "USER" | "LAWYER" | "ADMIN"
+//   senderRole String  // e.g. "ACTOR" | "CREATOR" | "VERIFIER"
+//
+//   // Message context (mutually exclusive)
+//   caseId    String?  // links to LawyerCase (infringement case)
+//   contractId String? // links to ConsentContract
+//
+//   // Content
+//   subject   String?
+//   body      String   @db.Text
+//   isHtml    Boolean @default(false)
+//
+//   // Attachments
+//   attachments Json?  // [{ name, url, size }]
+//
+//   // Read status
+//   readAt    DateTime?
+//
+//   // Soft delete
+//   deletedAt  DateTime?
+//   deletedBy  String?
+//
+//   // Indexes
+//   @@index([senderId])
+//   @@index([caseId])
+//   @@index([contractId])
+//   @@index([createdAt])
+// }
+//
+// Relations needed:
+// - User (sender)
+// - LawyerCase? (case context)
+// - ConsentContract? (contract context)
+//
+// API routes needed:
+// - GET  /api/messages?caseId=xxx&contractId=yyy
+// - POST /api/messages
+// - PATCH /api/messages/[id]/read
+// - DELETE /api/messages/[id]
+//
+// Frontend page:
+// - /messages/ — inbox with tabs (case messages / contract messages / all)
+// - /messages/[id]/ — thread view
+//
+// Access control:
+// - Users see only their own messages
+// - Admins see all
+// - Lawyers see messages linked to their cases
+//
+// Open questions:
+// 1. Should messages be encrypted at rest?
+// 2. Should we support rich-text / Markdown?
+// 3. Do we need message reactions / threading?
+// 4. Real-time (WebSocket) or polling?
