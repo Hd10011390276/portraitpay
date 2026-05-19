@@ -5,7 +5,11 @@ const nextConfig = {
   eslint: { ignoreDuringBuilds: true },
 
   // Output standalone for Docker/Railway deployment
-  output: 'standalone',
+  output: "standalone",
+
+  // Static page pre-rendering for stability — avoid HMR blank screen on cold start
+  // All non-dynamic pages are pre-rendered so they serve immediately without compilation waiting
+  trailingSlash: false,
 
   // Image optimization
   images: {
