@@ -103,6 +103,8 @@ model User {
   dealsAsPayee     Deal[] @relation("DealPayee")
   balanceTransactions BalanceTransaction[]
 
+  voiceEmbeddings VoiceEmbedding[]
+
   @@index([walletAddress])
   @@index([kycStatus])
 }
@@ -1063,6 +1065,11 @@ model InfringementReportQuick {
   evidenceUrls     String[]
   originalImageUrl String?
 
+  // Voice similarity (for VOICE_CLONE reports)
+  voiceSimilarityScore Float?
+  voiceSimilarityRisk String?  // HIGH | MEDIUM | LOW
+  voiceComparedAt     DateTime?
+
   // Generated PDF
   reportPdfUrl String?
   generatedAt  DateTime @default(now())
@@ -1840,4 +1847,17 @@ model DigitalHumanLicense {
   @@index([licensorId])
   @@index([portraitId])
   @@index([status])
+}
+
+model VoiceEmbedding {
+  id         String   @id @default(cuid())
+  userId     String   @unique
+  embedding  Float[]  @default([])
+  duration   Float?   // seconds
+  sampleUrl  String?  // optional: URL to stored sample if needed
+  createdAt  DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }

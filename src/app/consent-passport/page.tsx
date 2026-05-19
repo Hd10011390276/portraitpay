@@ -165,6 +165,9 @@ export default function ConsentPassportPage() {
           <p className="text-gray-500 dark:text-gray-400 max-w-md mx-auto">
             Generate a verifiable record of your portrait usage consent. Share it with creators, brands, and platforms.
           </p>
+          <p className="text-gray-500 dark:text-gray-400 max-w-md mx-auto mt-2">
+            Not just for actors — anyone whose face or voice has commercial value can create a Consent Passport.
+          </p>
         </div>
 
         <form onSubmit={handleSubmit} className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 p-6 space-y-6">

@@ -22,6 +22,8 @@ const SubmitSchema = z.object({
   platformUrl: z.string().url().max(500).optional().or(z.literal("")),
   description: z.string().max(2000).optional().or(z.literal("")),
   evidenceUrls: z.array(z.string().url()).max(10).default([]),
+  voiceSimilarityScore: z.number().min(0).max(1).optional().nullable(),
+  voiceSimilarityRisk: z.string().optional().nullable(),
 });
 
 function makeReportNumber(): string {
@@ -75,6 +77,9 @@ export async function POST(req: NextRequest) {
         description: data.description || null,
         evidenceUrls: data.evidenceUrls,
         generatedAt: new Date(),
+        voiceSimilarityScore: data.voiceSimilarityScore ?? null,
+        voiceSimilarityRisk: data.voiceSimilarityRisk ?? null,
+        voiceComparedAt: data.voiceSimilarityScore != null ? new Date() : null,
       },
     });
 

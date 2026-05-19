@@ -36,6 +36,87 @@ function DashboardContent({ user }: { user: User }) {
   const [genderFilter, setGenderFilter] = useState<string>("all");
   const [roleTypeFilter, setRoleTypeFilter] = useState<string>("all");
 
+  // Voice ID state
+  const [voiceRegistered, setVoiceRegistered] = useState(false);
+  const [voiceError, setVoiceError] = useState("");
+  const [voiceMediRecorder, setVoiceMediaRecorder] = useState<MediaRecorder | null>(null);
+  const [voiceChunks, setVoiceChunks] = useState<Blob[]>([]);
+  const [voiceStatus, setVoiceStatus] = useState<"idle" | "recording" | "processing" | "verified" | "failed">("idle");
+  const [verificationResult, setVerificationResult] = useState<{similarity: number; samePerson: boolean} | null>(null);
+  const [showVoiceReRegister, setShowVoiceReRegister] = useState(false);
+
+  // Voice recording helpers
+  async function startVoiceRecord(
+    setStatus: (s: "idle" | "recording" | "processing" | "verified" | "failed") => void,
+    setRecorder: (r: MediaRecorder | null) => void,
+    setChunks: (c: Blob[]) => void,
+    setErr: (e: string) => void,
+  ) {
+    setErr("");
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+      const mr = new MediaRecorder(stream, { mimeType: "audio/webm;codecs=opus" });
+      const chunks: Blob[] = [];
+      mr.ondataavailable = (e) => { if (e.data.size > 0) chunks.push(e.data); };
+      mr.onstop = async () => {
+        stream.getTracks().forEach((t) => t.stop());
+        setStatus("processing");
+        const blob = new Blob(chunks, { type: "audio/webm" });
+        await submitVoiceBlob(blob, setStatus, setErr, false);
+      };
+      mr.start();
+      setRecorder(mr);
+      setChunks(chunks);
+      setStatus("recording");
+    } catch {
+      setErr("Microphone access denied. Please allow microphone access.");
+    }
+  }
+
+  function stopVoiceRecord(
+    recorder: MediaRecorder | null,
+    setStatus: (s: "idle" | "recording" | "processing" | "verified" | "failed") => void,
+    setChunks: (c: Blob[]) => void,
+  ) {
+    if (recorder && recorder.state !== "inactive") recorder.stop();
+    setChunks([]);
+    setStatus("processing");
+  }
+
+  async function submitVoiceBlob(
+    blob: Blob,
+    setStatus: (s: "idle" | "recording" | "processing" | "verified" | "failed") => void,
+    setErr: (e: string) => void,
+    isRegister: boolean,
+  ) {
+    setErr("");
+    try {
+      const form = new FormData();
+      form.append("file", blob, "voice.webm");
+      const url = isRegister ? "/api/voice/register" : "/api/voice/verify";
+      const res = await fetch(url, { method: "POST", body: form, credentials: "include" });
+      const json = await res.json();
+      if (json.success) {
+        if (isRegister) {
+          setVoiceRegistered(true);
+          setShowVoiceReRegister(false);
+          setStatus("idle");
+        } else {
+          const data = json.data;
+          setVerificationResult({ similarity: Math.round(data.similarity * 100), samePerson: data.samePerson });
+          setStatus(data.samePerson ? "verified" : "failed");
+          if (!data.samePerson) setErr(`Similarity ${Math.round(data.similarity * 100)}% — below 80% threshold.`);
+        }
+      } else {
+        setStatus("failed");
+        setErr(json.message || "Voice processing failed.");
+      }
+    } catch {
+      setStatus("failed");
+      setErr("Network error. Please try again.");
+    }
+  }
+
   const getRoleLabel = (role: string) => {
     const roleKey = role.toLowerCase() as keyof typeof t.dashboard.roleLabels;
     return t.dashboard.roleLabels[roleKey] || role;
@@ -108,6 +189,17 @@ function DashboardContent({ user }: { user: User }) {
         } catch (e) {
           console.error('Failed to fetch actors:', e);
         }
+
+        // Fetch voice profile
+        try {
+          const vpRes = await fetch('/api/voice/profile', { credentials: "include" });
+          if (vpRes.ok) {
+            const vpJson = await vpRes.json();
+            if (vpJson.data?.hasEmbedding) setVoiceRegistered(true);
+          }
+        } catch (e) {
+          console.error('Failed to fetch voice profile:', e);
+        }
       } catch (error) {
         console.error("Failed to fetch dashboard data:", error);
       } finally {
@@ -155,6 +247,142 @@ function DashboardContent({ user }: { user: User }) {
                 )}
               </div>
             ))}
+        </div>
+
+        {/* Voice ID Tool */}
+        <div className="bg-white dark:bg-gray-900 rounded-2xl border border-teal-200 dark:border-teal-800/50 p-6">
+          <div className="flex items-start gap-4">
+            <div className="w-12 h-12 rounded-xl bg-teal-100 dark:bg-teal-900/30 flex items-center justify-center text-2xl flex-shrink-0">
+              🎤
+            </div>
+            <div className="flex-1 min-w-0">
+              <h2 className="text-base font-semibold text-gray-900 dark:text-white mb-1">Voice ID</h2>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mb-4">
+                Register your voice to enable secure voice-based ownership verification for portraits.
+              </p>
+
+              {voiceStatus === "idle" && !voiceRegistered && !showVoiceReRegister && (
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <button
+                    onClick={() => startVoiceRecord(setVoiceStatus, setVoiceMediaRecorder, setVoiceChunks, setVoiceError)}
+                    className="px-4 py-2 text-sm font-medium bg-teal-600 text-white rounded-xl hover:bg-teal-700 transition flex items-center gap-2"
+                  >
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" /></svg>
+                    Record Voice
+                  </button>
+                  <label className="px-4 py-2 text-sm font-medium border border-teal-200 dark:border-teal-800 text-teal-700 dark:text-teal-300 rounded-xl hover:bg-teal-50 dark:hover:bg-teal-950/30 transition cursor-pointer flex items-center gap-2">
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
+                    Upload File
+                    <input
+                      type="file"
+                      accept="audio/*,.wav,.mp3,.webm,.ogg,.m4a"
+                      className="hidden"
+                      onChange={async (e) => {
+                        const file = e.target.files?.[0];
+                        if (!file) return;
+                        setVoiceError("");
+                        setVoiceStatus("processing");
+                        await submitVoiceBlob(file, setVoiceStatus, setVoiceError, true);
+                      }}
+                    />
+                  </label>
+                </div>
+              )}
+
+              {voiceStatus === "recording" && (
+                <div className="flex items-center gap-3">
+                  <div className="w-3 h-3 rounded-full bg-red-500 animate-pulse" />
+                  <span className="text-sm text-red-700 dark:text-red-300">Recording... Speak naturally 10-30s</span>
+                  <button
+                    onClick={() => stopVoiceRecord(voiceMediRecorder, setVoiceStatus, setVoiceChunks)}
+                    className="px-3 py-1 text-xs font-medium bg-red-600 text-white rounded-lg hover:bg-red-700 transition"
+                  >
+                    Stop
+                  </button>
+                </div>
+              )}
+
+              {voiceStatus === "processing" && (
+                <div className="flex items-center gap-2">
+                  <div className="w-4 h-4 border-2 border-teal-500/30 border-t-teal-500 rounded-full animate-spin" />
+                  <span className="text-sm text-gray-500 dark:text-gray-400">Processing...</span>
+                </div>
+              )}
+
+              {voiceStatus === "verified" && verificationResult && (
+                <div className="flex items-center gap-2">
+                  <span className="text-green-500 font-bold">✓</span>
+                  <span className="text-sm text-green-700 dark:text-green-300">
+                    Verified ({verificationResult.similarity}%) — {verificationResult.samePerson ? "Voice matched" : "No match"}
+                  </span>
+                  <button onClick={() => { setVoiceStatus("idle"); setVerificationResult(null); }} className="text-xs text-teal-600 hover:underline">Again</button>
+                </div>
+              )}
+
+              {voiceStatus === "failed" && (
+                <div className="flex items-center gap-2">
+                  <span className="text-red-500 font-bold">✗</span>
+                  <span className="text-sm text-red-600 dark:text-red-300">{voiceError || "Failed"}</span>
+                  <button onClick={() => setVoiceStatus("idle")} className="text-xs text-teal-600 hover:underline">Retry</button>
+                  <button onClick={() => setShowVoiceReRegister(true)} className="text-xs text-gray-400 hover:underline">Re-register</button>
+                </div>
+              )}
+
+              {voiceRegistered && !showVoiceReRegister && voiceStatus === "idle" && (
+                <div className="flex items-center gap-3">
+                  <span className="text-sm text-green-600 dark:text-green-400 font-medium">🎤 Voice Registered</span>
+                  <button
+                    onClick={() => startVoiceRecord(setVoiceStatus, setVoiceMediaRecorder, setVoiceChunks, setVoiceError)}
+                    className="px-3 py-1 text-xs font-medium bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition"
+                  >
+                    Verify
+                  </button>
+                  <label className="px-3 py-1 text-xs font-medium border border-teal-200 dark:border-teal-800 text-teal-700 dark:text-teal-300 rounded-lg hover:bg-teal-50 dark:hover:bg-teal-950/30 transition cursor-pointer">
+                    Upload Verify
+                    <input
+                      type="file"
+                      accept="audio/*,.wav,.mp3,.webm,.ogg,.m4a"
+                      className="hidden"
+                      onChange={async (e) => {
+                        const file = e.target.files?.[0];
+                        if (!file) return;
+                        setVoiceError("");
+                        setVoiceStatus("processing");
+                        await submitVoiceBlob(file, setVoiceStatus, setVoiceError, false);
+                      }}
+                    />
+                  </label>
+                </div>
+              )}
+
+              {showVoiceReRegister && voiceStatus === "idle" && (
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => startVoiceRecord(setVoiceStatus, setVoiceMediaRecorder, setVoiceChunks, setVoiceError)}
+                    className="px-3 py-1 text-xs font-medium bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition"
+                  >
+                    Record &amp; Re-register
+                  </button>
+                  <label className="px-3 py-1 text-xs font-medium border border-teal-200 dark:border-teal-800 text-teal-700 dark:text-teal-300 rounded-lg hover:bg-teal-50 dark:hover:bg-teal-950/30 transition cursor-pointer">
+                    Upload &amp; Re-register
+                    <input
+                      type="file"
+                      accept="audio/*,.wav,.mp3,.webm,.ogg,.m4a"
+                      className="hidden"
+                      onChange={async (e) => {
+                        const file = e.target.files?.[0];
+                        if (!file) return;
+                        setVoiceError("");
+                        setVoiceStatus("processing");
+                        await submitVoiceBlob(file, setVoiceStatus, setVoiceError, true);
+                      }}
+                    />
+                  </label>
+                  <button onClick={() => setShowVoiceReRegister(false)} className="text-xs text-gray-400 hover:underline">Cancel</button>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
 
         {/* Two-col layout */}
