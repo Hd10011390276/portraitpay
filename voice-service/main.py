@@ -1,10 +1,10 @@
 """
-PortraitPay Voice Embedding Microservice — Fallback Edition
-Uses MFCC-based embedding (librosa only) when resemblyzer is unavailable.
-FastAPI + librosa for voice embedding generation and verification.
+PortraitPay Voice Embedding Microservice — ECAPA-TDNN Edition
+Uses SpeechBrain ECAPA-TDNN for discriminative speaker embeddings.
+Handles MP3/WAV/WebM etc via ffmpeg conversion to WAV.
 
 Setup:
-    pip install fastapi uvicorn librosa scipy numpy python-multipart
+    pip install speechbrain torch torchaudio scipy numpy python-multipart ffmpeg-python
 
 Run:
     python -m uvicorn main:app --reload --port 8001
@@ -17,13 +17,11 @@ from fastapi import FastAPI, File, UploadFile, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import numpy as np
-import librosa
 import tempfile
 import os
 import subprocess
-from typing import List
 
-app = FastAPI(title="PortraitPay Voice Service — MFCC Fallback")
+app = FastAPI(title="PortraitPay Voice Service — ECAPA-TDNN")
 
 app.add_middleware(
     CORSMiddleware,
@@ -32,6 +30,19 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+_encoder = None
+
+def get_encoder():
+    global _encoder
+    if _encoder is None:
+        from speechbrain.inference.speaker import EncoderClassifier
+        _encoder = EncoderClassifier.from_hparams(
+            "speechbrain/spkrec-ecapa-voxceleb",
+            run_opts={"device": "cpu"},
+        )
+    return _encoder
+
 
 def convert_to_wav(input_path: str) -> str:
     """Convert any audio file to WAV 16kHz mono using ffmpeg."""
@@ -47,43 +58,11 @@ def convert_to_wav(input_path: str) -> str:
     except subprocess.CalledProcessError as e:
         raise HTTPException(status_code=400, detail=f"Audio conversion failed: {e.stderr.decode()}")
 
-def load_wav(path: str) -> tuple:
-    """Load WAV file, return (PCM array, sample_rate)."""
-    result = librosa.load(path, sr=16000, mono=True)
-    if isinstance(result, tuple):
-        audio, sr = result
-    else:
-        audio = result
-        sr = 16000
-    return audio.astype(np.float32), sr
-
-def extract_mfcc_embedding(audio: np.ndarray, sr: int, n_mfcc: int = 40, n_mels: int = 80) -> np.ndarray:
-    """
-    Extract speaker embedding using MFCC + delta features + mean pooling.
-    Produces a 120-dim vector (40 MFCC * 3 = 120 from mean + delta + delta-delta).
-    """
-    # MFCC
-    mfcc = librosa.feature.mfcc(y=audio, sr=sr, n_mfcc=n_mfcc, n_mels=n_mels)
-    # Delta (velocity)
-    delta = librosa.feature.delta(mfcc)
-    # Delta-delta (acceleration)
-    delta2 = librosa.feature.delta(mfcc, order=2)
-
-    # Stack: 40 * 3 = 120 features
-    combined = np.vstack([mfcc, delta, delta2])
-
-    # Mean + std pooling across time
-    mean = np.mean(combined, axis=1)
-    std = np.std(combined, axis=1)
-
-    # Final embedding: 80-dim (40 mean + 40 std)
-    embedding = np.concatenate([mean, std])
-    return embedding
 
 @app.post("/embed")
 def embed_audio(file: UploadFile = File(...)):
     """
-    Generate an embedding vector from an uploaded audio file.
+    Generate a 192-dim speaker embedding via ECAPA-TDNN.
     Returns: { "embedding": [float, ...], "duration": float, "dimensions": int }
     """
     suffix = os.path.splitext(file.filename or ".wav")[1] or ".wav"
@@ -97,11 +76,21 @@ def embed_audio(file: UploadFile = File(...)):
 
     try:
         wav_path = convert_to_wav(in_path)
-        audio, sr = load_wav(wav_path)
-        duration = len(audio) / float(sr) if float(sr) > 0 else 0.0
 
-        emb = extract_mfcc_embedding(audio, float(sr))
-        emb_list = emb.tolist()
+        # Load WAV with scipy (no librosa dependency, avoids k2/speechbrain import conflict)
+        from scipy.io import wavfile
+        sr, data = wavfile.read(wav_path)
+        audio = data.astype(np.float32) / 32768.0
+        if len(audio.shape) > 1:
+            audio = audio.mean(axis=1)
+        duration = len(audio) / float(sr)
+
+        # Run through ECAPA-TDNN
+        import torch
+        encoder = get_encoder()
+        waveform = torch.FloatTensor(audio).unsqueeze(0)
+        embedding = encoder.encode_batch(waveform).squeeze().numpy()
+        emb_list = embedding.tolist()
 
         return {
             "embedding": emb_list,
@@ -110,18 +99,19 @@ def embed_audio(file: UploadFile = File(...)):
         }
     finally:
         os.unlink(in_path)
-        if 'wav_path' in locals():
+        if "wav_path" in locals():
             os.unlink(wav_path)
 
+
 @app.post("/verify")
-def verify_voices(
-    file1: UploadFile = File(...),
-    file2: UploadFile = File(...),
-):
+def verify_voices(file1: UploadFile = File(...), file2: UploadFile = File(...)):
     """
     Compare two audio files and return similarity score.
     Returns: { "similarity": float, "same_person": bool, "threshold": float }
     """
+    from scipy.io import wavfile
+    import torch
+
     def process(file: UploadFile) -> np.ndarray:
         suffix = os.path.splitext(file.filename or ".wav")[1] or ".wav"
         in_fd, in_path = tempfile.mkstemp(suffix=suffix)
@@ -133,23 +123,23 @@ def verify_voices(
             raise
         try:
             wav_path = convert_to_wav(in_path)
-            audio, sr = load_wav(wav_path)
-            return extract_mfcc_embedding(audio, float(sr))
+            sr, data = wavfile.read(wav_path)
+            audio = data.astype(np.float32) / 32768.0
+            if len(audio.shape) > 1:
+                audio = audio.mean(axis=1)
+            waveform = torch.FloatTensor(audio).unsqueeze(0)
+            encoder = get_encoder()
+            return encoder.encode_batch(waveform).squeeze().numpy()
         finally:
             os.unlink(in_path)
-            if 'wav_path' in locals():
+            if "wav_path" in locals():
                 os.unlink(wav_path)
 
     emb1 = process(file1)
     emb2 = process(file2)
 
-    # Cosine similarity
-    norm1 = np.linalg.norm(emb1)
-    norm2 = np.linalg.norm(emb2)
-    similarity = float(np.dot(emb1, emb2) / ((norm1 * norm2) + 1e-8))
-
-    # Threshold tuned for MFCC: same speaker ~0.85+, different speaker ~0.65-0.80
-    threshold = 0.80
+    similarity = float(np.dot(emb1, emb2) / (np.linalg.norm(emb1) * np.linalg.norm(emb2) + 1e-8))
+    threshold = 0.75
     same_person = similarity > threshold
 
     return {
@@ -158,6 +148,7 @@ def verify_voices(
         "threshold": threshold,
     }
 
+
 @app.get("/health")
 def health():
-    return {"status": "ok", "method": "MFCC-40 + delta/delta-delta + mean/std pooling"}
+    return {"status": "ok", "method": "ECAPA-TDNN (192-dim, speechbrain/spkrec-ecapa-voxceleb)"}

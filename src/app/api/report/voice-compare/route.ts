@@ -16,8 +16,8 @@ export const dynamic = "force-dynamic";
 const VOICE_SERVICE_URL = "http://127.0.0.1:8001";
 
 function riskLevel(score: number): string {
-  if (score >= 0.85) return "HIGH";
-  if (score >= 0.70) return "MEDIUM";
+  if (score >= 0.75) return "HIGH";
+  if (score >= 0.55) return "MEDIUM";
   return "LOW";
 }
 
