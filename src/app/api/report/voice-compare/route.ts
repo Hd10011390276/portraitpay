@@ -13,7 +13,7 @@ import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
 
-const VOICE_SERVICE_URL = "http://127.0.0.1:8001";
+const VOICE_SERVICE_URL = "https://hd10011390276--portraitpay-voice-final-web.modal.run";
 
 function riskLevel(score: number): string {
   if (score >= 0.75) return "HIGH";
