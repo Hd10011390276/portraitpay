@@ -51,7 +51,7 @@ export async function POST(req: NextRequest) {
     const voiceResp = await fetch(`${VOICE_SERVICE_URL}/embed`, {
       method: "POST",
       body: form,
-      signal: AbortSignal.timeout(30_000),
+      signal: AbortSignal.timeout(60_000),
     });
 
     if (!voiceResp.ok) {
