@@ -10,7 +10,7 @@ import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
 
-const VOICE_SERVICE_URL = "http://127.0.0.1:8001";
+const VOICE_SERVICE_URL = "https://hd10011390276--portraitpay-voice-final-web.modal.run";
 
 export async function POST(req: NextRequest) {
   const session = await getSessionFromRequest(req);
