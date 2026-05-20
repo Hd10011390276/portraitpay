@@ -1,0 +1,19 @@
+# render.yaml — ECAPA-TDNN Voice Embedding Service
+# Auto-deploys on push to master via Render GitHub integration
+
+services:
+  - type: web
+    name: portraitpay-voice-service
+    region: oregon
+    plan: free
+    runtime: docker
+    dockerfilePath: Dockerfile
+    healthCheckPath: /health
+    envVars:
+      - key: PORT
+        value: "8001"
+      - key: PYTHONUNBUFFERED
+        value: "1"
+    routes:
+      - path: /
+        service: portraitpay-voice-service
