@@ -2249,7 +2249,7 @@ export const translations = {
           changesToTerms: "Changes to Terms",
           changesToTermsDesc: "We reserve the right to modify these terms at any time.",
           contactUs: "Contact Us",
-          contactUsDesc: "For questions, contact us:",
+          contactUsDesc: "For questions, contact us: contact@portraitpayai.com",
         },
       },
       privacy: {
