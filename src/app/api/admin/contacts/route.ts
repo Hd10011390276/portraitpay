@@ -97,3 +97,27 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json({ success: false, error: "Server error" }, { status: 500 });
   }
 }
+
+export async function DELETE(req: NextRequest) {
+  const session = await getSessionFromRequest(req);
+  if (!session?.userId || !ADMIN_ROLES.includes(session.role)) {
+    return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
+  }
+
+  const { searchParams } = req.nextUrl;
+  const id = searchParams.get("id");
+  if (!id) {
+    return NextResponse.json({ success: false, error: "Missing id" }, { status: 400 });
+  }
+
+  try {
+    await prisma.contactSubmission.delete({ where: { id } });
+    return NextResponse.json({ success: true });
+  } catch (err: any) {
+    if (err.code === "P2025") {
+      return NextResponse.json({ success: false, error: "Record not found" }, { status: 404 });
+    }
+    console.error("[Admin/Contacts] DELETE error:", err);
+    return NextResponse.json({ success: false, error: "Server error" }, { status: 500 });
+  }
+}

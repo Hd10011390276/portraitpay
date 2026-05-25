@@ -59,10 +59,10 @@ export default function RegisterPage() {
     }
     if (!currentForm.confirmPassword) errs.confirmPassword = t.register.errors.confirmPasswordRequired;
     else if (currentForm.password !== currentForm.confirmPassword) errs.confirmPassword = t.register.errors.passwordsMismatch;
-    if (!currentForm.role) errs.role = t.register.errors.selectRole;
+    // role is always TALENT — no validation needed
 
-    // Media Kit validation for TALENT role
-    if (currentForm.role === "TALENT" && mediaKitUrl.trim() !== "") {
+    // Media Kit validation
+    if (mediaKitUrl.trim() !== "") {
       try { new URL(mediaKitUrl); }
       catch { errs.mediaKitUrl = t.register.errors.invalidMediaKitUrl || "Invalid URL format"; }
       if (!mediaKitShareConfirmed) errs.mediaKitShareConfirmed = t.register.errors.mediaKitConfirmRequired || "Please confirm your rights to share this link";
@@ -91,14 +91,14 @@ export default function RegisterPage() {
           confirmPassword: form.confirmPassword,
           name: form.name,
           phone: form.phone || undefined,
-          role: form.role,
+          role: "TALENT",
           allowLicensing,
           allowedScopes,
           prohibitedContent,
-          mediaKitUrl: form.role === "TALENT" ? mediaKitUrl : undefined,
-          mediaKitShareConfirmed: form.role === "TALENT" ? mediaKitShareConfirmed : false,
-          mediaKitReviewOnlyAcknowledged: form.role === "TALENT" ? mediaKitReviewOnlyAcknowledged : false,
-          mediaKitVisibility: form.role === "TALENT" ? mediaKitVisibility : "PRIVATE",
+          mediaKitUrl: mediaKitUrl || undefined,
+          mediaKitShareConfirmed,
+          mediaKitReviewOnlyAcknowledged,
+          mediaKitVisibility,
         }),
       });
 
@@ -215,14 +215,8 @@ export default function RegisterPage() {
               />
             </div>
 
-            <RoleSelector
-              value={form.role}
-              onChange={(val) => { setForm((prev) => ({ ...prev, role: val })); setErrors((prev) => ({ ...prev, role: "" })); }}
-              error={errors.role}
-            />
-
-            {/* Talent Media Kit — only shown for TALENT role */}
-            {form.role === "TALENT" && (
+            {/* Talent Media Kit — always shown */}
+            {(
               <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-5 space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-blue-900 dark:text-blue-200 mb-1">

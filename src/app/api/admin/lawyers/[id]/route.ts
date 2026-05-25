@@ -42,6 +42,14 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
       },
     });
 
+    // Promote user to LAWYER role on approval
+    if (action === "APPROVE") {
+      await prisma.user.update({
+        where: { id: registration.userId },
+        data: { role: "LAWYER" },
+      });
+    }
+
     return NextResponse.json({ success: true, data: updated });
   } catch (err) {
     console.error("[/api/admin/lawyers/[id] PATCH]", err);

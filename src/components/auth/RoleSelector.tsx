@@ -18,18 +18,6 @@ export function RoleSelector({ value, onChange, error }: RoleSelectorProps) {
       description: t.register.roleTalentDesc || "Actors, models, influencers - can upload portraits and create content",
       icon: "🎭",
     },
-    {
-      value: "AGENCY",
-      label: t.register.roleAgency,
-      description: t.register.roleAgencyDesc,
-      icon: "🏢",
-    },
-    {
-      value: "LAWYER",
-      label: t.register.roleLawyer,
-      description: t.register.roleLawyerDesc,
-      icon: "⚖️",
-    },
   ];
 
   return (

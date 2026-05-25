@@ -146,11 +146,13 @@ export async function approveByPlatform(
 
   // 创建正式的 Authorization 记录
   const endDate = addDays(new Date(), application.usageDuration);
+  const enterprise = await prisma.enterprise.findUnique({ where: { id: application.enterpriseId } });
+  if (!enterprise?.userId) throw new Error("Enterprise user not found");
   const authorization = await prisma.authorization.create({
     data: {
       portraitId: application.portraitId,
       granterId: portrait?.ownerId ?? application.portraitId,
-      granteeId: (await prisma.enterprise.findUnique({ where: { id: application.enterpriseId } }))!.userId,
+      granteeId: enterprise.userId,
       licenseType: application.exclusivity ? LICENSE_TYPES.EXCLUSIVE : LICENSE_TYPES.NON_EXCLUSIVE,
       usageScope: application.usageScope,
       exclusivity: application.exclusivity,

@@ -79,6 +79,7 @@ export default function AdminContactsPage() {
 
   const [replyText, setReplyText] = useState("");
   const [adminNotes, setAdminNotes] = useState("");
+  const [dashboardOpen, setDashboardOpen] = useState(false);
 
   const load = useCallback(
     async (page = 1) => {
@@ -178,6 +179,32 @@ export default function AdminContactsPage() {
           <h1 className="text-lg font-bold text-gray-900 dark:text-white">
             {tc.pageTitle}
           </h1>
+          {/* Dashboard switcher */}
+          <div className="relative ml-2">
+            <button
+              onClick={() => setDashboardOpen(!dashboardOpen)}
+              className="px-3 py-1.5 text-xs font-medium bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 rounded-lg hover:bg-blue-200 dark:hover:bg-blue-900/60 transition-colors"
+            >
+              🎛️ Dashboards ▾
+            </button>
+            {dashboardOpen && (
+              <div className="absolute top-full left-0 mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg py-1 min-w-[180px] z-50">
+                {[
+                  { label: "Actor Dashboard", href: "/dashboard" },
+                  { label: "Enterprise Dashboard", href: "/enterprise/dashboard" },
+                  { label: "Lawyer Dashboard", href: "/lawyer/dashboard" },
+                ].map((item) => (
+                  <button
+                    key={item.href}
+                    onClick={() => { router.push(item.href); setDashboardOpen(false); }}
+                    className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                  >
+                    {item.label}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
           <span className="ml-auto text-xs text-gray-400 dark:text-gray-500">
             {tc.totalRecords} {meta?.total ?? 0} {tc.records}
           </span>
@@ -340,12 +367,34 @@ export default function AdminContactsPage() {
 
                         {/* Action */}
                         <td className="px-4 py-3">
-                          <button
-                            className="px-3 py-1.5 text-xs bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition"
-                            onClick={(e) => { e.stopPropagation(); openDetail(c); }}
-                          >
-                            {tc.handle}
-                          </button>
+                          <div className="flex items-center gap-2">
+                            <button
+                              className="px-3 py-1.5 text-xs bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition"
+                              onClick={(e) => { e.stopPropagation(); openDetail(c); }}
+                            >
+                              {tc.handle}
+                            </button>
+                            <button
+                              className="px-3 py-1.5 text-xs bg-red-50 text-red-600 border border-red-200 dark:bg-red-900/20 dark:text-red-400 dark:border-red-800 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/40 transition"
+                              onClick={async (e) => {
+                                e.stopPropagation();
+                                if (!confirm(`Delete feedback from ${c.email}?`)) return;
+                                const token = localStorage.getItem("pp_access_token");
+                                const res = await fetch(`/api/admin/contacts?id=${c.id}`, {
+                                  method: "DELETE",
+                                  headers: token ? { Authorization: `Bearer ${token}` } : {},
+                                });
+                                if (res.ok) {
+                                  setContacts((prev) => prev.filter((x) => x.id !== c.id));
+                                } else {
+                                  alert("Delete failed");
+                                }
+                              }}
+                              title={tc.delete || "Delete"}
+                            >
+                              🗑️
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     );

@@ -104,6 +104,8 @@ model User {
   balanceTransactions BalanceTransaction[]
 
   voiceEmbeddings VoiceEmbedding[]
+  agencyAccount   AgencyAccount?
+  agencyArtistContracts AgencyArtistContract[]
 
   @@index([walletAddress])
   @@index([kycStatus])
@@ -380,6 +382,11 @@ model InfringementReport {
 
   // Source: MANUAL, AUTO
   source String @default("MANUAL")
+
+  voiceSimilarityScore  Float?
+  voiceSimilarityRisk  String?  // HIGH | MEDIUM | LOW | UNKNOWN
+  faceComparisonScore  Float?
+  faceImageUrl         String?
 
   similarityScore Float?
 
@@ -724,6 +731,13 @@ model Enterprise {
   isAgency         Boolean @default(false)
   agencyLicenseUrl String?
 
+  // Extended agency fields (Phase 2)
+  agencyType     String? // LEGAL_ENTITY | ENTERTAINMENT_AGENCY | ESTATE | IP_PLATFORM
+  rightsScope    String[] @default([]) // FILM | ANIMATION | ADVERTISING | GAMING | etc.
+  tier           String? // GOLD | SILVER | BRONZE
+  parentAgencyId String? // for agency chain (Triumph → licensed agents)
+  escrowId       String?
+
   validUntil DateTime?
 
   createdAt           DateTime             @default(now())
@@ -1024,7 +1038,7 @@ model ApiKey {
 
   lastUsedAt   DateTime?
   requestCount BigInt    @default(0)
-
+  revokedAt    DateTime?
   expiresAt DateTime?
 
   createdAt DateTime @default(now())
@@ -1401,6 +1415,12 @@ model LawyerRegistration {
   // URL to business license or bar association certificate
   licenseUrl String?
 
+  // Lawyer-configured fee fields
+  minCaseFee     Decimal? @db.Decimal(12,2) // 最低接案收费（USD）
+  hourlyRate     Decimal? @db.Decimal(12,2) // 时薪（USD）
+  retainerFee    Decimal? @db.Decimal(12,2) // 预付金（USD）
+  successFeeRate Int?     @default(20) // 胜诉分成%，默认20%
+
   // Status: PENDING, REVIEWING, APPROVED, REJECTED
   status String @default("PENDING")
 
@@ -1466,9 +1486,24 @@ model LawyerCase {
   messages      Message[]
   conversations Conversation[]
   deals        Deal[]
+  evidenceExports EvidenceExport[]
 
   @@index([lawyerRegistrationId])
   @@index([status])
+}
+
+model EvidenceExport {
+  id            String   @id @default(cuid())
+  caseId        String
+  lawyerId      String
+  exportedAt    DateTime @default(now())
+  fileHash      String
+  downloadCount Int      @default(1)
+
+  lawyerCase    LawyerCase @relation(fields: [caseId], references: [id])
+
+  @@index([caseId])
+  @@index([lawyerId])
 }
 
 // ============================================================
@@ -1860,4 +1895,217 @@ model VoiceEmbedding {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
+}
+
+// ============================================================
+// Agency Account System
+// ============================================================
+
+// AgencyAccount — Agency hierarchy (parent/child chain via self-reference)
+// Supports: Triumph → Licensed agents chain
+model AgencyAccount {
+  id String @id @default(cuid())
+
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id])
+
+  // Agency identity
+  agencyName String
+  // Type: ROOT_SPONSOR | ENTERPRISE_LAWYER | ENTERTAINMENT_AGENCY | ESTATE
+  agencyType String @default("ENTERTAINMENT_AGENCY")
+
+  // Business registration
+  registrationNo  String?
+  registrationUrl String?
+  establishedDate DateTime?
+  jurisdiction    String? // e.g. "Hong Kong", "Cayman Islands"
+
+  // Contact
+  contactName  String
+  contactEmail String
+  contactPhone String?
+
+  // Agency tier: GOLD | SILVER | BRONZE
+  tier String @default("BRONZE")
+
+  // Rights scope (JSON: { scopes: string[], territorialScope: string, exclusivity: boolean })
+  rightsScope Json @default("{\"scopes\":[],\"territorialScope\":\"global\",\"exclusivity\":false}")
+
+  // Parent agency chain (Triumph → licensed agents)
+  parentAgencyId String?
+  parentAgency   AgencyAccount?  @relation("AgencyChain", fields: [parentAgencyId], references: [id])
+  childAgencies  AgencyAccount[] @relation("AgencyChain")
+
+  // Escrow account
+  escrowId String? @unique
+
+  // Status: PENDING | APPROVED | SUSPENDED | REVOKED
+  status String @default("PENDING")
+
+  reviewerId      String?
+  reviewedAt      DateTime?
+  rejectionReason String?   @db.Text
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  artistContracts AgencyArtistContract[]
+  escrow          AgencyEscrow?
+  performanceApplications AgencyPerformanceApplication[]
+
+  @@index([parentAgencyId])
+  @@index([status])
+}
+
+// AgencyArtistContract — Formal contract between agency and artist
+model AgencyArtistContract {
+  id String @id @default(cuid())
+
+  agencyId String
+  agency   AgencyAccount @relation(fields: [agencyId], references: [id])
+
+  artistId String
+  artistUserId String
+  artistUser   User   @relation(fields: [artistUserId], references: [id])
+
+  // Contract details
+  contractTitle    String
+  contractType     String // EXCLUSIVE | NON_EXCLUSIVE | MANAGER
+  representation   String[] @default([]) // FILM | ADVERTISING | MERCHANDISE | etc.
+
+  contractStart    DateTime
+  contractEnd      DateTime?
+
+  // Financial terms
+  royaltySplit    Decimal @default(0.0) @db.Decimal(5, 4) // e.g. 0.20 = 20%
+  minGuarantee    Decimal? @db.Decimal(12, 2)
+  territories     String[] @default([])
+  rightsGranted   String[] @default([])
+
+  // Status: DRAFT | PENDING_APPROVAL | ACTIVE | EXPIRED | TERMINATED | DISPUTED
+  status String @default("DRAFT")
+
+  // Contract documents
+  contractHash    String? @unique
+  contractIpfsCid String?
+  contractPdfUrl String?
+
+  // Approval
+  platformApproved Boolean @default(false)
+  approvedAt       DateTime?
+  approvedBy      String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  escrowTransactions AgencyEscrowTransaction[]
+
+  @@unique([agencyId, artistId])
+  @@index([agencyId])
+  @@index([artistId])
+  @@index([status])
+}
+
+// AgencyEscrow — Escrow account per agency per currency
+model AgencyEscrow {
+  id String @id @default(cuid())
+
+  agencyId String @unique
+  agency   AgencyAccount @relation(fields: [agencyId], references: [id])
+
+  // Currency: USD | CNY | HKD | EUR
+  currency String @default("USD")
+
+  // Balance
+  totalAmount    Decimal @default(0) @db.Decimal(12, 2)
+  heldAmount     Decimal @default(0) @db.Decimal(12, 2) // pending release
+  availableAmount Decimal @default(0) @db.Decimal(12, 2)
+
+  // Escrow status: ACTIVE | FROZEN | CLOSED
+  status String @default("ACTIVE")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  transactions AgencyEscrowTransaction[]
+
+  @@unique([agencyId, currency])
+  @@index([agencyId])
+}
+
+// AgencyEscrowTransaction — Escrow ledger entries
+model AgencyEscrowTransaction {
+  id String @id @default(cuid())
+
+  escrowId String
+  escrow   AgencyEscrow @relation(fields: [escrowId], references: [id])
+
+  contractId String?
+  contract   AgencyArtistContract? @relation(fields: [contractId], references: [id])
+
+  // Type: DEPOSIT | RELEASE | HOLD | REFUND | FEE | ADJUSTMENT
+  type String
+
+  // Amount
+  amount   Decimal @db.Decimal(12, 2)
+  currency String @default("USD")
+
+  // Balance after this transaction
+  balanceBefore Decimal @db.Decimal(12, 2)
+  balanceAfter  Decimal @db.Decimal(12, 2)
+
+  // Hold/release reason
+  holdReason   String?
+  releaseReason String?
+
+  // Reference
+  dealId      String?
+  dealType    String? // LICENSE | LAWYER_CASE | SERVICE
+  description String?
+
+  // Status: PENDING | COMPLETED | FAILED | REVERSED
+  status String @default("COMPLETED")
+
+  createdAt DateTime @default(now())
+
+  @@index([escrowId])
+  @@index([contractId])
+  @@index([type])
+  @@index([createdAt])
+}
+
+// ============================================================
+// AgencyPerformanceApplication — Offline Performance Approval Workflow
+// ============================================================
+
+model AgencyPerformanceApplication {
+  id String @id @default(cuid())
+
+  agencyId String
+  agency   AgencyAccount @relation(fields: [agencyId], references: [id])
+
+  // Application details
+  eventName     String
+  eventDate     DateTime?
+  artistName    String?
+  artistUserId  String?
+  description   String? @db.Text
+
+  // Deadline for the performance
+  deadline      DateTime?
+
+  // Status: DRAFT | SUBMITTED | UNDER_REVIEW | APPROVED | REJECTED
+  status String @default("DRAFT")
+
+  // Reviewer
+  reviewerId    String?
+  reviewedAt    DateTime?
+  reviewNotes   String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([agencyId])
+  @@index([status])
+  @@index([createdAt])
 }

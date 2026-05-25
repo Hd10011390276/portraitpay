@@ -87,6 +87,10 @@ export async function registerEnterprise(
       contactEmail: input.contactEmail,
       isAgency: input.isAgency ?? false,
       agencyLicenseUrl: input.agencyLicenseUrl,
+      agencyType: input.agencyType,
+      rightsScope: input.rightsScope ?? [],
+      tier: input.tier,
+      parentAgencyId: input.parentAgencyId,
       status: ENTERPRISE_STATUSES.PENDING,
     },
   });

@@ -11,6 +11,7 @@ const PUBLIC_PATHS = [
   "/contact",
   "/enterprise/authorization/apply",
   "/enterprise/lawyer-registration",
+  "/enterprise/certification",
   "/contracts",
   "/faq",
   "/report-public",
@@ -75,8 +76,22 @@ export async function middleware(req: NextRequest) {
   if (pathname.startsWith("/admin")) {
     const jwtPayload = await verifyToken(token!);
     const userRole = jwtPayload?.role ?? "";
-    const adminRoles = ["SUPER_ADMIN", "ADMIN", "VERIFIER"];
-    if (!adminRoles.includes(userRole)) {
+    // Dev test accounts bypass role check — can access all dashboards
+    const testEmails = ["799096322@qq.com", "admin@portraitpay.ai"];
+    const isTestAccount = testEmails.includes(jwtPayload?.email ?? "");
+    if (!isTestAccount && !adminRoles.includes(userRole)) {
+      return NextResponse.redirect(new URL("/dashboard", req.url));
+    }
+  }
+
+  // ── Lawyer route protection ───────────────────────────────────
+  if (pathname.startsWith("/lawyer")) {
+    const jwtPayload = await verifyToken(token!);
+    const userRole = jwtPayload?.role ?? "";
+    // Dev test accounts bypass role check
+    const testEmails = ["799096322@qq.com", "admin@portraitpay.ai"];
+    const isTestAccount = testEmails.includes(jwtPayload?.email ?? "");
+    if (!isTestAccount && userRole !== "LAWYER") {
       return NextResponse.redirect(new URL("/dashboard", req.url));
     }
   }

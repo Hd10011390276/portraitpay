@@ -8,6 +8,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { getSessionFromRequest } from "@/lib/auth/session";
 import { buildEvidenceSetHash } from "@/lib/infringement/evidence";
+import { notarizeInfringementEvidence } from "@/lib/infringement/notarization";
 
 export const dynamic = "force-dynamic";
 
@@ -148,6 +149,25 @@ export async function POST(request: NextRequest) {
       }))
     );
 
+    // Notarize evidence to IPFS (fetch reportHash + reportIpfsCid)
+    let reportHash: string | undefined;
+    let reportIpfsCid: string | undefined;
+    try {
+      const result = await notarizeInfringementEvidence({
+        reportId: "pending",
+        portraitId,
+        reporterId: session.userId,
+        type,
+        description,
+        evidenceUrls,
+        detectedUrl: detectedUrl || undefined,
+      });
+      reportHash = result.reportHash;
+      reportIpfsCid = result.reportIpfsCid;
+    } catch (err) {
+      console.warn("[POST /api/infringements] IPFS notarization failed, continuing without it:", err);
+    }
+
     // Create the report
     const report = await prisma.infringementReport.create({
       data: {
@@ -162,6 +182,8 @@ export async function POST(request: NextRequest) {
         originalImageUrl: originalImageUrl || null,
         status: "PENDING_REVIEW",
         source: "MANUAL",
+        reportHash: reportHash || null,
+        reportIpfsCid: reportIpfsCid || null,
       },
       include: {
         portrait: { select: { id: true, title: true, ownerId: true } },

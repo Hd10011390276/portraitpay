@@ -23,7 +23,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const { email, password } = parsed.data;
+    const { email, password, loginAs } = parsed.data as { email: string; password: string; loginAs?: string };
 
     const user = await prisma.user.findFirst({
       where: { email, deletedAt: null },
@@ -78,9 +78,18 @@ export async function POST(req: NextRequest) {
       role: user.role,
     });
 
+    // loginAs from UI tab overrides DB role for redirect
     const redirectTo =
-      user.role === "LAWYER"
+      loginAs === "lawyer"
         ? "/lawyer/dashboard"
+        : loginAs === "agency"
+        ? "/enterprise/dashboard"
+        : loginAs === "user"
+        ? "/dashboard"
+        : user.role === "LAWYER"
+        ? "/lawyer/dashboard"
+        : user.role === "AGENCY"
+        ? "/enterprise/dashboard"
         : user.role === "SUPER_ADMIN" || user.role === "ADMIN" || user.role === "VERIFIER"
         ? "/admin"
         : "/dashboard";
@@ -104,7 +113,7 @@ export async function POST(req: NextRequest) {
     response.cookies.set(
       "pp_access_token",
       tokens.accessToken,
-      { httpOnly: true, sameSite: "lax", path: "/", maxAge: 60 * 15, secure: process.env.NODE_ENV === "production" }
+      { httpOnly: true, sameSite: "lax", path: "/", maxAge: 60 * 120, secure: process.env.NODE_ENV === "production" }
     );
     response.cookies.set(
       "pp_refresh_token",

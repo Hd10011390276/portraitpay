@@ -167,7 +167,7 @@ export async function DELETE(req: NextRequest, context: RouteContext) {
     // Soft-delete: set deletedAt
     await prisma.infringementReport.update({
       where: { id },
-      data: { updatedAt: new Date() },
+      data: { deletedAt: new Date() },
     });
 
     return NextResponse.json({ success: true, message: "Report withdrawn" });

@@ -26,7 +26,7 @@ export async function signAccessToken(payload: Omit<JwtPayload, "iat" | "exp">):
   return new SignJWT({ ...payload })
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()
-    .setExpirationTime("15m")
+    .setExpirationTime("2h")
     .sign(JWT_SECRET);
 }
 

@@ -149,9 +149,9 @@ function FeatureCard({ icon, title, desc }: { icon: React.ReactNode; title: stri
 
 
 // ─── Pricing Card ────────────────────────────────────────────────
-function PricingCard({ title, price, period, desc, features, cta, badge, highlighted }: {
+function PricingCard({ title, price, period, desc, features, cta, badge, highlighted, href }: {
   title: string; price: string; period?: string; desc: string;
-  features: string[]; cta: string; badge?: string; highlighted?: boolean;
+  features: string[]; cta: string; badge?: string; highlighted?: boolean; href?: string;
 }) {
   return (
     <div style={{
@@ -202,7 +202,7 @@ function PricingCard({ title, price, period, desc, features, cta, badge, highlig
           </li>
         ))}
       </ul>
-      <Link href="/register" style={{
+      <Link href={href || "/register"} style={{
         display: "inline-flex",
         alignItems: "center",
         justifyContent: "center",
@@ -472,17 +472,19 @@ export default function HomePage() {
                 cta={t.nav.getStarted}
               />
               <PricingCard
-                title={t.pricing.proTitle}
-                price={t.pricing.proPrice}
-                desc={t.pricing.proDesc}
+                title={t.pricing.agentTitle}
+                price="$0"
+                period="during beta"
+                desc={t.pricing.agentDesc}
                 features={[
-                  t.pricing.proLi1,
-                  t.pricing.proLi2,
-                  t.pricing.proLi3,
+                  t.pricing.agentLi1,
+                  t.pricing.agentLi2,
+                  t.pricing.agentLi3,
+                  t.pricing.agentLi4,
                 ]}
-                cta={t.pricing.contactUs}
-                badge={t.pricing.proBadge}
-                highlighted
+                cta={t.nav.getStarted}
+                badge={t.pricing.agentBadge}
+                href="/enterprise/certification"
               />
             </div>
           </div>

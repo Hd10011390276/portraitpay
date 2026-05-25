@@ -1,3 +1,5 @@
+import { withSentryConfig } from "@sentry/nextjs";
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   // Skip type checking for faster builds — fix types later
@@ -34,6 +36,8 @@ const nextConfig = {
     optimizePackageImports: ['date-fns', 'react-hook-form'],
     // Keep heavy native deps out of serverless bundles
     serverComponentsExternalPackages: ['@prisma/client', '@prisma/engines', '@vladmandic/face-api', 'canvas', 'ali-oss', 'sharp'],
+    // Sentry instrumentation
+    instrumentation: true,
   },
 
   // Stub canvas for server-side builds so webpack doesn't fail resolution
@@ -46,4 +50,11 @@ const nextConfig = {
   },
 };
 
-export default nextConfig;
+export default withSentryConfig(nextConfig, {
+  org: process.env.SENTRY_ORG,
+  project: process.env.SENTRY_PROJECT,
+  authToken: process.env.SENTRY_AUTH_TOKEN,
+  widenClientFileUploadEnabled: true,
+  disableLogger: true,
+  automaticVercelMonitors: true,
+});

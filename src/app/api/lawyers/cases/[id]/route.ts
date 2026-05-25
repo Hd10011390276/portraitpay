@@ -1,10 +1,12 @@
 /**
  * GET /api/lawyers/cases/[id] — 律师查看案件详情
  * PATCH /api/lawyers/cases/[id] — 律师更新案件（状态、description、platformConfirmed）
+ * DELETE /api/lawyers/cases/[id] — 律师删除案件
  */
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getSessionFromRequest } from "@/lib/auth/session";
+import { deleteCase } from "@/lib/cases/deleteCase";
 
 export const dynamic = "force-dynamic";
 
@@ -108,4 +110,33 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
   });
 
   return NextResponse.json({ success: true, data: updated });
+}
+
+export async function DELETE(req: NextRequest, { params }: RouteParams) {
+  const session = await getSessionFromRequest(req);
+  if (!session?.userId) return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
+
+  const { id } = await params;
+
+  const lawyerCase = await prisma.lawyerCase.findUnique({
+    where: { id },
+    include: { infringementReport: { select: { id: true } } },
+  });
+  if (!lawyerCase) return NextResponse.json({ success: false, error: "Case not found" }, { status: 404 });
+
+  const lawyer = await prisma.lawyerRegistration.findFirst({
+    where: { userId: session.userId, status: "APPROVED" },
+  });
+
+  const isOwner = lawyer?.id === lawyerCase.lawyerRegistrationId;
+  const isAdmin = session.role === "ADMIN" || session.role === "VERIFIER";
+
+  if (!isOwner && !isAdmin) return NextResponse.json({ success: false, error: "Access denied" }, { status: 403 });
+
+  const result = await deleteCase(id);
+  if (!result.success) {
+    return NextResponse.json({ success: false, error: result.error }, { status: 404 });
+  }
+
+  return NextResponse.json({ success: true });
 }

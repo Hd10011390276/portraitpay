@@ -44,7 +44,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Check code matches and not expired
-    if (user.verificationCode !== code) {
+    if ((user.verificationCode ?? "").trim() !== (code ?? "").trim()) {
       return NextResponse.json(
         { success: false, error: "验证码错误" },
         { status: 400 }

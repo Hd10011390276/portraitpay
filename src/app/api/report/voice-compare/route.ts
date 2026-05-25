@@ -10,6 +10,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSessionFromRequest } from "@/lib/auth/session";
 import { prisma } from "@/lib/prisma";
+import * as Sentry from "@sentry/nextjs";
 
 export const dynamic = "force-dynamic";
 
@@ -111,6 +112,9 @@ export async function POST(req: NextRequest) {
       },
     });
   } catch (err) {
+    Sentry.captureException(err, {
+      extra: { route: "/api/report/voice-compare", userId: session?.userId },
+    });
     console.error("[voice-compare]", err);
     return NextResponse.json({ success: false, message: "Internal server error" }, { status: 500 });
   }

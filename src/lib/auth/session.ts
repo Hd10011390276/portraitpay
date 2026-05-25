@@ -52,6 +52,15 @@ export async function getSessionFromRequest(request: NextRequest): Promise<Sessi
   if (!token) {
     token = request.cookies.get("pp_access_token")?.value || request.cookies.get("accessToken")?.value || null;
   }
+  // Priority 1.5: API Key header (for agent access)
+  if (!token) {
+    const apiKey = request.headers.get("X-API-Key");
+    if (apiKey) {
+      const { verifyApiKey } = await import("./apiKeys");
+      const user = await verifyApiKey(apiKey);
+      if (user) return user;
+    }
+  }
   return _verifySession(token);
 }
 

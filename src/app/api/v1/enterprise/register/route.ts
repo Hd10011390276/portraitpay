@@ -25,7 +25,7 @@ export async function POST(req: NextRequest) {
     } = body;
 
     if (!companyName || !unifiedCreditCode || !legalPersonName || !legalPersonIdCard || !licenseImageUrl || !contactName || !contactPhone || !contactEmail) {
-      return NextResponse.json({ success: false, error: "缺少必填字段" }, { status: 400 });
+      return NextResponse.json({ success: false, error: "Missing required fields" }, { status: 400 });
     }
 
     const enterprise = await registerEnterprise(session.userId, {

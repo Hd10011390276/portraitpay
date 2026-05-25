@@ -19,14 +19,17 @@ interface HeaderProps {
   title?: string;
   subtitle?: string;
   action?: React.ReactNode;
+  effectiveRole?: string | null;
+  onRoleSwitch?: (role: string) => void;
 }
 
-export function Header({ user, title, subtitle, action }: HeaderProps) {
+export function Header({ user, title, subtitle, action, effectiveRole, onRoleSwitch }: HeaderProps) {
   const router = useRouter();
   const { toast } = useToast();
   const { t } = useLanguage();
   const [loggingOut, setLoggingOut] = useState(false);
-  const [menuOpen, setMenuOpen] = useState(false);
+  const [roleSwitcherOpen, setRoleSwitcherOpen] = useState(false);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
   const [hasUnread, setHasUnread] = useState(false);
 
@@ -77,13 +80,63 @@ export function Header({ user, title, subtitle, action }: HeaderProps) {
         <div className="flex items-center gap-3">
           {action && <div className="hidden sm:block">{action}</div>}
 
-          {/* Theme toggle */}
-          <ThemeToggle />
+{/* Test account role switcher */}
+          {user?.email === "799096322@qq.com" && (
+            <div className="relative">
+              <button
+                onClick={() => setRoleSwitcherOpen((o) => !o)}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors"
+              >
+                <span className="text-xs font-medium text-blue-700 dark:text-blue-400">
+                  {effectiveRole || user?.role}
+                </span>
+                <svg className="w-3 h-3 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+              {roleSwitcherOpen && (
+                <>
+                  <div className="fixed inset-0 z-10" onClick={() => setRoleSwitcherOpen(false)} />
+                  <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 py-2 z-20">
+                    <p className="px-4 py-2 text-xs font-semibold text-gray-400 uppercase tracking-wider border-b border-gray-100 dark:border-gray-700">
+                      Switch Role
+                    </p>
+                    {[
+                      { label: "Actor / Creator", role: "USER", href: "/dashboard" },
+                      { label: "Agency / Entertainment", role: "AGENCY", href: "/dashboard" },
+                      { label: "Lawyer", role: "LAWYER", href: "/lawyer/dashboard" },
+                    ].map((opt) => (
+                      <button
+                        key={opt.role}
+                        onClick={() => {
+                          setRoleSwitcherOpen(false);
+                          if (onRoleSwitch) onRoleSwitch(opt.role);
+                          router.push(opt.href);
+                        }}
+                        className={`w-full text-left px-4 py-2.5 text-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors flex items-center justify-between ${
+                          (effectiveRole || user?.role) === opt.role
+                            ? "text-blue-600 dark:text-blue-400 font-medium"
+                            : "text-gray-700 dark:text-gray-300"
+                        }`}
+                      >
+                        {opt.label}
+                        {(effectiveRole || user?.role) === opt.role && (
+                          <svg className="w-4 h-4 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                          </svg>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
+          )}
 
           {/* User avatar + dropdown */}
           <div className="relative">
             <button
-              onClick={() => setMenuOpen((o) => !o)}
+              onClick={() => setUserMenuOpen((o) => !o)}
               className="flex items-center gap-2 p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
             >
               <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white text-sm font-medium">
@@ -94,9 +147,9 @@ export function Header({ user, title, subtitle, action }: HeaderProps) {
               </svg>
             </button>
 
-            {menuOpen && (
+            {userMenuOpen && (
               <>
-                <div className="fixed inset-0 z-10" onClick={() => setMenuOpen(false)} />
+                <div className="fixed inset-0 z-10" onClick={() => setUserMenuOpen(false)} />
                 <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 py-2 z-20">
                   <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-700">
                     <p className="text-sm font-medium text-gray-900 dark:text-white">{user?.name || 'User'}</p>

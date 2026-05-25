@@ -8,7 +8,7 @@ import ThemeToggle from "@/components/ThemeToggle";
 import { useLanguage } from "@/context/LanguageContext";
 
 type Tab = "email" | "phone";
-type LoginAs = "user" | "lawyer";
+type LoginAs = "user" | "lawyer" | "agency";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -103,8 +103,8 @@ export default function LoginPage() {
       const endpoint = tab === "email" ? "/api/auth/login" : "/api/auth/otp/verify";
       const body =
         tab === "email"
-          ? { email, password }
-          : { phone, code };
+          ? { email, password, loginAs }
+          : { phone, code, loginAs };
 
       const res = await fetch(endpoint, {
         method: "POST",
@@ -123,13 +123,12 @@ export default function LoginPage() {
         localStorage.setItem("pp_access_token", data.data.accessToken);
         localStorage.setItem("pp_refresh_token", data.data.refreshToken);
         localStorage.setItem("pp_user", JSON.stringify(data.data.user));
+        localStorage.removeItem("pp_effective_role");
       }
 
-      // Redirect based on explicit login type selection (button takes precedence over DB role)
+      // Redirect based on loginAs tab selection
       const destination = data.data.redirectTo;
-      if (loginAs === "lawyer") {
-        router.push("/lawyer/dashboard");
-      } else if (destination) {
+      if (destination) {
         router.push(destination);
       } else {
         router.push("/dashboard");
@@ -209,6 +208,17 @@ export default function LoginPage() {
                 }`}
               >
                 ⚖️ {t.login.lawyerLabel}
+              </button>
+              <button
+                type="button"
+                onClick={() => setLoginAs("agency")}
+                className={`flex-1 py-2 px-3 rounded-md text-xs sm:text-sm font-medium transition-all ${
+                  loginAs === "agency"
+                    ? "bg-white dark:bg-gray-600 text-blue-600 dark:text-blue-400 shadow-sm"
+                    : "text-gray-500 dark:text-gray-300 hover:text-gray-700 dark:hover:text-white"
+                }`}
+              >
+                🏢 {t.login.agencyLabel ?? "Agency"}
               </button>
             </div>
           </div>

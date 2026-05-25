@@ -4,12 +4,8 @@
  * Provides a unified interface for submitting evidence packages to
  * authorized notarization authorities (公证处).
  *
- * Currently implemented as a STUB — replace with real 公证处 API calls
- * when integrating with a provider such as:
- *   - 北京互联网法院「天平链」电子证据平台
- *   - 蚂蚁链「司法联盟链」
- *   - 杭州互联网法院「之江共识」存证平台
- *   - 各地公证处在线受理 API
+ * Uses Pinata for IPFS deposition of evidence hashes, enabling
+ * third-party verification of evidence integrity over time.
  *
  * Key concepts:
  *   - 证据固化 (Evidence Solidification): making evidence tamper-evident
@@ -61,6 +57,96 @@ export interface NotarizationStatus {
   chainHash?: string;
   issuedAt?: Date;
   rejectionReason?: string;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Pinata IPFS Integration
+// ─────────────────────────────────────────────────────────────────────────────
+
+const PINATA_API_URL = "https://api.pinata.cloud";
+
+/**
+ * Upload a JSON evidence package to IPFS via Pinata.
+ * Returns the IPFS CID (Content Identifier).
+ */
+export async function pinataUploadJson(
+  data: Record<string, unknown>
+): Promise<{ cid: string; size: number }> {
+  const apiKey = process.env.PINATA_API_KEY;
+  const secretKey = process.env.PINATA_SECRET_KEY;
+
+  if (!apiKey || !secretKey) {
+    throw new Error("Pinata API credentials not configured");
+  }
+
+  const body = {
+    pinataContent: data,
+    pinataMetadata: {
+      name: `PortraitPay-Evidence-${Date.now()}`,
+    },
+    pinataOptions: {
+      cidVersion: 1,
+    },
+  };
+
+  const res = await fetch(`${PINATA_API_URL}/pinning/pinJSONToIPFS`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      pinata_api_key: apiKey,
+      pinata_secret_api_key: secretKey,
+    },
+    body: JSON.stringify(body),
+  });
+
+  if (!res.ok) {
+    const err = await res.text();
+    throw new Error(`Pinata upload failed: ${res.status} — ${err}`);
+  }
+
+  const json = await res.json();
+  return { cid: json.IpfsHash, size: json.PinSize };
+}
+
+/**
+ * Pin an existing IPFS CID (e.g., from a third-party upload).
+ */
+export async function pinataPinByCid(cid: string, name?: string): Promise<void> {
+  const apiKey = process.env.PINATA_API_KEY;
+  const secretKey = process.env.PINATA_SECRET_KEY;
+
+  if (!apiKey || !secretKey) {
+    throw new Error("Pinata API credentials not configured");
+  }
+
+  const res = await fetch(`${PINATA_API_URL}/pinning/pinByCID`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      pinata_api_key: apiKey,
+      pinata_secret_api_key: secretKey,
+    },
+    body: JSON.stringify({
+      hashToPin: cid,
+      pinataMetadata: { name: name || `PortraitPay-Pin-${cid}` },
+      pinataOptions: { cidVersion: 1 },
+    }),
+  });
+
+  if (!res.ok) {
+    const err = await res.text();
+    throw new Error(`Pinata pin failed: ${res.status} — ${err}`);
+  }
+}
+
+/**
+ * Check whether Pinata credentials are configured.
+ */
+export function isPinataConfigured(): boolean {
+  return !!(
+    process.env.PINATA_API_KEY &&
+    process.env.PINATA_SECRET_KEY
+  );
 }
 
 /**
@@ -141,4 +227,53 @@ export function isNotarizationConfigured(): boolean {
     process.env.NOTARIZATION_API_KEY ||
     process.env.NOTARIZATION_ENDPOINT
   );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// High-level evidence notarization workflow
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Full evidence notarization pipeline:
+ * 1. Build the evidence manifest JSON
+ * 2. Upload to IPFS via Pinata
+ * 3. Returns { reportHash, reportIpfsCid }
+ */
+export async function notarizeInfringementEvidence(params: {
+  reportId: string;
+  portraitId: string;
+  reporterId: string;
+  type: string;
+  description: string;
+  evidenceUrls: string[];
+  detectedUrl?: string;
+  capturedAt?: Date;
+}): Promise<{ reportHash: string; reportIpfsCid: string }> {
+  const { createHash } = await import("crypto");
+
+  const { reportId, portraitId, reporterId, type, description, evidenceUrls, detectedUrl, capturedAt } = params;
+
+  // Build deterministic evidence manifest
+  const manifest = {
+    reportId,
+    portraitId,
+    reporterId,
+    type,
+    description,
+    evidenceUrls,
+    detectedUrl: detectedUrl || null,
+    capturedAt: (capturedAt || new Date()).toISOString(),
+    platform: "PortraitPay AI",
+    version: "1.0",
+  };
+
+  // Compute reportHash from manifest (deterministic — matches what we store in DB)
+  const reportHash = createHash("sha256")
+    .update(JSON.stringify({ portraitId, type, description, detectedUrl, evidenceUrls }))
+    .digest("hex");
+
+  // Upload manifest to IPFS
+  const { cid } = await pinataUploadJson(manifest);
+
+  return { reportHash, reportIpfsCid: cid };
 }

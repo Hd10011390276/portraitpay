@@ -27,6 +27,9 @@ export function DashboardShell({ children, title, subtitle, action, forceLight }
   const [loading, setLoading] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [theme, setTheme] = useState<"light" | "dark">("light");
+  const [effectiveRole, setEffectiveRole] = useState<string | null>(
+    () => typeof window !== "undefined" ? localStorage.getItem("pp_effective_role") : null
+  );
 
   useEffect(() => {
     const saved = localStorage.getItem("theme");
@@ -40,6 +43,11 @@ export function DashboardShell({ children, title, subtitle, action, forceLight }
     window.addEventListener("theme-change", handleThemeChange);
     return () => window.removeEventListener("theme-change", handleThemeChange);
   }, []);
+
+  const handleRoleSwitch = (role: string) => {
+    localStorage.setItem("pp_effective_role", role);
+    setEffectiveRole(role);
+  };
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -75,7 +83,7 @@ export function DashboardShell({ children, title, subtitle, action, forceLight }
     <div className={`min-h-screen ${forceLight ? "bg-white" : theme === "dark" ? "bg-gray-950" : "bg-gray-50"}`}>
       {/* Sidebar - hidden on mobile, shown on desktop */}
       <div className="hidden sm:block fixed inset-y-0 left-0 z-40">
-        <Sidebar userRole={user?.role} />
+        <Sidebar userRole={effectiveRole || user?.role} />
       </div>
 
       {/* Mobile sidebar overlay */}
@@ -89,7 +97,7 @@ export function DashboardShell({ children, title, subtitle, action, forceLight }
       {/* Mobile sidebar drawer */}
       {mobileMenuOpen && (
         <div className="fixed inset-y-0 left-0 z-40 sm:hidden">
-          <Sidebar onClose={() => setMobileMenuOpen(false)} userRole={user?.role} />
+          <Sidebar onClose={() => setMobileMenuOpen(false)} userRole={effectiveRole || user?.role} />
         </div>
       )}
 
@@ -112,7 +120,8 @@ export function DashboardShell({ children, title, subtitle, action, forceLight }
 
       {/* Main content */}
       <div className="sm:ml-64">
-        <Header user={user} title={title} subtitle={subtitle} action={action} />
+        <Header user={user} title={title} subtitle={subtitle} action={action}
+          effectiveRole={effectiveRole} onRoleSwitch={handleRoleSwitch} />
         <main
           className="p-4 sm:p-6 sm:pt-6"
           style={{
