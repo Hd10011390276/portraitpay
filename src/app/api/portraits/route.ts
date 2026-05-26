@@ -23,6 +23,8 @@ const CreatePortraitSchema = z.object({
   gender: z.enum(["male", "female", "non_binary", "not_specified"]).optional(),
   roleType: z.enum(["actor", "model", "influencer", "celebrity", "voice_actor", "stunt_performer"]).optional(),
   productionType: z.enum(["live_action", "animation", "vfx", "cgi", "mixed_media"]).optional(),
+  subjectName: z.string().max(200).optional(),
+  subjectEmail: z.string().email().optional().or(z.literal("")),
 });
 
 export async function GET(request: NextRequest) {
@@ -83,7 +85,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ success: false, error: "Validation failed", details: parsed.error.flatten() }, { status: 400 });
   }
 
-  const { title, description, category, tags, isPublic, imageHash, portraitImageHash, idCardFrontHash, idCardType, idCardName, idCardNumber, frontViewUrl, sideViewUrl, backViewUrl, gender, roleType, productionType } = parsed.data;
+  const { title, description, category, tags, isPublic, imageHash, portraitImageHash, idCardFrontHash, idCardType, idCardName, idCardNumber, frontViewUrl, sideViewUrl, backViewUrl, gender, roleType, productionType, subjectName, subjectEmail } = parsed.data;
 
   try {
     const portrait = await prisma.portrait.create({
@@ -105,6 +107,8 @@ export async function POST(request: NextRequest) {
         gender: gender ?? null,
         roleType: roleType ?? null,
         productionType: productionType ?? null,
+        subjectName: subjectName ?? null,
+        subjectEmail: subjectEmail || null,
         ownerId: session.userId,
         status: "DRAFT",
       },

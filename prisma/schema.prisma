@@ -152,6 +152,10 @@ model Portrait {
   ownerId String
   owner   User   @relation(fields: [ownerId], references: [id])
 
+  // Agent-managed portrait: the actual person this portrait represents
+  subjectName  String? // Name of the person in the portrait (Agent-managed)
+  subjectEmail String? // Email of the person (optional, for linking existing users)
+
   title       String
   description String?
   category    String  @default("general")

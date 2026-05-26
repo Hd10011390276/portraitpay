@@ -55,8 +55,6 @@ async function savePortraitLocally(portraitId: string, imageBlob: Blob) {
 }
 
 // ── Component ─────────────────────────────────────────────────────
-const MAX_PORTRAITS = 5;
-
 export default function UploadPortraitPage() {
   const router = useRouter();
   const { t } = useLanguage();
@@ -85,6 +83,7 @@ export default function UploadPortraitPage() {
   // ── Test account bypass ────────────────────────────────────
   const TEST_ACCOUNTS = ["799096322@qq.com"];
   const [userEmail, setUserEmail] = useState<string>("");
+  const [userRole, setUserRole] = useState<string>("");
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -93,6 +92,7 @@ export default function UploadPortraitPage() {
         if (res.ok) {
           const json = await res.json();
           setUserEmail(json.data?.user?.email || json.user?.email || "");
+          setUserRole(json.data?.user?.role || json.user?.role || "");
         }
       } catch {}
     };
@@ -100,6 +100,7 @@ export default function UploadPortraitPage() {
   }, []);
 
   const isTestAccount = TEST_ACCOUNTS.includes(userEmail);
+  const MAX_PORTRAITS = userRole === "AGENT" ? 50 : 5;
 
   // ── Portrait count check ─────────────────────────────────────
   useEffect(() => {

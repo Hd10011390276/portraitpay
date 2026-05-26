@@ -15,8 +15,14 @@ export function RoleSelector({ value, onChange, error }: RoleSelectorProps) {
     {
       value: "TALENT",
       label: t.register.roleTalent || "Actor/Creator",
-      description: t.register.roleTalentDesc || "Actors, models, influencers - can upload portraits and create content",
+      description: t.register.roleTalentDesc || "Manage your own portraits, consent passport, and voice ID",
       icon: "🎭",
+    },
+    {
+      value: "AGENT",
+      label: t.register.roleAgent || "Agent / IP Holder",
+      description: t.register.roleAgentDesc || "Manage multiple people's portraits, licenses, and rights",
+      icon: "🏢",
     },
   ];
 

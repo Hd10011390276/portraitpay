@@ -59,7 +59,7 @@ export default function RegisterPage() {
     }
     if (!currentForm.confirmPassword) errs.confirmPassword = t.register.errors.confirmPasswordRequired;
     else if (currentForm.password !== currentForm.confirmPassword) errs.confirmPassword = t.register.errors.passwordsMismatch;
-    // role is always TALENT — no validation needed
+    if (!currentForm.role) errs.role = t.register.errors.roleRequired;
 
     // Media Kit validation
     if (mediaKitUrl.trim() !== "") {
@@ -91,7 +91,7 @@ export default function RegisterPage() {
           confirmPassword: form.confirmPassword,
           name: form.name,
           phone: form.phone || undefined,
-          role: "TALENT",
+          role: form.role,
           allowLicensing,
           allowedScopes,
           prohibitedContent,
@@ -163,6 +163,12 @@ export default function RegisterPage() {
                 {globalError}
               </div>
             )}
+
+            <RoleSelector
+              value={form.role}
+              onChange={(role) => setForm((prev) => ({ ...prev, role }))}
+              error={errors.role}
+            />
 
             <Input
               label={t.register.name}

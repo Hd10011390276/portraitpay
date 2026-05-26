@@ -36,7 +36,7 @@ export default function PortraitsPage() {
   const [statusFilter, setStatusFilter] = useState("");
   const [certifyStatus, setCertifyStatus] = useState<{ id: string; message: string } | null>(null);
   const [search, setSearch] = useState("");
-  const MAX_PORTRAITS = 5;
+  const MAX_PORTRAITS = user?.role === "AGENT" ? 50 : 5;
   const atPortraitLimit = portraits.length >= MAX_PORTRAITS;
 
   const STATUS_OPTIONS = [
