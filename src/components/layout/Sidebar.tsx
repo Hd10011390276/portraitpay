@@ -140,16 +140,7 @@ export function Sidebar({ onClose, userRole }: SidebarProps) {
       ),
     },
     {
-      label: t.sidebar.lawyerEarnings || "Earnings",
-      href: "/lawyer/earnings",
-      icon: (
-        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
-      ),
-    },
-    {
-      label: "Inbox",
+          label: "Inbox",
       href: "/inbox",
       icon: (
         <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -197,25 +188,7 @@ export function Sidebar({ onClose, userRole }: SidebarProps) {
         </svg>
       ),
     },
-    {
-      label: t.sidebar.earnings,
-      href: "/earnings",
-      icon: (
-        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
-      ),
-    },
-    {
-      label: t.sidebar.withdraw,
-      href: "/withdraw",
-      icon: (
-        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
-        </svg>
-      ),
-    },
-  ];
+      ];
 
   const secondaryItems: NavItem[] = [
     {
@@ -236,16 +209,7 @@ export function Sidebar({ onClose, userRole }: SidebarProps) {
         </svg>
       ),
     },
-    {
-      label: t.sidebar.contracts,
-      href: "/contracts",
-      icon: (
-        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-        </svg>
-      ),
-    },
-    {
+        {
       label: t.sidebar.faq,
       href: "/faq",
       icon: (
@@ -294,7 +258,7 @@ export function Sidebar({ onClose, userRole }: SidebarProps) {
         <p className="px-3 mb-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">
           {isLawyerWithReg ? "Lawyer Tools" : t.sidebar.main}
         </p>
-        {navItems.map((item) => (
+        {navItems.filter((item) => !isAgency || (item.href !== "/earnings" && item.href !== "/withdraw")).map((item) => (
           <Link
             key={item.href}
             href={item.href}
@@ -351,6 +315,20 @@ export function Sidebar({ onClose, userRole }: SidebarProps) {
                 <path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
               </svg>
               {t.sidebar.contacts ?? "Contacts"}
+            </Link>
+            <Link
+              href="/admin/kyc"
+              onClick={onClose}
+              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all
+                ${isActive("/admin/kyc")
+                  ? "bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300"
+                  : "text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white"
+                }`}
+            >
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+              </svg>
+              ID Verification
             </Link>
           </>
         )}
@@ -421,21 +399,7 @@ export function Sidebar({ onClose, userRole }: SidebarProps) {
                   </svg>
                   {t.sidebar.artistContracts ?? "Artist Contracts"}
                 </Link>
-                <Link
-                  href="/enterprise/escrow"
-                  onClick={onClose}
-                  className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all
-                    ${isActive("/enterprise/escrow")
-                      ? "bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300"
-                      : "text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white"
-                    }`}
-                >
-                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
-                  </svg>
-                  {t.sidebar.escrow ?? "Escrow"}
-                </Link>
-                <Link
+                                <Link
                   href="/enterprise/rights-chain"
                   onClick={onClose}
                   className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all
@@ -518,16 +482,7 @@ export function Sidebar({ onClose, userRole }: SidebarProps) {
                   </svg>
                 ),
               },
-              {
-                label: t.sidebar.discoverActors ?? "Discover Actors",
-                href: "/actors",
-                icon: (
-                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 7a4 4 0 100 8 4 4 0 000-8z" />
-                  </svg>
-                ),
-              },
-            ].map((item) => (
+                          ].map((item) => (
               <Link
                 key={item.href}
                 href={item.href}
@@ -616,25 +571,7 @@ export function Sidebar({ onClose, userRole }: SidebarProps) {
             </div>
 
             {[
-              {
-                label: t.sidebar.apiKeys,
-                href: "/api-keys",
-                icon: (
-                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
-                  </svg>
-                ),
-              },
-              {
-                label: t.sidebar.developers,
-                href: "/developers",
-                icon: (
-                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
-                  </svg>
-                ),
-              },
-            ].map((item) => (
+                          ].map((item) => (
               <Link
                 key={item.href}
                 href={item.href}

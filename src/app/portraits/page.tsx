@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
+export const dynamic = "force-dynamic";
 import Link from "next/link";
 import PortraitCard from "@/components/portrait/PortraitCard";
 import { DashboardShell } from "@/components/layout/DashboardShell";
@@ -80,7 +81,7 @@ export default function PortraitsPage() {
   }, [checking, fetchPortraits]);
 
   const handleCertify = async (id: string) => {
-    if (!confirm("Certify this portrait on Base Mainnet?")) return;
+    if (!confirm("Certify this portrait on Sepolia Testnet?")) return;
     // removed setCertifyingId;
     setCertifyStatus({ id, message: "Starting certification..." });
     try {
@@ -213,7 +214,7 @@ export default function PortraitsPage() {
             <h2 className="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-2">
               {search ? t.portraits.noResults : t.portraits.noPortraits}
             </h2>
-            <p className="text-gray-400 dark:text-gray-500 mb-6 max-w-sm">
+            <p className="text-gray-500 dark:text-gray-400 mb-6 max-w-sm">
               {search ? t.portraits.tryDifferentKeyword : t.portraits.uploadFirstPortrait}
             </p>
             <Link href="/portraits/upload"

@@ -13,6 +13,9 @@
  *   { success: false, error: "..." }
  */
 import { NextRequest, NextResponse } from "next/server";
+
+export const dynamic = "force-dynamic";
+
 import { getSessionFromRequest } from "@/lib/auth/session";
 
 // Provider factory — same as service.ts

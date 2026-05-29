@@ -52,7 +52,7 @@ export async function generateCertificateClientSide(
   ctx.drawImage(templateImg, 0, 0, W, H);
 
   // Prepare text values
-  const networkLabel = data.network === "base" ? "Base Mainnet" : "Ethereum Sepolia";
+  const networkLabel = data.network === "base" ? "Base Mainnet (Production)" : "Ethereum Sepolia";
   const certDateStr = formatDate(data.certifiedAt);
   const txHash = truncateHash(data.blockchainTxHash, 66);
   const imgHash = truncateHash(data.portraitHash || "", 66);

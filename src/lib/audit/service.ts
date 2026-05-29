@@ -1,214 +1,92 @@
-// User Audit Log Service
-// Records user-side operation audit trail (login, profile change, authorization, etc.)
+/**
+ * Audit Service - minimal stub for auth/api-keys dependencies
+ */
 
 import { prisma } from "@/lib/prisma";
 import type { UserAuditAction } from "@/types/enums";
-import { headers } from "next/headers";
 
-export type AuditMeta = {
-  ip?: string | null;
-  userAgent?: string | null;
-  deviceType?: string;
-  browser?: string;
-  os?: string;
-  errorCode?: string;
-  [key: string]: unknown;
+export const AUDIT_ACTION_LABELS: Record<string, string> = {
+  LOGIN: "Login",
+  LOGIN_FAILED: "Login Failed",
+  LOGOUT: "Logout",
+  REGISTER: "Registration",
+  API_KEY_CREATED: "API Key Created",
+  API_KEY_DELETED: "API Key Deleted",
+  PORTRAIT_UPLOADED: "Portrait Uploaded",
+  PORTRAIT_CERTIFIED: "Portrait Certified",
 };
 
-// ─── Log a User Action ───────────────────────────────────────────────────────
-
-export type LogAuditInput = {
+interface LogAuditParams {
   userId: string;
-  action: UserAuditAction;
+  action: string;
   targetType?: string;
   targetId?: string;
   success?: boolean;
   detail?: string;
-  meta?: AuditMeta;
-};
+  meta?: Record<string, unknown>;
+}
 
-/**
- * Record a user audit log entry.
- * Call this at the end of every significant user action handler.
- */
-export async function logAudit(input: LogAuditInput) {
-  const { userId, action, targetType, targetId, success = true, detail, meta } = input;
-
-  // Try to extract IP and User-Agent from headers if not provided
-  let ip = meta?.ip;
-  let userAgent = meta?.userAgent;
-
-  if (!ip || !userAgent) {
-    try {
-      const headersList = await headers();
-      ip = ip ?? headersList.get("x-forwarded-for")?.split(",")[0]?.trim()
-        ?? headersList.get("x-real-ip") ?? null;
-      userAgent = userAgent ?? headersList.get("user-agent") ?? null;
-    } catch {
-      // Headers not available in this context
-    }
-  }
-
+export async function logAudit(params: LogAuditParams): Promise<void> {
   try {
-    await prisma.userAuditLog.create({
+    await prisma.auditLog.create({
       data: {
-        userId,
-        action,
-        targetType,
-        targetId,
-        success,
-        detail,
-        ipAddress: ip ?? null,
-        userAgent: userAgent ?? null,
-        meta: meta ? JSON.parse(JSON.stringify(meta)) : undefined,
+        userId: params.userId,
+        action: params.action as UserAuditAction,
+        targetType: params.targetType,
+        targetId: params.targetId,
+        success: params.success ?? true,
+        detail: params.detail,
+        meta: params.meta,
       },
     });
-  } catch (err) {
-    // Audit logging failure must never break the main business flow
-    console.error("[logAudit] Failed to write audit log:", err);
+  } catch (error) {
+    console.error("[logAudit]", error);
   }
 }
 
-// ─── List Audit Logs (for user or admin) ─────────────────────────────────────
-
-export type ListAuditLogsOptions = {
-  userId?: string;
-  action?: UserAuditAction;
-  startDate?: Date;
-  endDate?: Date;
-  page?: number;
-  limit?: number;
-  success?: boolean;
-};
-
-export async function listAuditLogs(options: ListAuditLogsOptions) {
-  const {
-    userId,
-    action,
-    startDate,
-    endDate,
-    page = 1,
-    limit = 50,
-    success,
-  } = options;
-
-  const where: Record<string, unknown> = {};
-  if (userId) where.userId = userId;
-  if (action) where.action = action;
-  if (typeof success === "boolean") where.success = success;
-  if (startDate || endDate) {
-    where.createdAt = {};
-    if (startDate) (where.createdAt as Record<string, Date>).gte = startDate;
-    if (endDate) (where.createdAt as Record<string, Date>).lte = endDate;
-  }
-
-  const [logs, total] = await Promise.all([
-    prisma.userAuditLog.findMany({
-      where,
-      orderBy: { createdAt: "desc" },
-      skip: (page - 1) * limit,
-      take: limit,
-    }),
-    prisma.userAuditLog.count({ where }),
-  ]);
-
-  return {
-    logs,
-    meta: { page, limit, total, totalPages: Math.ceil(total / limit) },
-  };
-}
-
-// ─── Admin: List All Audit Logs ─────────────────────────────────────────────
-
-export type AdminListAuditLogsOptions = {
-  action?: UserAuditAction;
+interface AdminListAuditLogsParams {
+  action?: string;
   userId?: string;
   targetType?: string;
-  targetId?: string;
   startDate?: Date;
   endDate?: Date;
-  page?: number;
-  limit?: number;
+  page: number;
+  limit: number;
   success?: boolean;
-};
+}
 
-export async function adminListAuditLogs(options: AdminListAuditLogsOptions) {
-  const {
-    action,
-    userId,
-    targetType,
-    targetId,
-    startDate,
-    endDate,
-    page = 1,
-    limit = 50,
-    success,
-  } = options;
-
+export async function adminListAuditLogs(params: AdminListAuditLogsParams) {
   const where: Record<string, unknown> = {};
-  if (userId) where.userId = userId;
-  if (action) where.action = action;
-  if (targetType) where.targetType = targetType;
-  if (targetId) where.targetId = targetId;
-  if (typeof success === "boolean") where.success = success;
-  if (startDate || endDate) {
+
+  if (params.action) where.action = params.action;
+  if (params.userId) where.userId = params.userId;
+  if (params.targetType) where.targetType = params.targetType;
+  if (params.startDate || params.endDate) {
     where.createdAt = {};
-    if (startDate) (where.createdAt as Record<string, Date>).gte = startDate;
-    if (endDate) (where.createdAt as Record<string, Date>).lte = endDate;
+    if (params.startDate) (where.createdAt as Record<string, Date>).gte = params.startDate;
+    if (params.endDate) (where.createdAt as Record<string, Date>).lte = params.endDate;
   }
+  if (typeof params.success === "boolean") where.success = params.success;
+
+  const skip = (params.page - 1) * params.limit;
 
   const [logs, total] = await Promise.all([
-    prisma.userAuditLog.findMany({
+    prisma.auditLog.findMany({
       where,
-      include: {
-        user: { select: { id: true, email: true, displayName: true, role: true } },
-      },
       orderBy: { createdAt: "desc" },
-      skip: (page - 1) * limit,
-      take: limit,
+      skip,
+      take: params.limit,
     }),
-    prisma.userAuditLog.count({ where }),
+    prisma.auditLog.count({ where }),
   ]);
 
   return {
     logs,
-    meta: { page, limit, total, totalPages: Math.ceil(total / limit) },
+    meta: {
+      page: params.page,
+      limit: params.limit,
+      total,
+      totalPages: Math.ceil(total / params.limit),
+    },
   };
 }
-
-// ─── Audit Action Descriptions (human-readable) ─────────────────────────────
-
-export const AUDIT_ACTION_LABELS: Record<UserAuditAction, string> = {
-  LOGIN: "用户登录",
-  LOGIN_FAILED: "登录失败",
-  LOGOUT: "用户登出",
-  OTP_SENT: "发送验证码",
-  OTP_VERIFIED: "验证码验证成功",
-  OTP_FAILED: "验证码验证失败",
-  PROFILE_UPDATE: "更新个人资料",
-  PHONE_BIND: "Bind phone number",
-  PHONE_UNBIND: "Unbind phone number",
-  WALLET_BIND: "绑定钱包",
-  WALLET_UNBIND: "解绑钱包",
-  KYC_SUBMITTED: "提交KYC认证",
-  KYC_APPROVED: "KYC认证通过",
-  KYC_REJECTED: "KYC认证拒绝",
-  KYC_EXPIRED: "KYC认证过期",
-  PORTRAIT_REGISTERED: "登记肖像",
-  PORTRAIT_UPDATED: "更新肖像信息",
-  PORTRAIT_SUSPENDED: "肖像被暂停",
-  PORTRAIT_DELETED: "删除肖像",
-  AUTH_REQUEST_SENT: "发起授权申请",
-  AUTH_APPROVED: "授权通过",
-  AUTH_REJECTED: "授权拒绝",
-  AUTH_REVOKED: "授权撤回",
-  AUTH_CERTIFICATE_DOWNLOADED: "下载授权证书",
-  EARNINGS_WITHDRAWN: "收益提现",
-  EARNINGS_EXPORTED: "导出收益报告",
-  SETTLEMENT_VIEWED: "查看结算单",
-  NOTIFICATION_SETTINGS_UPDATED: "更新通知设置",
-  MONITOR_CONFIG_UPDATED: "更新监测配置",
-  API_KEY_CREATED: "创建API Key",
-  API_KEY_DELETED: "删除API Key",
-  API_KEY_ROTATED: "轮换API Key",
-};

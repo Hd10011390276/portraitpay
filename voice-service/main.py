@@ -139,7 +139,7 @@ def verify_voices(file1: UploadFile = File(...), file2: UploadFile = File(...)):
     emb2 = process(file2)
 
     similarity = float(np.dot(emb1, emb2) / (np.linalg.norm(emb1) * np.linalg.norm(emb2) + 1e-8))
-    threshold = 0.75
+    threshold = float(os.environ.get("VOICE_THRESHOLD", "0.80"))
     same_person = similarity > threshold
 
     return {

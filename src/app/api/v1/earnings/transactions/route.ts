@@ -1,40 +1,38 @@
-
-/**
- * GET /api/v1/earnings/transactions
- * Get user's revenue transaction history (earnings detail)
- */
-
 import { NextRequest, NextResponse } from "next/server";
-import { getSession, getSessionFromRequest } from "@/lib/auth/session";
-import { getEarningsTransactions } from "@/lib/revenue/service";
+import { getSessionFromRequest } from "@/lib/auth/session";
+import { prisma } from "@/lib/prisma";
+
 export const dynamic = "force-dynamic";
 
-
-export async function GET(request: NextRequest) {
-  try {
-    const session = await getSessionFromRequest(request);
-    if (!session) {
-      return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
-    }
-
-    const { searchParams } = new URL(request.url);
-    const page = parseInt(searchParams.get("page") ?? "1", 10);
-    const limit = Math.min(parseInt(searchParams.get("limit") ?? "20", 10), 100);
-    const startDate = searchParams.get("startDate");
-    const endDate = searchParams.get("endDate");
-    const type = searchParams.get("type");
-
-    const result = await getEarningsTransactions(session.userId, {
-      page,
-      limit,
-      startDate: startDate ? new Date(startDate) : undefined,
-      endDate: endDate ? new Date(endDate) : undefined,
-      type: type ?? undefined,
-    });
-
-    return NextResponse.json({ success: true, ...result });
-  } catch (error) {
-    console.error("[GET /api/v1/earnings/transactions]", error);
-    return NextResponse.json({ success: false, error: "Internal server error" }, { status: 500 });
+export async function GET(req: NextRequest) {
+  const session = await getSessionFromRequest(req);
+  if (!session?.userId) {
+    return NextResponse.json({ success: false, message: "Unauthorized" }, { status: 401 });
   }
+
+  const transactions = await prisma.transaction.findMany({
+    where: { userId: session.userId },
+    orderBy: { createdAt: "desc" },
+    take: 20,
+    select: {
+      id: true,
+      type: true,
+      status: true,
+      amount: true,
+      currency: true,
+      createdAt: true,
+    },
+  });
+
+  return NextResponse.json({
+    success: true,
+    data: transactions.map((t) => ({
+      id: t.id,
+      type: t.type,
+      status: t.status,
+      amount: Number(t.amount),
+      currency: t.currency,
+      createdAt: t.createdAt.toISOString(),
+    })),
+  });
 }

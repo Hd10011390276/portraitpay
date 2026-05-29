@@ -161,7 +161,7 @@ export async function computeImageHash(fileBuffer: Buffer): Promise<string> {
 }
 
 /**
- * Get current Base Mainnet gas price
+ * Get current Sepolia Testnet gas price
  */
 export async function getBaseGasPrice(): Promise<string> {
   const provider = getProvider("base");

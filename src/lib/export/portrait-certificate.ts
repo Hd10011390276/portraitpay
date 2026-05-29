@@ -77,7 +77,7 @@ export async function buildCertificateImage(
   const W = 5000;
   const H = 2813;
 
-  const networkLabel = data.network === "base" ? "Base Mainnet" : "Ethereum Sepolia";
+  const networkLabel = data.network === "base" ? "Base Mainnet (Production)" : "Ethereum Sepolia";
   const certDateStr = format(data.certifiedAt, "yyyy-MM-dd HH:mm:ss");
 
   const portraitTitle = escapeXml(data.portraitTitle);

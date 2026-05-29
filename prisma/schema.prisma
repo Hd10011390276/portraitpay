@@ -69,8 +69,7 @@ model User {
   reportsAsVictim       InfringementReport[] @relation("ReportVictim")
   quickReports         InfringementReportQuick[]
   kycLogs               KYCLog[]
-  celebrityApplications CelebrityApplication[]
-
+  
   withdrawals Withdrawal[]
   settlements Settlement[]
   auditLogs   AuditLog[]   @relation("AuditAdmin")
@@ -106,6 +105,9 @@ model User {
   voiceEmbeddings VoiceEmbedding[]
   agencyAccount   AgencyAccount?
   agencyArtistContracts AgencyArtistContract[]
+  ipMembers       IPMember[]
+  webhookConfigs  WebhookConfig[]
+  memberDocuments MemberDocument[]
 
   @@index([walletAddress])
   @@index([kycStatus])
@@ -167,6 +169,7 @@ model Portrait {
   tags           String[] @default([])
 
   originalImageUrl String?
+  portraitImageUrl String? // Portrait face photo (separate from ID card image)
   thumbnailUrl     String?
   imageHash        String?
 
@@ -221,6 +224,7 @@ model Portrait {
   digitalHumanLicenses DigitalHumanLicense[]
   licensePackages      LicensePackage[]
   marketplaceRequests  MarketplaceRequest[]
+  ipMembers            IPMember[]
 
   @@index([ownerId])
   @@index([status])
@@ -399,9 +403,10 @@ model InfringementReport {
 
   alertId String? @unique
 
-  notices       InfringementNotice[]
-  lawyerCases   LawyerCase[]
-  conversations Conversation[]
+  notices          InfringementNotice[]
+  lawyerCases      LawyerCase[]
+  conversations    Conversation[]
+  evidencePackages EvidencePackage[]
 
   @@index([portraitId])
   @@index([reporterId])
@@ -581,7 +586,9 @@ model InfringementNotice {
 model EvidencePackage {
   id String @id @default(cuid())
 
-  reportId String? @unique
+  reportId String?
+  report   InfringementReport? @relation(fields: [reportId], references: [id])
+
   alertId  String? @unique
 
   evidenceType String
@@ -637,42 +644,6 @@ model KYCLog {
   @@index([userId])
 }
 
-// ============================================================
-// CelebrityApplication
-// ============================================================
-
-model CelebrityApplication {
-  id String @id @default(cuid())
-
-  userId String
-  user   User   @relation(fields: [userId], references: [id])
-
-  stageName      String
-  realName       String
-  idCardNumber   String
-  idCardFrontUrl String
-  idCardBackUrl  String
-  authLetterUrl  String
-  authLetterHash String?
-  notaryCertUrl  String?
-
-  agencyName    String?
-  agencyContact String?
-  agencyPhone   String?
-
-  // Status: PENDING_REVIEW, APPROVED, REJECTED
-  status String @default("PENDING_REVIEW")
-
-  reviewerId      String?
-  reviewedAt      DateTime?
-  rejectionReason String?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([userId])
-  @@index([status])
-}
 
 // ============================================================
 // License
@@ -752,29 +723,6 @@ model Enterprise {
   @@index([status])
 }
 
-// ============================================================
-// AgencyArtist
-// ============================================================
-
-model AgencyArtist {
-  id String @id @default(cuid())
-
-  agencyId String
-  artistId String
-
-  proxyAgreementUrl String?
-  proxyStartDate    DateTime?
-  proxyEndDate      DateTime?
-  // Status: ACTIVE, EXPIRED, REVOKED
-  proxyStatus       String    @default("ACTIVE")
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@unique([agencyId, artistId])
-  @@index([agencyId])
-  @@index([artistId])
-}
 
 // ============================================================
 // EntAuthApplication
@@ -1304,24 +1252,6 @@ model ContactSubmission {
   @@index([createdAt])
 }
 
-// Celebrity - known faces to prevent face copyright fraud
-model Celebrity {
-  id        String   @id @default(cuid())
-  name      String
-  enName    String?
-  category  String // film, music, sports, politics, tv
-  imageUrl  String?
-  sourceUrl String?
-  country   String   @default("CN")
-  faceId    String?
-  active    Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([category])
-  @@index([country])
-  @@index([faceId])
-}
 
 // ============================================================
 // AI Platform API Keys — For third-party AI platforms to license portraits
@@ -1432,6 +1362,10 @@ model LawyerRegistration {
   reviewedAt      DateTime?
   rejectionReason String?   @db.Text
 
+  barNumber        String? // State Bar number e.g. "CA 123456"
+  barState         String? // Jurisdiction e.g. "California"
+  federalAdmission Boolean  @default(false)
+
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
   lawyerCases LawyerCase[]
@@ -1503,6 +1437,11 @@ model EvidenceExport {
   exportedAt    DateTime @default(now())
   fileHash      String
   downloadCount Int      @default(1)
+
+  signedAt      DateTime?
+  signerName    String?
+  signerIp      String?
+  signatureHash String?
 
   lawyerCase    LawyerCase @relation(fields: [caseId], references: [id])
 
@@ -1956,12 +1895,18 @@ model AgencyAccount {
   artistContracts AgencyArtistContract[]
   escrow          AgencyEscrow?
   performanceApplications AgencyPerformanceApplication[]
+  ipMembers       IPMember[]
+  memberDocuments MemberDocument[]
+  memberFolders   MemberFolder[]
 
   @@index([parentAgencyId])
   @@index([status])
 }
 
+// ============================================================
 // AgencyArtistContract — Formal contract between agency and artist
+// ============================================================
+
 model AgencyArtistContract {
   id String @id @default(cuid())
 
@@ -2010,7 +1955,10 @@ model AgencyArtistContract {
   @@index([status])
 }
 
+// ============================================================
 // AgencyEscrow — Escrow account per agency per currency
+// ============================================================
+
 model AgencyEscrow {
   id String @id @default(cuid())
 
@@ -2037,7 +1985,10 @@ model AgencyEscrow {
   @@index([agencyId])
 }
 
+// ============================================================
 // AgencyEscrowTransaction — Escrow ledger entries
+// ============================================================
+
 model AgencyEscrowTransaction {
   id String @id @default(cuid())
 
@@ -2112,4 +2063,133 @@ model AgencyPerformanceApplication {
   @@index([agencyId])
   @@index([status])
   @@index([createdAt])
+}
+
+// ============================================================
+// IPMember — Agency IP roster member
+// ============================================================
+
+model IPMember {
+  id          String   @id @default(cuid())
+
+  agencyId    String
+  agency      AgencyAccount @relation(fields: [agencyId], references: [id])
+
+  name        String
+  email       String?
+  phone       String?
+
+  userId      String?
+  user        User?    @relation(fields: [userId], references: [id])
+
+  rightType   String   @default("OWNER")
+
+  portraitId  String?
+  portrait    Portrait? @relation(fields: [portraitId], references: [id])
+
+  proofUrl    String?
+  proofHash   String?
+  rightsScope String[] @default([])
+  territory   String   @default("global")
+  revenueShare Decimal  @default(1.0) @db.Decimal(5, 4)
+  status      String   @default("ACTIVE")
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  folderId   String?
+  folder     MemberFolder?  @relation(fields: [folderId], references: [id])
+  memberDocuments MemberDocument[]
+
+  @@index([agencyId])
+  @@index([portraitId])
+  @@index([folderId])
+}
+
+// ============================================================
+// MemberDocument — Documents attached to IP roster members
+// ============================================================
+
+model MemberDocument {
+  id          String   @id @default(cuid())
+
+  agencyId    String
+  agency      AgencyAccount @relation(fields: [agencyId], references: [id])
+
+  memberId    String?
+  member      IPMember? @relation(fields: [memberId], references: [id])
+
+  category    String   @default("OTHER")
+  fileName    String
+  fileUrl     String
+  fileSize    Int?
+  mimeType    String?
+  contentHash String
+
+  previousHash String?
+  chainIndex  Int      @default(0)
+
+  uploadedById String
+  uploadedBy   User   @relation(fields: [uploadedById], references: [id])
+
+  tags        String[] @default([])
+  notes       String?
+
+  ipfsCid     String?
+  notarized   Boolean  @default(false)
+  notarizationId String?
+
+  status      String   @default("ACTIVE")
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([agencyId])
+  @@index([memberId])
+  @@index([category])
+  @@index([contentHash])
+}
+
+// ============================================================
+// MemberFolder — Folder grouping for IP roster members
+// ============================================================
+
+model MemberFolder {
+  id        String   @id @default(cuid())
+  agencyId  String
+  agency    AgencyAccount @relation(fields: [agencyId], references: [id])
+  name      String
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  members   IPMember[]
+
+  @@index([agencyId])
+}
+
+// ============================================================
+// WebhookConfig — User webhook subscriptions
+// ============================================================
+
+model WebhookConfig {
+  id          String   @id @default(cuid())
+
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  url         String
+  events      String[] @default([])
+  secret      String
+  secretPrefix String  @default("pp_wh_")
+
+  isActive    Boolean  @default(true)
+
+  lastSentAt  DateTime?
+  lastStatus  Int?
+  failCount   Int      @default(0)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([userId])
 }

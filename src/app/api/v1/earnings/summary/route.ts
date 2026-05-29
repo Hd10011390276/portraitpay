@@ -1,30 +1,35 @@
-
-/**
- * GET /api/v1/earnings/summary
- * Get current user's earnings summary (as portrait owner)
- */
-
 import { NextRequest, NextResponse } from "next/server";
-import { getSession, getSessionFromRequest } from "@/lib/auth/session";
-import { getEarningsSummary } from "@/lib/revenue/service";
+import { getSessionFromRequest } from "@/lib/auth/session";
+import { prisma } from "@/lib/prisma";
+
 export const dynamic = "force-dynamic";
 
-
-export async function GET(request: NextRequest) {
-  try {
-    const session = await getSessionFromRequest(request);
-    if (!session) {
-      return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
-    }
-
-    const { searchParams } = new URL(request.url);
-    const currency = searchParams.get("currency") ?? "CNY";
-
-    const summary = await getEarningsSummary(session.userId, currency);
-
-    return NextResponse.json({ success: true, data: summary });
-  } catch (error) {
-    console.error("[GET /api/v1/earnings/summary]", error);
-    return NextResponse.json({ success: false, error: "Internal server error" }, { status: 500 });
+export async function GET(req: NextRequest) {
+  const session = await getSessionFromRequest(req);
+  if (!session?.userId) {
+    return NextResponse.json({ success: false, message: "Unauthorized" }, { status: 401 });
   }
+
+  const [totalTx, completedTx, portraitCount] = await Promise.all([
+    prisma.transaction.count({ where: { userId: session.userId } }),
+    prisma.transaction.count({ where: { userId: session.userId, status: "COMPLETED" } }),
+    prisma.portrait.count({ where: { ownerId: session.userId, status: "ACTIVE", deletedAt: null } }),
+  ]);
+
+  const completed = await prisma.transaction.findMany({
+    where: { userId: session.userId, status: "COMPLETED" },
+    select: { amount: true, currency: true },
+  });
+
+  const totalEarnings = completed.reduce((sum, t) => sum + Number(t.amount), 0);
+
+  return NextResponse.json({
+    success: true,
+    data: {
+      totalTransactions: totalTx,
+      completedTransactions: completedTx,
+      totalEarnings,
+      certifiedPortraits: portraitCount,
+    },
+  });
 }

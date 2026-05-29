@@ -12,6 +12,7 @@
 import crypto from "crypto";
 import { prisma } from "@/lib/prisma";
 import { uploadToIpfs } from "@/lib/ipfs";
+import { captureUrlScreenshot, bufferHash } from "./screenshot";
 
 export interface EvidenceCapture {
   evidenceUrl: string;      // where the evidence is stored (S3/R2 URL)
@@ -20,6 +21,8 @@ export interface EvidenceCapture {
   mimeType: string;
   pageTitle?: string;
   pageDescription?: string;
+  pageSnapshotUrl?: string; // R2 URL of the full-page PNG screenshot
+  screenshotHash?: string;  // SHA-256 of the screenshot
 }
 
 /**
@@ -72,9 +75,20 @@ export async function captureEvidence(
   );
   if (descMatch) pageDescription = descMatch[1].trim();
 
-  // ── Step 4: Store HTML in S3/R2 ───────────────────────────────────────────
+  // ── Step 4: Store HTML in S3/R2 (local fallback if not configured) ─────────
   const evidenceKey = `evidence/${metadata.reportId ?? metadata.alertId ?? "unknown"}/${capturedAt.getTime()}-${contentHash.slice(0, 12)}.html`;
-  const evidenceUrl = await storeEvidenceToS3(evidenceKey, htmlBuffer, mimeType);
+  let evidenceUrl: string;
+  try {
+    evidenceUrl = await storeEvidenceToS3(evidenceKey, htmlBuffer, mimeType);
+  } catch {
+    const fs = await import("fs/promises");
+    const path = await import("path");
+    const localDir = path.join(process.cwd(), "public", "evidence");
+    await fs.mkdir(localDir, { recursive: true });
+    const localPath = path.join(localDir, `${contentHash.slice(0, 12)}.html`);
+    await fs.writeFile(localPath, htmlBuffer);
+    evidenceUrl = `/evidence/${contentHash.slice(0, 12)}.html`;
+  }
 
   // ── Step 5: Save EvidencePackage record ───────────────────────────────────
   await prisma.evidencePackage.create({
@@ -92,6 +106,61 @@ export async function captureEvidence(
     },
   });
 
+  // ── Step 6: Capture full-page screenshot (non-blocking) ──────────────────
+  let pageSnapshotUrl: string | undefined;
+  let screenshotHash: string | undefined;
+
+  try {
+    const { buffer: screenshotBuffer, metadata: pageMeta } =
+      await captureUrlScreenshot(targetUrl);
+    screenshotHash = bufferHash(screenshotBuffer);
+    const screenshotKey = `evidence/${metadata.reportId ?? metadata.alertId ?? "unknown"}/screenshot-${screenshotHash.slice(0, 12)}.png`;
+
+    try {
+      pageSnapshotUrl = await storeEvidenceToS3(
+        screenshotKey,
+        screenshotBuffer,
+        "image/png"
+      );
+    } catch {
+      // R2 not configured — save locally as fallback
+      const fs = await import("fs/promises");
+      const path = await import("path");
+      const localDir = path.join(process.cwd(), "public", "evidence");
+      await fs.mkdir(localDir, { recursive: true });
+      const localPath = path.join(localDir, `screenshot-${screenshotHash.slice(0, 12)}.png`);
+      await fs.writeFile(localPath, screenshotBuffer);
+      pageSnapshotUrl = `/evidence/screenshot-${screenshotHash.slice(0, 12)}.png`;
+    }
+
+    // Update pageTitle if screenshot extracted a better one
+    if (pageMeta.title && !pageTitle) pageTitle = pageMeta.title;
+    if (pageMeta.description && !pageDescription)
+      pageDescription = pageMeta.description;
+
+    await prisma.evidencePackage.create({
+      data: {
+        reportId: metadata.reportId,
+        alertId: metadata.alertId,
+        evidenceType: "page_snapshot",
+        evidenceUrl: pageSnapshotUrl,
+        evidenceKey: screenshotKey,
+        capturedAt,
+        capturedBy: metadata.capturedBy ?? "SYSTEM",
+        contentHash: screenshotHash,
+        pageUrl: targetUrl,
+        pageTitle: pageTitle ?? pageMeta.title,
+        pageSnapshotUrl,
+      },
+    });
+  } catch (err) {
+    console.error(
+      `[Evidence] Screenshot capture failed for ${targetUrl}:`,
+      err instanceof Error ? err.message : String(err)
+    );
+    // Screenshot is best-effort — don't fail the whole capture
+  }
+
   return {
     evidenceUrl,
     contentHash,
@@ -99,6 +168,8 @@ export async function captureEvidence(
     mimeType,
     pageTitle,
     pageDescription,
+    pageSnapshotUrl,
+    screenshotHash,
   };
 }
 
@@ -182,4 +253,40 @@ export function buildEvidenceSetHash(
     .join("|");
 
   return crypto.createHash("sha256").update(canonical).digest("hex");
+}
+
+/**
+ * Record evidence from text description and optional URL.
+ * Cold-start path — no screenshot, no IPFS, no external API calls.
+ * Computes SHA-256 of url|description and stores directly as EvidencePackage.
+ */
+export async function recordManualEvidence(params: {
+  evidenceUrl?: string;
+  evidenceDescription: string;
+  capturedBy: string;
+}): Promise<EvidenceCapture> {
+  const capturedAt = new Date();
+  const contentHash = crypto.createHash("sha256")
+    .update((params.evidenceUrl || "") + "|" + params.evidenceDescription)
+    .digest("hex");
+
+  await prisma.evidencePackage.create({
+    data: {
+      evidenceType: "manual_entry",
+      evidenceUrl: params.evidenceUrl || "",
+      capturedAt,
+      capturedBy: params.capturedBy,
+      contentHash,
+      pageUrl: params.evidenceUrl || null,
+      pageTitle: params.evidenceDescription.substring(0, 200),
+    },
+  });
+
+  return {
+    evidenceUrl: params.evidenceUrl || "",
+    contentHash,
+    capturedAt,
+    mimeType: "text/plain",
+    pageTitle: params.evidenceDescription.substring(0, 200),
+  };
 }

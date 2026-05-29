@@ -306,6 +306,12 @@ export default function LawyerCaseDetailPage() {
                     </p>
                   </div>
                 )}
+                <Link
+                  href={`/lawyer/cases/${id}/face-report`}
+                  className="mt-3 inline-flex items-center gap-1.5 text-sm text-blue-600 dark:text-blue-400 hover:underline"
+                >
+                  View Face Report →
+                </Link>
               </div>
             </div>
           )}

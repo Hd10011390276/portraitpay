@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 
+export const dynamic = "force-dynamic";
+
 /**
  * POST /api/contracts/unlock
  * Verifies payment and returns unlock confirmation.

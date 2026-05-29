@@ -4,7 +4,6 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Input } from "@/components/auth/Input";
 import { Button } from "@/components/auth/Button";
-import { RoleSelector } from "@/components/auth/RoleSelector";
 import { UsagePreferences } from "@/components/auth/UsagePreferences";
 import ThemeToggle from "@/components/ThemeToggle";
 import { useLanguage } from "@/context/LanguageContext";
@@ -21,7 +20,7 @@ export default function RegisterPage() {
     confirmPassword: "",
     name: "",
     phone: "",
-    role: "",
+    role: "TALENT",
   });
   const [allowLicensing, setAllowLicensing] = useState(false);
   const [allowedScopes, setAllowedScopes] = useState<string[]>([]);
@@ -59,10 +58,9 @@ export default function RegisterPage() {
     }
     if (!currentForm.confirmPassword) errs.confirmPassword = t.register.errors.confirmPasswordRequired;
     else if (currentForm.password !== currentForm.confirmPassword) errs.confirmPassword = t.register.errors.passwordsMismatch;
-    if (!currentForm.role) errs.role = t.register.errors.roleRequired;
 
-    // Media Kit validation
-    if (mediaKitUrl.trim() !== "") {
+    // Media Kit validation for TALENT role
+    if (currentForm.role === "TALENT" && mediaKitUrl.trim() !== "") {
       try { new URL(mediaKitUrl); }
       catch { errs.mediaKitUrl = t.register.errors.invalidMediaKitUrl || "Invalid URL format"; }
       if (!mediaKitShareConfirmed) errs.mediaKitShareConfirmed = t.register.errors.mediaKitConfirmRequired || "Please confirm your rights to share this link";
@@ -95,10 +93,10 @@ export default function RegisterPage() {
           allowLicensing,
           allowedScopes,
           prohibitedContent,
-          mediaKitUrl: mediaKitUrl || undefined,
-          mediaKitShareConfirmed,
-          mediaKitReviewOnlyAcknowledged,
-          mediaKitVisibility,
+          mediaKitUrl: form.role === "TALENT" ? mediaKitUrl : undefined,
+          mediaKitShareConfirmed: form.role === "TALENT" ? mediaKitShareConfirmed : false,
+          mediaKitReviewOnlyAcknowledged: form.role === "TALENT" ? mediaKitReviewOnlyAcknowledged : false,
+          mediaKitVisibility: form.role === "TALENT" ? mediaKitVisibility : "PRIVATE",
         }),
       });
 
@@ -164,12 +162,6 @@ export default function RegisterPage() {
               </div>
             )}
 
-            <RoleSelector
-              value={form.role}
-              onChange={(role) => setForm((prev) => ({ ...prev, role }))}
-              error={errors.role}
-            />
-
             <Input
               label={t.register.name}
               type="text"
@@ -221,8 +213,8 @@ export default function RegisterPage() {
               />
             </div>
 
-            {/* Talent Media Kit — always shown */}
-            {(
+            {/* Talent Media Kit — only shown for TALENT role */}
+            {form.role === "TALENT" && (
               <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-5 space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-blue-900 dark:text-blue-200 mb-1">

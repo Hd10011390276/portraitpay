@@ -141,8 +141,27 @@ export async function uploadFile(
   key: string,
   mimeType: string = "application/octet-stream"
 ): Promise<string> {
-  const { S3Client, PutObjectCommand } = await import("@aws-sdk/client-s3");
   const config = getS3Config();
+
+  // Local filesystem fallback when R2 credentials are not configured or are placeholder strings
+  const hasCredentials = config.accessKeyId &&
+    config.accessKeyId !== "undefined" &&
+    config.secretAccessKey &&
+    config.secretAccessKey !== "undefined" &&
+    config.bucket &&
+    config.bucket !== "undefined";
+
+  if (!hasCredentials) {
+    const path = await import("path");
+    const fs = await import("fs/promises");
+    const localDir = path.join(process.cwd(), "public", "uploads", path.dirname(key));
+    await fs.mkdir(localDir, { recursive: true });
+    const localPath = path.join(process.cwd(), "public", "uploads", key);
+    await fs.writeFile(localPath, buffer);
+    return `/uploads/${key}`;
+  }
+
+  const { S3Client, PutObjectCommand } = await import("@aws-sdk/client-s3");
 
   const client = new S3Client({
     region: config.region,

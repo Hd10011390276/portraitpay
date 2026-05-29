@@ -42,6 +42,8 @@ export default function ConsentPassportViewPage() {
     threeViewSide?: string | null;
     threeViewTop?: string | null;
     createdAt: string;
+    kycStatus?: string | null;
+    kycVerifiedAt?: string | null;
   } | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
@@ -106,6 +108,27 @@ export default function ConsentPassportViewPage() {
             <p className="text-xs text-gray-400 uppercase tracking-wide mb-1">Account Holder</p>
             <p className="text-xl font-bold text-gray-900 dark:text-white">{passport.fullName}</p>
           </div>
+
+          {/* Identity Verified Badge */}
+          {passport.kycStatus === "APPROVED" && (
+            <div className="px-6 py-3 border-b border-gray-100 dark:border-gray-800 bg-green-50/50 dark:bg-green-900/10">
+              <div className="flex items-center gap-2.5">
+                <div className="w-6 h-6 rounded-full bg-green-500 flex items-center justify-center">
+                  <svg className="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                  </svg>
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-green-700 dark:text-green-400">Identity Verified</p>
+                  {passport.kycVerifiedAt && (
+                    <p className="text-xs text-green-600/70 dark:text-green-400/70">
+                      Verified {new Date(passport.kycVerifiedAt).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Allowed Uses */}
           <div className="px-6 py-5 border-b border-gray-100 dark:border-gray-800">

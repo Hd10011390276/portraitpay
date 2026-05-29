@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { Sidebar } from "./Sidebar";
 import { Header } from "./Header";
 import ThemeToggle from "@/components/ThemeToggle";
@@ -23,13 +23,13 @@ interface DashboardShellProps {
 
 export function DashboardShell({ children, title, subtitle, action, forceLight }: DashboardShellProps) {
   const router = useRouter();
+  const pathname = usePathname();
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [theme, setTheme] = useState<"light" | "dark">("light");
-  const [effectiveRole, setEffectiveRole] = useState<string | null>(
-    () => typeof window !== "undefined" ? localStorage.getItem("pp_effective_role") : null
-  );
+  const [effectiveRole, setEffectiveRole] = useState<string | null>(null);
+  const [availableRoles, setAvailableRoles] = useState<string[]>([]);
 
   useEffect(() => {
     const saved = localStorage.getItem("theme");
@@ -44,28 +44,71 @@ export function DashboardShell({ children, title, subtitle, action, forceLight }
     return () => window.removeEventListener("theme-change", handleThemeChange);
   }, []);
 
-  const handleRoleSwitch = (role: string) => {
-    localStorage.setItem("pp_effective_role", role);
-    setEffectiveRole(role);
+  // Load effective role from localStorage (after mount to avoid hydration mismatch)
+  useEffect(() => {
+    const saved = localStorage.getItem("pp_effective_role");
+    if (saved) setEffectiveRole(saved);
+  }, []);
+
+  const handleRoleSwitch = async (role: string) => {
+    try {
+      const res = await fetch("/api/auth/switch-role", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ role }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        localStorage.setItem("pp_access_token", data.data.accessToken);
+        localStorage.setItem("pp_user", JSON.stringify(data.data.user));
+        localStorage.removeItem("pp_effective_role");
+        setEffectiveRole(null);
+        if (user) setUser({ ...user, role });
+      }
+    } catch {
+      // Fallback to localStorage-only
+      localStorage.setItem("pp_effective_role", role);
+      setEffectiveRole(role);
+    }
   };
 
+  const [timeoutError, setTimeoutError] = useState(false);
+
   useEffect(() => {
+    let timeoutId: ReturnType<typeof setTimeout>;
+    let controller: AbortController;
+
     const checkAuth = async () => {
       try {
-        const res = await fetch("/api/auth/me", { credentials: "include" });
+        controller = new AbortController();
+        timeoutId = setTimeout(() => controller.abort(), 10000);
+        const res = await fetch("/api/auth/me", {
+          credentials: "include",
+          signal: controller.signal
+        });
+        clearTimeout(timeoutId);
         if (!res.ok) {
           router.push("/login");
           return;
         }
         const json = await res.json();
         setUser(json.data?.user || json.user || null);
-      } catch {
-        router.push("/login");
+        setAvailableRoles(json.data?.availableRoles || []);
+      } catch (e: any) {
+        // Timeout or network error — stop spinner, show retry
+        clearTimeout(timeoutId);
+        if (e?.name === "AbortError") {
+          setTimeoutError(true);
+        }
+        setLoading(false);
+        return;
       } finally {
         setLoading(false);
       }
     };
     checkAuth();
+    return () => { clearTimeout(timeoutId); controller?.abort(); };
   }, [router]);
 
   if (loading) {
@@ -74,6 +117,27 @@ export function DashboardShell({ children, title, subtitle, action, forceLight }
         <div className="flex flex-col items-center gap-4">
           <img src="/logo.png" alt="PortraitPay AI" className="w-10 h-10 rounded-lg object-contain" />
           <div className="animate-spin h-6 w-6 border-2 border-blue-500 border-t-transparent rounded-full" />
+        </div>
+      </div>
+    );
+  }
+
+  if (timeoutError) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
+        <div className="flex flex-col items-center gap-4 text-center max-w-sm">
+          <img src="/logo.png" alt="PortraitPay AI" className="w-10 h-10 rounded-lg object-contain" />
+          <div className="text-red-500 text-4xl">!</div>
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Connection failed</h2>
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            The authentication server is not responding. Please check your connection and try again.
+          </p>
+          <button
+            onClick={() => window.location.reload()}
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
+          >
+            Retry
+          </button>
         </div>
       </div>
     );
@@ -121,8 +185,10 @@ export function DashboardShell({ children, title, subtitle, action, forceLight }
       {/* Main content */}
       <div className="sm:ml-64">
         <Header user={user} title={title} subtitle={subtitle} action={action}
-          effectiveRole={effectiveRole} onRoleSwitch={handleRoleSwitch} />
+          effectiveRole={effectiveRole} onRoleSwitch={handleRoleSwitch}
+          availableRoles={availableRoles} />
         <main
+          key={pathname}
           className="p-4 sm:p-6 sm:pt-6"
           style={{
             paddingTop: `calc(3.5rem + env(safe-area-inset-top))`,

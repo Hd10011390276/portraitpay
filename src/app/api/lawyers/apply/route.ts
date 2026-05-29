@@ -17,6 +17,9 @@ const LawyerApplySchema = z.object({
   contactEmail: z.string().email("Invalid email format"),
   contactPhone: z.string().min(1, "Phone number is required").max(30),
   licenseUrl: z.string().url("Invalid license URL format").optional().or(z.literal("")),
+  barNumber: z.string().optional(),
+  barState: z.string().optional(),
+  federalAdmission: z.boolean().optional(),
 }).transform((data) => ({
   lawyerType: data.lawyerType,
   companyName: data.companyName,
@@ -25,6 +28,9 @@ const LawyerApplySchema = z.object({
   contactEmail: data.contactEmail,
   contactPhone: data.contactPhone,
   licenseUrl: data.licenseUrl,
+  barNumber: data.barNumber,
+  barState: data.barState,
+  federalAdmission: data.federalAdmission,
 }));
 
 export async function POST(req: NextRequest) {
@@ -63,9 +69,19 @@ export async function POST(req: NextRequest) {
         contactEmail: data.contactEmail,
         contactPhone: data.contactPhone,
         licenseUrl: data.licenseUrl || null,
-        status: "PENDING",
+        barNumber: data.barNumber || null,
+        barState: data.barState || null,
+        federalAdmission: data.federalAdmission || false,
+        status: "APPROVED",
+        reviewedAt: new Date(),
         userId: session.userId,
       },
+    });
+
+    // Auto-approve: promote user to LAWYER role immediately
+    await prisma.user.update({
+      where: { id: session.userId },
+      data: { role: "LAWYER" },
     });
 
     // Send confirmation email to the applicant
@@ -77,12 +93,12 @@ export async function POST(req: NextRequest) {
 <body style="font-family:Arial,sans-serif;background:#f4f4f4;margin:0;padding:20px">
 <div style="max-width:600px;margin:0 auto;background:#fff;border-radius:8px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.08)">
   <div style="background:#244169;padding:20px 24px">
-    <h2 style="margin:0;color:#fff;font-size:18px">⚖️ 律师入驻申请已收到</h2>
-    <p style="margin:4px 0 0;color:#93c5fd;font-size:13px">PortraitPay AI · 入驻申请</p>
+    <h2 style="margin:0;color:#fff;font-size:18px">⚖️ 律师入驻申请已通过</h2>
+    <p style="margin:4px 0 0;color:#93c5fd;font-size:13px">PortraitPay AI · 入驻成功</p>
   </div>
   <div style="padding:24px">
     <p style="font-size:15px;color:#333">${data.contactName}，您好！</p>
-    <p style="font-size:15px;color:#333">我们已收到您的律师入驻申请，以下是申请详情：</p>
+    <p style="font-size:15px;color:#333">恭喜！您的律师入驻申请已通过审核。</p>
     <div style="margin:20px 0;padding:16px;background:#f9f9f9;border-radius:8px">
       <table style="width:100%;border-collapse:collapse">
         <tr><td style="padding:6px 0;color:#666;font-size:13px">申请类型</td><td style="padding:6px 0;font-size:13px;font-weight:bold;color:#333">${data.lawyerType === "firm" ? "律所" : "个人律师"}</td></tr>
@@ -93,22 +109,22 @@ export async function POST(req: NextRequest) {
         <tr><td style="padding:6px 0;color:#666;font-size:13px">提交时间</td><td style="padding:6px 0;font-size:13px;color:#333">${submittedAt}</td></tr>
       </table>
     </div>
-    <div style="margin:16px 0;padding:14px;background:#eff6ff;border-radius:8px;border-left:4px solid #244169">
-      <p style="margin:0;font-size:13px;color:#1e40af;font-weight:bold">📋 审核说明</p>
-      <p style="margin:6px 0 0;font-size:13px;color:#1e40af">我们的团队将在 <strong>3-5 个工作日</strong>内完成资料审核。</p>
-      <p style="margin:6px 0 0;font-size:13px;color:#1e40af">审核结果将发送至您上述邮箱，请留意查收。</p>
+    <div style="margin:16px 0;padding:14px;background:#f0fdf4;border-radius:8px;border-left:4px solid #16a34a">
+      <p style="margin:0;font-size:13px;color:#166534;font-weight:bold">✅ 审核结果</p>
+      <p style="margin:6px 0 0;font-size:13px;color:#166534">您的律师入驻申请已自动通过审核。</p>
+      <p style="margin:6px 0 0;font-size:13px;color:#166534">您现在可以登录平台开始使用律师功能。</p>
     </div>
-    <p style="font-size:12px;color:#999;margin-top:16px">此通知由系统自动发送，请勿回复。如有疑问请联系 support@portraitpayai.com</p>
+    <p style="font-size:12px;color:#999;margin-top:16px">此通知由系统自动发送，请勿回复。如有疑问请联系 contact@portraitpayai.com</p>
   </div>
 </div>
 </body>
 </html>`;
 
-      const text = `PortraitPay AI — 律师入驻申请已收到\n\n${data.contactName}，您好！\n我们已收到您的律师入驻申请。\n\n申请详情：\n申请类型：${data.lawyerType === "firm" ? "律所" : "个人律师"}\n公司/律所名称：${data.companyName}\n联系人：${data.contactName}\n联系邮箱：${data.contactEmail}\n联系电话：${data.contactPhone}\n提交时间：${submittedAt}\n\n审核说明：\n我们的团队将在 3-5 个工作日内完成资料审核。审核结果将发送至您的邮箱，请留意查收。\n\n此通知由系统自动发送，请勿回复。`;
+      const text = `PortraitPay AI — 律师入驻申请已通过\n\n${data.contactName}，您好！\n恭喜！您的律师入驻申请已通过审核。\n\n入驻详情：\n申请类型：${data.lawyerType === "firm" ? "律所" : "个人律师"}\n公司/律所名称：${data.companyName}\n联系人：${data.contactName}\n联系邮箱：${data.contactEmail}\n联系电话：${data.contactPhone}\n提交时间：${submittedAt}\n\n审核结果：\n您的律师入驻申请已自动通过审核。您现在可以登录平台开始使用律师功能。\n\n此通知由系统自动发送，请勿回复。`;
 
       await sendEmail({
         to: data.contactEmail,
-        subject: "PortraitPay AI - 律师入驻申请已收到 | Lawyer Registration Received",
+        subject: "PortraitPay AI - 律师入驻申请已通过 | Lawyer Registration Approved",
         html,
         text,
       });
@@ -122,7 +138,7 @@ export async function POST(req: NextRequest) {
       success: true,
       data: {
         id: registration.id,
-        message: "申请已提交，我们会在 3-5 个工作日内完成审核",
+        message: "申请已通过审核，您已成为认证律师",
       },
     }, { status: 201 });
   } catch (err) {

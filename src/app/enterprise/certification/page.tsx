@@ -1,437 +1,271 @@
 "use client";
-/**
- * Enterprise Certification Page
- * /enterprise/certification
- * CN/US country-aware registration with agencyType selection
- * One form: Step 1 (country + type) → Step 2 (fields) → Step 3 (pending)
- */
+
 import { useState } from "react";
 import Link from "next/link";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import { useLanguage } from "@/context/LanguageContext";
+import { useRouter } from "next/navigation";
 import ThemeToggle from "@/components/ThemeToggle";
 
-type Country = "CN" | "US";
-type AgencyType = "ROOT_SPONSOR" | "ENTERTAINMENT_AGENCY" | "ESTATE";
+const AGENCY_TYPES = [
+  { value: "ENTERTAINMENT_AGENCY", label: "Entertainment Agency" },
+  { value: "ROOT_SPONSOR", label: "IP Owner / Brand" },
+  { value: "ESTATE", label: "Estate / Heritage" },
+];
 
-type Step = "type" | "form" | "pending";
-
-function cnSchema(t: any) {
-  return z.object({
-    companyName: z.string().min(2, t.companyNameMin2 || "Min 2 characters"),
-    unifiedCreditCode: z.string().length(18, t.unifiedCreditCodeLen18 || "Must be 18 digits"),
-    legalPersonName: z.string().min(2, t.legalPersonNameMin2 || "Required"),
-    legalPersonIdCard: z.string().length(18, t.legalPersonIdCardLen18 || "Must be 18 digits"),
-    registeredCapital: z.string().optional(),
-    establishedDate: z.string().optional(),
-    businessTerm: z.string().optional(),
-    businessScope: z.string().optional(),
-    licenseImageUrl: z.string().url(t.uploadLicense || "Required"),
-    legalPersonIdCardFrontUrl: z.string().url().optional(),
-    legalPersonIdCardBackUrl: z.string().url().optional(),
-    contactName: z.string().min(2, t.enterContactName || "Required"),
-    contactPhone: z.string().min(11, t.phoneFormatInvalid || "Invalid phone"),
-    contactEmail: z.string().email(t.emailFormatInvalid || "Invalid email"),
-  });
-}
-
-function usSchema() {
-  return z.object({
-    companyName: z.string().min(2, "Min 2 characters"),
-    ein: z.string().regex(/^\d{2}-\d{7}$/, "Format: XX-XXXXXXX"),
-    registeredAgent: z.string().min(2, "Required"),
-    stateOfIncorporation: z.string().min(1, "Required"),
-    dateOfIncorporation: z.string().optional(),
-    authorizedShares: z.string().optional(),
-    businessPurpose: z.string().optional(),
-    licenseImageUrl: z.string().url("Required"),
-    w9Url: z.string().url().optional(),
-    contactName: z.string().min(2, "Required"),
-    contactPhone: z.string().min(11, "Invalid phone"),
-    contactEmail: z.string().email("Invalid email"),
-  });
-}
-
-type CNFormData = z.infer<ReturnType<typeof cnSchema>>;
-type USFormData = z.infer<ReturnType<typeof usSchema>>;
-
-const AGENCY_TYPE_LABELS: Record<AgencyType, string> = {
-  ROOT_SPONSOR: "IP Owner / Brand",
-  ENTERTAINMENT_AGENCY: "Entertainment Agency",
-  ESTATE: "Estate / Heritage",
-};
-
-const AGENCY_TYPE_DESCS: Record<AgencyType, string> = {
-  ROOT_SPONSOR: "Brand or IP holder (e.g., Triumph, Sony Music)",
-  ENTERTAINMENT_AGENCY: "Agency managing artist portraits and licensing",
-  ESTATE: "Heritage manager for deceased celebrity estates",
-};
+const COUNTRIES = [
+  { value: "US", label: "United States" },
+  { value: "CN", label: "China" },
+  { value: "GB", label: "United Kingdom" },
+  { value: "JP", label: "Japan" },
+  { value: "KR", label: "South Korea" },
+  { value: "CA", label: "Canada" },
+  { value: "AU", label: "Australia" },
+  { value: "DE", label: "Germany" },
+  { value: "FR", label: "France" },
+  { value: "SG", label: "Singapore" },
+  { value: "HK", label: "Hong Kong" },
+  { value: "OTHER", label: "Other" },
+];
 
 export default function EnterpriseCertificationPage() {
-  const { t } = useLanguage();
-  const tc = t.enterpriseCert || {};
-
-  const [step, setStep] = useState<Step>("type");
-  const [country, setCountry] = useState<Country | null>(null);
-  const [agencyType, setAgencyType] = useState<AgencyType | null>(null);
+  const router = useRouter();
+  const [agencyName, setAgencyName] = useState("");
+  const [agencyType, setAgencyType] = useState("");
+  const [country, setCountry] = useState("");
+  const [contactName, setContactName] = useState("");
+  const [contactEmail, setContactEmail] = useState("");
+  const [registrationNo, setRegistrationNo] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [submitted, setSubmitted] = useState(false);
 
-  const cnForm = useForm<CNFormData>({
-    resolver: zodResolver(cnSchema(tc)),
-  });
-
-  const usForm = useForm<USFormData>({
-    resolver: zodResolver(usSchema()),
-  });
-
-  const handleSelectCountry = (c: Country) => {
-    setCountry(c);
+  const validate = (): boolean => {
+    const errs: Record<string, string> = {};
+    if (!agencyName.trim()) errs.agencyName = "Company / organization name is required";
+    if (!agencyType) errs.agencyType = "Please select an agency type";
+    if (!country) errs.country = "Please select a country / region";
+    if (!contactName.trim()) errs.contactName = "Contact name is required";
+    if (!contactEmail.trim()) errs.contactEmail = "Contact email is required";
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contactEmail)) errs.contactEmail = "Invalid email format";
+    setErrors(errs);
+    return Object.keys(errs).length === 0;
   };
 
-  const handleSubmitCN = async (data: CNFormData) => {
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!validate()) return;
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch("/api/v1/enterprise/register", {
+      const res = await fetch("/api/v1/agency/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...data, _country: "CN", _agencyType: agencyType }),
+        credentials: "include",
+        body: JSON.stringify({
+          agencyName: agencyName.trim(),
+          agencyType,
+          country,
+          contactName: contactName.trim(),
+          contactEmail: contactEmail.trim(),
+          registrationNo: registrationNo.trim() || undefined,
+        }),
       });
       const json = await res.json();
-      if (!json.success) throw new Error(json.error);
-      setStep("pending");
+      if (!json.success) {
+        setError(json.error || "Submission failed");
+        return;
+      }
+      setSubmitted(true);
     } catch (err) {
-      setError(err instanceof Error ? err.message : (tc.submitError || "Submission failed"));
+      setError(err instanceof Error ? err.message : "Submission failed");
     } finally {
       setLoading(false);
     }
   };
 
-  const handleSubmitUS = async (data: USFormData) => {
-    setLoading(true);
-    setError(null);
-    try {
-      const res = await fetch("/api/v1/enterprise/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...data, _country: "US", _agencyType: agencyType }),
-      });
-      const json = await res.json();
-      if (!json.success) throw new Error(json.error);
-      setStep("pending");
-    } catch (err) {
-      setError(err instanceof Error ? err.message : (tc.submitError || "Submission failed"));
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // ── Pending step ──────────────────────────────────────────────────────────
-  if (step === "pending") {
+  if (submitted) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
-        <header className="nav-glass sticky top-0 z-30">
-          <div className="container" style={{ height: "var(--header-height)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-            <Link href="/" style={{ display: "flex", alignItems: "center", gap: "10px", textDecoration: "none" }}>
-              <img src="/logo.png" alt="Logo" className="logo-light" style={{ width: "32px", height: "32px", objectFit: "contain", borderRadius: "6px" }} />
-              <img src="/logo-dark.png" alt="Logo" className="logo-dark" style={{ width: "32px", height: "32px", objectFit: "contain", borderRadius: "6px" }} />
-              <span style={{ fontSize: "17px", fontWeight: 700, color: "var(--text-primary)", letterSpacing: "-0.02em" }}>PortraitPay AI</span>
+        <header className="sticky top-0 z-30 bg-white/80 dark:bg-gray-900/80 backdrop-blur border-b border-gray-200 dark:border-gray-800">
+          <div className="max-w-2xl mx-auto px-6 h-16 flex items-center justify-between">
+            <Link href="/" className="flex items-center gap-2.5 no-underline">
+              <img src="/logo.png" alt="Logo" className="block dark:hidden w-8 h-8 rounded-md object-contain" />
+              <img src="/logo-dark.png" alt="Logo" className="hidden dark:block w-8 h-8 rounded-md object-contain" />
+              <span className="text-lg font-bold text-gray-900 dark:text-white tracking-tight">PortraitPay AI</span>
             </Link>
             <ThemeToggle />
           </div>
         </header>
-        <div className="flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-lg p-8 max-w-md text-center">
-            <div className="text-5xl mb-4">⏳</div>
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">{tc.submittedSuccessfully}</h2>
-            <p className="text-gray-600 dark:text-gray-400 mb-6">{tc.submittedDesc}</p>
-            <button onClick={() => setStep("select")} className="text-blue-600 font-medium hover:underline">
-              {tc.backToForm}
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // ── Step 1: Select company type ───────────────────────────────────────────
-  if (step === "type") {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 px-4 py-8">
-        <div className="fixed top-3 right-3 sm:top-4 sm:right-4 z-50">
-          <ThemeToggle />
-        </div>
-        <div className="w-full max-w-lg space-y-6">
-          <div className="text-center px-2">
-            <Link href="/" className="inline-block">
-              <div className="text-3xl sm:text-4xl font-bold text-blue-600 dark:text-blue-400 mb-2 hover:opacity-80 transition-opacity">
-                PortraitPay AI
-              </div>
+        <main className="max-w-2xl mx-auto px-6 py-10">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-8 text-center">
+            <svg className="w-12 h-12 mx-auto mb-4 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Application Submitted</h2>
+            <p className="text-gray-600 dark:text-gray-400 mb-2">
+              Your enterprise registration application for <strong>{agencyName}</strong> has been submitted.
+            </p>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
+              We will review your application and notify you once approved.
+            </p>
+            <Link
+              href="/agent/dashboard"
+              className="inline-block bg-blue-600 text-white font-semibold py-2.5 px-6 rounded-xl hover:bg-blue-700 transition-colors"
+            >
+              Go to Dashboard
             </Link>
-            <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">{tc.title}</h1>
-            <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mt-1">{tc.subtitle}</p>
           </div>
-
-          <div className="bg-white dark:bg-gray-800 rounded-xl sm:rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 p-4 sm:p-6 space-y-6">
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-3">
-                {tc.agencyTypeLabel || "Agency Type"} *
-              </label>
-              <div className="grid grid-cols-1 gap-3">
-                {(Object.keys(AGENCY_TYPE_LABELS) as AgencyType[]).map((type) => (
-                  <button key={type} type="button" onClick={() => setAgencyType(type)}
-                    className={`flex flex-col items-start gap-1 p-4 rounded-xl border-2 text-left transition-all ${agencyType === type ? "border-blue-500 bg-blue-50 dark:bg-blue-900/30" : "border-gray-200 dark:border-gray-700 hover:border-blue-300"}`}>
-                    <span className="text-base font-semibold text-gray-900 dark:text-white">{AGENCY_TYPE_LABELS[type]}</span>
-                    <span className="text-sm text-gray-500 dark:text-gray-400">{AGENCY_TYPE_DESCS[type]}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {agencyType && (
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-3">
-                  {tc.selectCountry || "Select Country / Region"} *
-                </label>
-                <div className="grid grid-cols-2 gap-3">
-                  <button type="button" onClick={() => handleSelectCountry("CN")}
-                    className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all ${country === "CN" ? "border-blue-500 bg-blue-50 dark:bg-blue-900/30" : "border-gray-200 dark:border-gray-700 hover:border-blue-300"}`}>
-                    <span className="text-3xl">🇨🇳</span>
-                    <span className="text-sm font-medium text-gray-900 dark:text-white">China (CN)</span>
-                    <span className="text-xs text-gray-500">统一社会信用代码</span>
-                  </button>
-                  <button type="button" onClick={() => handleSelectCountry("US")}
-                    className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all ${country === "US" ? "border-blue-500 bg-blue-50 dark:bg-blue-900/30" : "border-gray-200 dark:border-gray-700 hover:border-blue-300"}`}>
-                    <span className="text-3xl">🇺🇸</span>
-                    <span className="text-sm font-medium text-gray-900 dark:text-white">United States (US)</span>
-                    <span className="text-xs text-gray-500">EIN + W-9</span>
-                  </button>
-                </div>
-              </div>
-            )}
-
-            <button type="button" disabled={!agencyType || !country} onClick={() => setStep("form")}
-              className="w-full bg-blue-600 text-white font-semibold py-3 rounded-xl hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
-              {tc.nextStep || "Next"}
-            </button>
-          </div>
-        </div>
+        </main>
       </div>
     );
   }
-
-  // ── Step 2: Country-specific form ────────────────────────────────────────
-  const isCN = country === "CN";
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 px-4 py-8">
-      <div className="fixed top-3 right-3 sm:top-4 sm:right-4 z-50">
-        <ThemeToggle />
-      </div>
-      <div className="w-full max-w-lg space-y-6">
-        <div className="text-center px-2">
-          <Link href="/" className="inline-block">
-            <div className="text-3xl sm:text-4xl font-bold text-blue-600 dark:text-blue-400 mb-2 hover:opacity-80 transition-opacity">
-              PortraitPay AI
-            </div>
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
+      <header className="sticky top-0 z-30 bg-white/80 dark:bg-gray-900/80 backdrop-blur border-b border-gray-200 dark:border-gray-800">
+        <div className="max-w-2xl mx-auto px-6 h-16 flex items-center justify-between">
+          <Link href="/" className="flex items-center gap-2.5 no-underline">
+            <img src="/logo.png" alt="Logo" className="block dark:hidden w-8 h-8 rounded-md object-contain" />
+            <img src="/logo-dark.png" alt="Logo" className="hidden dark:block w-8 h-8 rounded-md object-contain" />
+            <span className="text-lg font-bold text-gray-900 dark:text-white tracking-tight">PortraitPay AI</span>
           </Link>
-          <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">{tc.title}</h1>
-          <div className="flex items-center justify-center gap-2 mt-2">
-            <span className="text-sm text-gray-500">{country === "CN" ? "🇨🇳 China" : "🇺🇸 United States"}</span>
-            <span className="text-gray-400">›</span>
-            <span className="text-sm font-medium text-blue-600">{AGENCY_TYPE_LABELS[agencyType!]}</span>
+          <ThemeToggle />
+        </div>
+      </header>
+
+      <main className="max-w-2xl mx-auto px-6 py-10">
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center gap-2 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-sm px-4 py-1.5 rounded-full mb-4">
+            <span>🏢</span>
+            <span>Agency / Enterprise</span>
           </div>
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">Enterprise Registration</h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-2 max-w-md mx-auto">
+            Register your organization to manage IP rights, monetize portraits, and access API integrations.
+          </p>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 rounded-xl sm:rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 p-4 sm:p-6 space-y-5">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-6 sm:p-8">
           {error && (
-            <div className="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-lg px-3 py-2.5 text-xs text-red-600 dark:text-red-400">
+            <div className="mb-6 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-lg px-4 py-3 text-sm text-red-600 dark:text-red-400">
               {error}
             </div>
           )}
 
-          <button type="button" onClick={() => setStep("type")} className="text-sm text-blue-600 hover:underline">
-            ← {tc.backToSelect || "Back to selection"}
-          </button>
+          <form onSubmit={handleSubmit} className="space-y-5">
+            {/* Agency Name */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1.5">
+                Company / Organization Name <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                value={agencyName}
+                onChange={(e) => { setAgencyName(e.target.value); setErrors((p) => ({ ...p, agencyName: "" })); }}
+                className={`w-full border rounded-lg px-3 py-2.5 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-300 dark:focus:ring-blue-700 ${errors.agencyName ? "border-red-400" : "border-gray-200 dark:border-gray-700"}`}
+                placeholder="e.g. Triumph Entertainment Inc."
+              />
+              {errors.agencyName && <p className="mt-1 text-xs text-red-500">{errors.agencyName}</p>}
+            </div>
 
-          {/* CN Form */}
-          {isCN && (
-            <form onSubmit={cnForm.handleSubmit(handleSubmitCN)} className="space-y-5">
-              <section className="space-y-4">
-                <h2 className="text-base font-semibold text-gray-900 dark:text-white">{tc.basicInfo}</h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">{tc.companyName} *</label>
-                    <input {...cnForm.register("companyName")} className="w-full border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-300 placeholder-gray-400" placeholder={tc.companyNamePlaceholder} />
-                    {cnForm.formState.errors.companyName && <p className="text-red-500 text-xs mt-1">{cnForm.formState.errors.companyName.message}</p>}
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">{tc.unifiedCreditCode} *</label>
-                    <input {...cnForm.register("unifiedCreditCode")} className="w-full border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-300 placeholder-gray-400" maxLength={18} />
-                    {cnForm.formState.errors.unifiedCreditCode && <p className="text-red-500 text-xs mt-1">{cnForm.formState.errors.unifiedCreditCode.message}</p>}
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">{tc.legalRep} *</label>
-                    <input {...cnForm.register("legalPersonName")} className="w-full border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-300 placeholder-gray-400" />
-                    {cnForm.formState.errors.legalPersonName && <p className="text-red-500 text-xs mt-1">{cnForm.formState.errors.legalPersonName.message}</p>}
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">{tc.idCardNumber} *</label>
-                    <input {...cnForm.register("legalPersonIdCard")} className="w-full border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-300 placeholder-gray-400" maxLength={18} />
-                    {cnForm.formState.errors.legalPersonIdCard && <p className="text-red-500 text-xs mt-1">{cnForm.formState.errors.legalPersonIdCard.message}</p>}
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">{tc.registeredCapital}</label>
-                    <input {...cnForm.register("registeredCapital")} className="w-full border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-300 placeholder-gray-400" />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">{tc.establishedDate}</label>
-                    <input {...cnForm.register("establishedDate")} className="w-full border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-300 placeholder-gray-400" placeholder="YYYY-MM-DD" />
-                  </div>
-                  <div className="sm:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">{tc.businessTerm}</label>
-                    <input {...cnForm.register("businessTerm")} className="w-full border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-300 placeholder-gray-400" />
-                  </div>
-                  <div className="sm:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">{tc.businessScope}</label>
-                    <textarea {...cnForm.register("businessScope")} rows={3} className="w-full border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-300 placeholder-gray-400 resize-none" />
-                  </div>
-                </div>
-              </section>
+            {/* Agency Type + Country */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1.5">
+                  Agency Type <span className="text-red-500">*</span>
+                </label>
+                <select
+                  value={agencyType}
+                  onChange={(e) => { setAgencyType(e.target.value); setErrors((p) => ({ ...p, agencyType: "" })); }}
+                  className={`w-full border rounded-lg px-3 py-2.5 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white dark:[&>option]:bg-gray-800 dark:[&>option]:text-white focus:outline-none focus:ring-2 focus:ring-blue-300 dark:focus:ring-blue-700 ${errors.agencyType ? "border-red-400" : "border-gray-200 dark:border-gray-700"}`}
+                >
+                  <option value="">Select type</option>
+                  {AGENCY_TYPES.map((t) => (
+                    <option key={t.value} value={t.value}>{t.label}</option>
+                  ))}
+                </select>
+                {errors.agencyType && <p className="mt-1 text-xs text-red-500">{errors.agencyType}</p>}
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1.5">
+                  Country / Region <span className="text-red-500">*</span>
+                </label>
+                <select
+                  value={country}
+                  onChange={(e) => { setCountry(e.target.value); setErrors((p) => ({ ...p, country: "" })); }}
+                  className={`w-full border rounded-lg px-3 py-2.5 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white dark:[&>option]:bg-gray-800 dark:[&>option]:text-white focus:outline-none focus:ring-2 focus:ring-blue-300 dark:focus:ring-blue-700 ${errors.country ? "border-red-400" : "border-gray-200 dark:border-gray-700"}`}
+                >
+                  <option value="">Select country</option>
+                  {COUNTRIES.map((c) => (
+                    <option key={c.value} value={c.value}>{c.label}</option>
+                  ))}
+                </select>
+                {errors.country && <p className="mt-1 text-xs text-red-500">{errors.country}</p>}
+              </div>
+            </div>
 
-              <section className="space-y-4">
-                <h2 className="text-base font-semibold text-gray-900 dark:text-white">{tc.documentUpload}</h2>
+            {/* Registration No */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1.5">
+                Registration / License Number <span className="text-gray-400 text-xs">(optional)</span>
+              </label>
+              <input
+                type="text"
+                value={registrationNo}
+                onChange={(e) => setRegistrationNo(e.target.value)}
+                className="w-full border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2.5 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-300 dark:focus:ring-blue-700"
+                placeholder="e.g. Unified credit code or business license number"
+              />
+            </div>
+
+            <hr className="border-gray-200 dark:border-gray-700" />
+
+            {/* Contact Info */}
+            <div>
+              <p className="text-sm font-medium text-gray-700 dark:text-gray-200 mb-3">Contact Person</p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">{tc.businessLicense} *</label>
-                  <input {...cnForm.register("licenseImageUrl")} className="w-full border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-300 placeholder-gray-400" placeholder="https://" />
-                  <p className="text-xs text-gray-500 mt-1">{tc.businessLicenseHint}</p>
-                  {cnForm.formState.errors.licenseImageUrl && <p className="text-red-500 text-xs mt-1">{cnForm.formState.errors.licenseImageUrl.message}</p>}
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">{tc.idCardFront}</label>
-                    <input {...cnForm.register("legalPersonIdCardFrontUrl")} className="w-full border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-300 placeholder-gray-400" placeholder="https://" />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">{tc.idCardBack}</label>
-                    <input {...cnForm.register("legalPersonIdCardBackUrl")} className="w-full border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-300 placeholder-gray-400" placeholder="https://" />
-                  </div>
-                </div>
-              </section>
-
-              <section className="space-y-4">
-                <h2 className="text-base font-semibold text-gray-900 dark:text-white">{tc.contactInfo}</h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">{tc.contactName} *</label>
-                    <input {...cnForm.register("contactName")} className="w-full border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-300" />
-                    {cnForm.formState.errors.contactName && <p className="text-red-500 text-xs mt-1">{cnForm.formState.errors.contactName.message}</p>}
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">{tc.phone} *</label>
-                    <input {...cnForm.register("contactPhone")} className="w-full border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-300 placeholder-gray-400" maxLength={11} />
-                    {cnForm.formState.errors.contactPhone && <p className="text-red-500 text-xs mt-1">{cnForm.formState.errors.contactPhone.message}</p>}
-                  </div>
-                  <div className="sm:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">{tc.email} *</label>
-                    <input {...cnForm.register("contactEmail")} type="email" className="w-full border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-300" />
-                    {cnForm.formState.errors.contactEmail && <p className="text-red-500 text-xs mt-1">{cnForm.formState.errors.contactEmail.message}</p>}
-                  </div>
-                </div>
-              </section>
-
-              <button type="submit" disabled={loading} className="w-full bg-blue-600 text-white font-semibold py-3 rounded-xl hover:bg-blue-700 transition-colors disabled:opacity-50">
-                {loading ? (tc.submitting || "Submitting...") : (tc.nextPayFee || "Submit")}
-              </button>
-            </form>
-          )}
-
-          {/* US Form */}
-          {!isCN && (
-            <form onSubmit={usForm.handleSubmit(handleSubmitUS)} className="space-y-5">
-              <section className="space-y-4">
-                <h2 className="text-base font-semibold text-gray-900 dark:text-white">Company Information</h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Company Name *</label>
-                    <input {...usForm.register("companyName")} className="w-full border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-300 placeholder-gray-400" />
-                    {usForm.formState.errors.companyName && <p className="text-red-500 text-xs mt-1">{usForm.formState.errors.companyName.message}</p>}
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">EIN * (XX-XXXXXXX)</label>
-                    <input {...usForm.register("ein")} className="w-full border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-300 placeholder-gray-400" placeholder="12-3456789" maxLength={10} />
-                    {usForm.formState.errors.ein && <p className="text-red-500 text-xs mt-1">{usForm.formState.errors.ein.message}</p>}
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Registered Agent *</label>
-                    <input {...usForm.register("registeredAgent")} className="w-full border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-300 placeholder-gray-400" />
-                    {usForm.formState.errors.registeredAgent && <p className="text-red-500 text-xs mt-1">{usForm.formState.errors.registeredAgent.message}</p>}
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">State of Incorporation *</label>
-                    <input {...usForm.register("stateOfIncorporation")} className="w-full border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-300 placeholder-gray-400" />
-                    {usForm.formState.errors.stateOfIncorporation && <p className="text-red-500 text-xs mt-1">{usForm.formState.errors.stateOfIncorporation.message}</p>}
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Date of Incorporation</label>
-                    <input {...usForm.register("dateOfIncorporation")} className="w-full border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-300 placeholder-gray-400" placeholder="YYYY-MM-DD" />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Authorized Shares</label>
-                    <input {...usForm.register("authorizedShares")} className="w-full border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-300 placeholder-gray-400" />
-                  </div>
-                  <div className="sm:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Business Purpose</label>
-                    <textarea {...usForm.register("businessPurpose")} rows={3} className="w-full border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-300 placeholder-gray-400 resize-none" />
-                  </div>
-                </div>
-              </section>
-
-              <section className="space-y-4">
-                <h2 className="text-base font-semibold text-gray-900 dark:text-white">Document Upload</h2>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Business License / Certificate of Incorporation *</label>
-                  <input {...usForm.register("licenseImageUrl")} className="w-full border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-300 placeholder-gray-400" placeholder="https://" />
-                  <p className="text-xs text-gray-500 mt-1">JPG/PNG under 5MB, or paste URL</p>
-                  {usForm.formState.errors.licenseImageUrl && <p className="text-red-500 text-xs mt-1">{usForm.formState.errors.licenseImageUrl.message}</p>}
+                  <label className="block text-sm text-gray-500 dark:text-gray-400 mb-1">Full Name <span className="text-red-500">*</span></label>
+                  <input
+                    type="text"
+                    value={contactName}
+                    onChange={(e) => { setContactName(e.target.value); setErrors((p) => ({ ...p, contactName: "" })); }}
+                    className={`w-full border rounded-lg px-3 py-2.5 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-300 dark:focus:ring-blue-700 ${errors.contactName ? "border-red-400" : "border-gray-200 dark:border-gray-700"}`}
+                    placeholder="Full name"
+                  />
+                  {errors.contactName && <p className="mt-1 text-xs text-red-500">{errors.contactName}</p>}
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">W-9 / Tax Document (optional)</label>
-                  <input {...usForm.register("w9Url")} className="w-full border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-300 placeholder-gray-400" placeholder="https://" />
+                  <label className="block text-sm text-gray-500 dark:text-gray-400 mb-1">Email <span className="text-red-500">*</span></label>
+                  <input
+                    type="email"
+                    value={contactEmail}
+                    onChange={(e) => { setContactEmail(e.target.value); setErrors((p) => ({ ...p, contactEmail: "" })); }}
+                    className={`w-full border rounded-lg px-3 py-2.5 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-300 dark:focus:ring-blue-700 ${errors.contactEmail ? "border-red-400" : "border-gray-200 dark:border-gray-700"}`}
+                    placeholder="you@example.com"
+                  />
+                  {errors.contactEmail && <p className="mt-1 text-xs text-red-500">{errors.contactEmail}</p>}
                 </div>
-              </section>
+              </div>
+            </div>
 
-              <section className="space-y-4">
-                <h2 className="text-base font-semibold text-gray-900 dark:text-white">Contact Information</h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Contact Name *</label>
-                    <input {...usForm.register("contactName")} className="w-full border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-300" />
-                    {usForm.formState.errors.contactName && <p className="text-red-500 text-xs mt-1">{usForm.formState.errors.contactName.message}</p>}
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Phone *</label>
-                    <input {...usForm.register("contactPhone")} className="w-full border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-300" maxLength={11} />
-                    {usForm.formState.errors.contactPhone && <p className="text-red-500 text-xs mt-1">{usForm.formState.errors.contactPhone.message}</p>}
-                  </div>
-                  <div className="sm:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Email *</label>
-                    <input {...usForm.register("contactEmail")} type="email" className="w-full border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-300" />
-                    {usForm.formState.errors.contactEmail && <p className="text-red-500 text-xs mt-1">{usForm.formState.errors.contactEmail.message}</p>}
-                  </div>
-                </div>
-              </section>
-
-              <button type="submit" disabled={loading} className="w-full bg-blue-600 text-white font-semibold py-3 rounded-xl hover:bg-blue-700 transition-colors disabled:opacity-50">
-                {loading ? (tc.submitting || "Submitting...") : (tc.nextPayFee || "Submit")}
-              </button>
-            </form>
-          )}
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-blue-600 text-white font-semibold py-3 rounded-xl hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {loading ? "Submitting..." : "Submit Application"}
+            </button>
+          </form>
         </div>
-      </div>
+
+        <p className="text-center text-xs text-gray-400 dark:text-gray-500 mt-6">
+          Already have an enterprise account?{" "}
+          <Link href="/enterprise/dashboard" className="text-blue-600 dark:text-blue-400 hover:underline">
+            Go to Dashboard
+          </Link>
+        </p>
+      </main>
     </div>
   );
 }

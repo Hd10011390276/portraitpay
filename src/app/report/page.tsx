@@ -6,8 +6,9 @@
  * Allows authenticated users to submit an infringement report.
  * Reference: /consent-passport UX pattern (max-w-2xl card layout, dark mode)
  */
+export const dynamic = "force-dynamic";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import ThemeToggle from "@/components/ThemeToggle";
 import { useLanguage } from "@/context/LanguageContext";
@@ -74,9 +75,30 @@ export default function ReportPage() {
   const [voiceCompareNoRegister, setVoiceCompareNoRegister] = useState(false);
   const [reportUrl, setReportUrl] = useState("");
   const [copied, setCopied] = useState(false);
+  // IP Member selection for agency users — evidence chain
+  const [ipMembers, setIpMembers] = useState<{ id: string; name: string; email?: string }[]>([]);
+  const [selectedMemberId, setSelectedMemberId] = useState("");
+  const [isAgency, setIsAgency] = useState(false);
 
   const set = (key: keyof typeof form, value: string) =>
     setForm((p) => ({ ...p, [key]: value }));
+
+  // Fetch IP Members for agency users
+  useEffect(() => {
+    fetch("/api/auth/me", { credentials: "include" })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((json) => {
+        if (json?.data?.availableRoles?.includes("AGENCY")) {
+          setIsAgency(true);
+          return fetch("/api/v1/agent/members", { credentials: "include" })
+            .then((r) => (r.ok ? r.json() : null))
+            .then((d) => {
+              if (d?.success) setIpMembers(d.data || []);
+            });
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   const evidenceUrls = form.evidenceUrls.split("\n").map((u) => u.trim()).filter(Boolean);
 
@@ -139,6 +161,7 @@ export default function ReportPage() {
           evidenceUrls,
           voiceSimilarityScore: voiceCompareResult?.similarity ?? null,
           voiceSimilarityRisk: voiceCompareResult?.risk ?? null,
+          ipMemberId: selectedMemberId || undefined,
         }),
       });
       const json = await res.json();
@@ -168,6 +191,13 @@ export default function ReportPage() {
       `Reporter Name: ${form.reporterName}`,
       `Reporter Email: ${form.reporterEmail}`,
       form.reporterPhone ? `Reporter Phone: ${form.reporterPhone}` : null,
+      ...(selectedMemberId ? [
+        "",
+        "--- EVIDENCE CHAIN (For Lawyer Review) ---",
+        `IP Member ID: ${selectedMemberId}`,
+        `IP Member Name: ${ipMembers.find((m) => m.id === selectedMemberId)?.name || "N/A"}`,
+        "Note: This report is prepared as evidence for legal counsel.",
+      ] : []),
       "",
       "--- INFRINGER INFORMATION ---",
       `Infringer Name: ${form.infringerName}`,
@@ -389,6 +419,29 @@ export default function ReportPage() {
 
         <form onSubmit={handleSubmit} className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 p-6 space-y-6">
 
+          {/* IP Member selector — agency evidence chain mode */}
+          {isAgency && ipMembers.length > 0 && (
+            <div className="bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-xl p-4">
+              <div className="flex items-center gap-2 mb-3">
+                <span className="text-lg">🔗</span>
+                <div>
+                  <p className="text-sm font-semibold text-purple-800 dark:text-purple-300">Evidence Chain for Lawyer</p>
+                  <p className="text-xs text-purple-600 dark:text-purple-400">Select the IP member whose rights have been infringed</p>
+                </div>
+              </div>
+              <select
+                value={selectedMemberId}
+                onChange={(e) => setSelectedMemberId(e.target.value)}
+                className="w-full border border-purple-200 dark:border-purple-700 rounded-lg px-3 py-2.5 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-300"
+              >
+                <option value="">-- Select IP Member --</option>
+                {ipMembers.map((m) => (
+                  <option key={m.id} value={m.id}>{m.name}{m.email ? ` (${m.email})` : ""}</option>
+                ))}
+              </select>
+            </div>
+          )}
+
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
               Your Name <span className="text-red-500">*</span>
@@ -403,7 +456,7 @@ export default function ReportPage() {
             {errors.reporterName && <p className="text-red-500 text-xs mt-1">{errors.reporterName}</p>}
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
                 Your Email <span className="text-red-500">*</span>
@@ -435,7 +488,7 @@ export default function ReportPage() {
             <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide mb-4">
               Infringer Information
             </h2>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
                   Infringer Name <span className="text-red-500">*</span>
@@ -469,7 +522,7 @@ export default function ReportPage() {
             <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide mb-4">
               Infringement Details
             </h2>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
                   Infringement Type

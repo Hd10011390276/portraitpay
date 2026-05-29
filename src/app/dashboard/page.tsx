@@ -27,7 +27,29 @@ function DashboardContent({ user }: { user: User }) {
   const { t, locale } = useLanguage();
   const isZh = false;
   const [loading, setLoading] = useState(true);
-  const [stats, setStats] = useState<Stat[]>([]);
+  const [stats, setStats] = useState<Stat[]>([
+    {
+      label: t.dashboard.stats.certifiedPortraits,
+      value: "—",
+      delta: "",
+      color: "text-blue-600",
+      bg: "bg-blue-50 dark:bg-blue-900/20",
+    },
+    {
+      label: t.dashboard.stats.monthlyEarnings,
+      value: "—",
+      delta: "",
+      color: "text-green-600",
+      bg: "bg-green-50 dark:bg-green-900/20",
+    },
+    {
+      label: t.dashboard.stats.pendingAuthorizations,
+      value: "—",
+      delta: "",
+      color: "text-yellow-600",
+      bg: "bg-yellow-50 dark:bg-yellow-900/20",
+    },
+  ]);
   const [recentPortraits, setRecentPortraits] = useState<any[]>([]);
   const [recentTransactions, setRecentTransactions] = useState<any[]>([]);
   const [lawyers, setLawyers] = useState<any[]>([]);
@@ -130,6 +152,8 @@ function DashboardContent({ user }: { user: User }) {
           const portraitsData = await portraitsRes.json();
           const portraits = portraitsData.data?.slice(0, 5) || [];
           setRecentPortraits(portraits);
+        } else {
+          console.error("[Dashboard] /api/portraits failed:", portraitsRes.status, portraitsRes.statusText);
         }
 
         const txRes = await fetch('/api/v1/earnings/transactions');
@@ -137,6 +161,8 @@ function DashboardContent({ user }: { user: User }) {
           const txData = await txRes.json();
           const transactions = txData.data?.slice(0, 5) || [];
           setRecentTransactions(transactions);
+        } else {
+          console.error("[Dashboard] /api/v1/earnings/transactions failed:", txRes.status, txRes.statusText);
         }
 
         const summaryRes = await fetch('/api/v1/earnings/summary');
@@ -166,6 +192,8 @@ function DashboardContent({ user }: { user: User }) {
               bg: "bg-yellow-50 dark:bg-yellow-900/20",
             },
           ]);
+        } else {
+          console.error("[Dashboard] /api/v1/earnings/summary failed:", summaryRes.status, summaryRes.statusText);
         }
 
         // Fetch approved lawyers
@@ -176,7 +204,7 @@ function DashboardContent({ user }: { user: User }) {
             setLawyers(lawyersData.data?.slice(0, 6) || []);
           }
         } catch (e) {
-          console.error('Failed to fetch lawyers:', e);
+          console.error("[Dashboard] /api/lawyers failed:", e);
         }
 
         // Fetch actors for discovery
@@ -187,7 +215,7 @@ function DashboardContent({ user }: { user: User }) {
             setActors(actorsData.data || []);
           }
         } catch (e) {
-          console.error('Failed to fetch actors:', e);
+          console.error("[Dashboard] /api/actors failed:", e);
         }
 
         // Fetch voice profile
@@ -198,10 +226,10 @@ function DashboardContent({ user }: { user: User }) {
             if (vpJson.data?.hasEmbedding) setVoiceRegistered(true);
           }
         } catch (e) {
-          console.error('Failed to fetch voice profile:', e);
+          console.error("[Dashboard] /api/voice/profile failed:", e);
         }
       } catch (error) {
-        console.error("Failed to fetch dashboard data:", error);
+        console.error("[Dashboard] Failed to fetch dashboard data:", error);
       } finally {
         setLoading(false);
       }

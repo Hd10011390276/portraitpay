@@ -241,22 +241,28 @@ export async function POST(request: NextRequest, context: RouteContext) {
         console.error("[Mint] Certificate PDF failed (non-blocking):", e);
       }
 
-      sendPortraitCertifiedEmail({
-        name: ownerName,
-        email: portrait.owner.email,
-        portraitTitle: updated.title ?? "Portrait",
-        portraitImageHash,
-        idCardFrontHash,
-        idCardName,
-        idCardType,
-        idCardNumberMasked: maskedNumber,
-        blockchainTxHash: certificationResult.txHash,
-        network,
-        certifiedAt: certificationResult.certifiedAt.toString(),
-        certificateBuffer: certBuffer,
-        certificateNo: certNo,
-        isEarlyContributor,
-      }).catch((e: unknown) => console.error("[Mint] Email send failed:", e));
+      let emailWarning: string | undefined;
+      try {
+        await sendPortraitCertifiedEmail({
+          name: ownerName,
+          email: portrait.owner.email,
+          portraitTitle: updated.title ?? "Portrait",
+          portraitImageHash,
+          idCardFrontHash,
+          idCardName,
+          idCardType,
+          idCardNumberMasked: maskedNumber,
+          blockchainTxHash: certificationResult.txHash,
+          network,
+          certifiedAt: certificationResult.certifiedAt.toString(),
+          certificateBuffer: certBuffer,
+          certificateNo: certNo,
+          isEarlyContributor,
+        });
+      } catch (e: unknown) {
+        console.error("[Mint] Email send failed:", e);
+        emailWarning = "Certificate created but email notification failed: " + ((e as Error).message || String(e));
+      }
     }
 
     return NextResponse.json({
@@ -272,6 +278,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
         certificateNumber,
         certNo,
         isEarlyContributor,
+        emailWarning: emailWarning || null,
       },
     });
   } catch (error) {

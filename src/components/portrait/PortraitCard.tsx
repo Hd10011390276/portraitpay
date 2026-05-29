@@ -122,7 +122,7 @@ export default function PortraitCard({ portrait, onView, onCertify, onDelete }: 
           {portrait.status === "DRAFT" && portrait.originalImageUrl && onCertify && (
             <button
               onClick={() => onCertify(portrait.id)}
-              className="flex-1 px-3 py-1.5 text-xs font-medium bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+              className="flex-1 px-3 py-1.5 text-xs font-medium bg-purple-600 dark:bg-purple-700 text-white rounded-lg hover:bg-purple-700 dark:hover:bg-purple-600 transition-colors"
             >
               🔗 Certify
             </button>

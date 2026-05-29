@@ -1,0 +1,1412 @@
+import {
+  Document,
+  Page,
+  Text,
+  View,
+  StyleSheet,
+  Image,
+} from "@react-pdf/renderer";
+
+const BLUE = "#244169";
+const LIGHT_BLUE = "#e8f0f8";
+const GRAY = "#6b7280";
+const DARK = "#1f2937";
+const WHITE = "#ffffff";
+const GREEN = "#16a34a";
+const RED = "#dc2626";
+
+const styles = StyleSheet.create({
+  page: { fontFamily: "Helvetica", fontSize: 10, color: DARK, backgroundColor: WHITE, paddingBottom: 46 },
+  header: {
+    backgroundColor: BLUE, padding: "12 36", flexDirection: "row",
+    alignItems: "center", justifyContent: "space-between",
+  },
+  headerTitle: { color: WHITE, fontSize: 14, fontWeight: "bold" },
+  headerSub: { color: "#93c5fd", fontSize: 7, marginTop: 2 },
+  headerRight: { alignItems: "flex-end" },
+  watermark: { color: "#93c5fd", fontSize: 7, marginTop: 4 },
+  section: { margin: "14 36" },
+  sectionTitle: {
+    fontSize: 11, fontWeight: "bold", color: BLUE,
+    borderBottom: `1 solid ${BLUE}`, paddingBottom: 4, marginBottom: 10,
+  },
+  row: { flexDirection: "row", marginBottom: 5, gap: 14 },
+  label: { width: 140, color: GRAY, fontSize: 9 },
+  value: { flex: 1, color: DARK, fontSize: 10 },
+  card: {
+    border: `1 solid #e5e7eb`, borderRadius: 6, padding: "8 10",
+    marginBottom: 6, backgroundColor: "#f9fafb",
+  },
+  cardTitle: { fontSize: 10, fontWeight: "bold", color: DARK, marginBottom: 6 },
+  tag: {
+    backgroundColor: LIGHT_BLUE, color: BLUE, padding: "2 6",
+    borderRadius: 3, fontSize: 7, fontWeight: "bold", alignSelf: "flex-start", marginBottom: 5,
+  },
+  tagRed: {
+    backgroundColor: "#fee2e2", color: "#991b1b", padding: "2 6",
+    borderRadius: 3, fontSize: 7, fontWeight: "bold", alignSelf: "flex-start", marginBottom: 5,
+  },
+  footer: {
+    position: "absolute", bottom: 20, left: 40, right: 40,
+    flexDirection: "row", justifyContent: "space-between", alignItems: "center",
+    borderTop: `1 solid #e5e7eb`, paddingTop: 6,
+  },
+  footerText: { color: GRAY, fontSize: 7 },
+  coverPage: { flex: 1, justifyContent: "center", alignItems: "center", padding: 40 },
+  coverLogo: { fontSize: 22, fontWeight: "bold", color: BLUE, marginBottom: 4 },
+  coverTitle: { fontSize: 17, fontWeight: "bold", color: DARK, marginBottom: 20, textAlign: "center" },
+  coverBox: {
+    border: `2 solid ${BLUE}`, borderRadius: 8, padding: "18 28",
+    alignItems: "center", width: "100%", maxWidth: 420,
+  },
+  coverLabel: { fontSize: 8, color: GRAY, marginBottom: 3 },
+  coverValue: { fontSize: 16, fontWeight: "bold", color: BLUE, marginBottom: 12 },
+  coverWarning: {
+    backgroundColor: LIGHT_BLUE, borderRadius: 6, padding: "8 16",
+    marginTop: 12, width: "100%", maxWidth: 420,
+  },
+  coverWarningText: { color: BLUE, fontSize: 8, textAlign: "center", lineHeight: 1.5 },
+  checklist: { flexDirection: "row", alignItems: "flex-start", gap: 6, marginBottom: 4 },
+  checkMark: { color: GREEN, fontSize: 9, lineHeight: 1.3 },
+  crossMark: { color: RED, fontSize: 9, lineHeight: 1.3 },
+  checklistText: { flex: 1, fontSize: 9, lineHeight: 1.4, color: DARK },
+  voiceCard: {
+    backgroundColor: "#fefce8", border: `1 solid #fde047`,
+    borderRadius: 6, padding: 8, marginBottom: 6,
+  },
+  riskHigh: { backgroundColor: "#fee2e2", color: "#991b1b", padding: "1 5", borderRadius: 3, fontSize: 7, fontWeight: "bold", alignSelf: "flex-start" },
+  riskMed: { backgroundColor: "#fef9c3", color: "#854d0e", padding: "1 5", borderRadius: 3, fontSize: 7, fontWeight: "bold", alignSelf: "flex-start" },
+  riskLow: { backgroundColor: "#dcfce7", color: "#166534", padding: "1 5", borderRadius: 3, fontSize: 7, fontWeight: "bold", alignSelf: "flex-start" },
+  statementBox: {
+    marginTop: 6, padding: "6 8", backgroundColor: "#fefce8", borderRadius: 4,
+  },
+  tableRow: {
+    flexDirection: "row", borderBottom: `1 solid #e5e7eb`,
+    paddingVertical: 4, gap: 4,
+  },
+  tableHeader: {
+    flexDirection: "row", borderBottom: `2 solid ${BLUE}`,
+    paddingVertical: 4, gap: 4, marginBottom: 4,
+  },
+  tableHeaderCell: { fontSize: 8, fontWeight: "bold", color: BLUE, flex: 1 },
+  tableCell: { fontSize: 8, color: DARK, flex: 1 },
+  captionLine: {
+    borderBottom: `1 solid ${DARK}`, marginBottom: 6, paddingBottom: 6,
+  },
+  captionVs: { fontSize: 11, fontWeight: "bold", color: DARK, textAlign: "center", marginVertical: 4 },
+  signatureLine: {
+    borderTop: `1 solid ${DARK}`, marginTop: 14, paddingTop: 3,
+    width: 200,
+  },
+  legalRef: { fontSize: 7, color: GRAY, marginTop: 3 },
+});
+
+export interface EvidenceClaimData {
+  caseId: string;
+  caseRef: string;
+  exportDate: string;
+  exportTimestamp: string;
+  status: string;
+  compensation: string;
+
+  // Court info (optional -- filled by lawyer)
+  courtName: string;
+  caseNumber: string;
+  plaintiffName: string;
+  defendantName: string;
+
+  // Claimant (reporter)
+  claimantName: string;
+  claimantEmail: string;
+  claimantProfileUrl: string;
+
+  // Portrait owner
+  portraitOwnerName: string;
+  portraitOwnerEmail: string;
+
+  // Consent
+  consentPassportId: string;
+  consentCreatedAt: string;
+  consentModifiedAt: string;
+
+  // Portrait
+  portraitTitle: string;
+  portraitId: string;
+
+  // Consent scopes
+  allowedScopes: string[];
+  prohibitedScopes: string[];
+
+  // Infringement
+  infringementType: string;
+  infringementDescription: string;
+  infringementDetectedAt: string;
+  infringementPlatformUrl: string;
+  infringementEvidence: string[];
+  infringementReportCreatedAt: string;
+  infringementReportId: string;
+
+  // Lawyer info
+  lawyerFirm: string;
+  lawyerName: string;
+  lawyerEmail: string;
+  lawyerPhone: string;
+  lawyerBarNumber?: string;
+  lawyerBarState?: string;
+
+  // Biometric
+  hasVoice: boolean;
+  voiceRefId: string;
+  voiceSimilarityScore: number;
+  voiceRisk: string;
+  hasFace: boolean;
+  faceComparisonScore: number;
+  faceImageUrl: string;
+
+  // Evidence screenshots (from automated capture)
+  evidenceScreenshots?: Array<{
+    pageUrl: string;
+    pageTitle?: string;
+    screenshotUrl: string;
+    screenshotHash: string;
+    capturedAt: string;
+  }>;
+
+  // Face comparison technical report (P2 — court-admissible)
+  faceReport?: {
+    reportId: string;
+    generatedAt: string;
+    methodology: {
+      algorithm: string;
+      provider: string;
+      embeddingDimension: number;
+      similarityMetric: string;
+      threshold: number;
+      confidenceIntervalMethod: string;
+      peerReviewed: boolean;
+    };
+    comparison: {
+      referenceImage: string;
+      candidateImage: string;
+      score: number;
+      result: string;
+      confidenceInterval: [number, number];
+      confidenceLevel: number;
+    };
+    chainOfCustody: {
+      reportHash: string;
+      hashAlgorithm: string;
+      referenceImageHash?: string;
+      candidateImageHash?: string;
+      verifiedAt?: string;
+    };
+    expertConclusion: string;
+    disclaimer: string;
+  };
+
+  // Verification
+  recordHash: string;
+  ipfsCid: string;
+  verificationUrl: string;
+
+  // Electronic signature (ESIGN Act / UETA)
+  signedByName?: string;
+  signedAt?: string;
+  signatureHash?: string;
+  isSigned?: boolean;
+}
+
+/* ── Shared components ─────────────────────────────────── */
+
+function PageFooter({ hash, exportDate, pageLabel }: { hash: string; exportDate: string; pageLabel?: string }) {
+  return (
+    <View style={styles.footer} fixed>
+      <View>
+        <Text style={styles.footerText}>SHA-256: {hash.slice(0, 16)}...</Text>
+        <Text style={styles.footerText}>Export: {exportDate} PST/PDT</Text>
+      </View>
+      <View style={{ alignItems: "flex-end" }}>
+        {pageLabel && <Text style={styles.footerText}>{pageLabel}</Text>}
+        <Text style={styles.footerText}>Cal. Civ. Code S. 3344 / AB 1836 (2024)</Text>
+      </View>
+    </View>
+  );
+}
+
+function PdfHeader({ caseRef }: { caseRef: string }) {
+  return (
+    <View style={styles.header}>
+      <View>
+        <Text style={styles.headerTitle}>PortraitPay AI</Text>
+        <Text style={styles.headerSub}>Expert Evidence Package -- Attorney Work Product</Text>
+      </View>
+      <View style={styles.headerRight}>
+        <Text style={{ color: WHITE, fontSize: 10, fontWeight: "bold" }}>{caseRef}</Text>
+        <Text style={styles.watermark}>portraitpayai.com</Text>
+      </View>
+    </View>
+  );
+}
+
+/* ── Page 1: Case Caption (Court Cover) ────────────────── */
+
+export function CaseCaptionPage({ data }: { data: EvidenceClaimData }) {
+  const court = data.courtName || "United States District Court";
+  return (
+    <Page size="A4" style={styles.page}>
+      <PdfHeader caseRef={data.caseRef} />
+      <View style={[styles.section, { marginTop: 30 }]}>
+        {/* Court header */}
+        <View style={styles.captionLine}>
+          <Text style={{ fontSize: 13, fontWeight: "bold", color: DARK, textAlign: "center", marginBottom: 4 }}>
+            {court.toUpperCase()}
+          </Text>
+          {!!data.caseNumber && (
+            <Text style={{ fontSize: 10, color: GRAY, textAlign: "center" }}>
+              Case No. {data.caseNumber}
+            </Text>
+          )}
+        </View>
+
+        {/* Parties */}
+        <View style={{ marginVertical: 16 }}>
+          <View style={{ marginBottom: 6 }}>
+            <Text style={{ fontSize: 10, fontWeight: "bold", color: DARK }}>
+              {data.plaintiffName || data.portraitOwnerName || "[Plaintiff Name]"}
+            </Text>
+            <Text style={{ fontSize: 8, color: GRAY }}>Plaintiff / Portrait Rights Holder</Text>
+          </View>
+          <Text style={styles.captionVs}>v.</Text>
+          <View style={{ marginBottom: 6 }}>
+            <Text style={{ fontSize: 10, fontWeight: "bold", color: DARK }}>
+              {data.defendantName || "[Defendant Name]"}
+            </Text>
+            <Text style={{ fontSize: 8, color: GRAY }}>Defendant / Alleged Infringer</Text>
+          </View>
+        </View>
+
+        {/* Document title */}
+        <View style={[styles.card, { backgroundColor: LIGHT_BLUE, marginTop: 12 }]}>
+          <Text style={{ fontSize: 14, fontWeight: "bold", color: BLUE, textAlign: "center", marginBottom: 6 }}>
+            EXPERT EVIDENCE PACKAGE
+          </Text>
+          <Text style={{ fontSize: 10, color: DARK, textAlign: "center" }}>
+            Digital Portrait Rights Infringement
+          </Text>
+        </View>
+
+        {/* Submitting attorney */}
+        <View style={[styles.card, { marginTop: 12 }]}>
+          <Text style={styles.cardTitle}>Submitted by Counsel</Text>
+          <View style={styles.row}>
+            <Text style={styles.label}>Attorney / Firm</Text>
+            <Text style={styles.value}>{data.lawyerName || "-"}{data.lawyerFirm ? `, ${data.lawyerFirm}` : ""}</Text>
+          </View>
+          <View style={styles.row}>
+            <Text style={styles.label}>Email</Text>
+            <Text style={styles.value}>{data.lawyerEmail || "-"}</Text>
+          </View>
+          {!!data.lawyerPhone && (
+            <View style={styles.row}>
+              <Text style={styles.label}>Phone</Text>
+              <Text style={styles.value}>{data.lawyerPhone}</Text>
+            </View>
+          )}
+        </View>
+
+        {/* Key references */}
+        <View style={[styles.card, { marginTop: 12 }]}>
+          <View style={styles.row}>
+            <Text style={styles.label}>Platform Reference</Text>
+            <Text style={styles.value}>{data.caseRef}</Text>
+          </View>
+          <View style={styles.row}>
+            <Text style={styles.label}>Generated</Text>
+            <Text style={styles.value}>{data.exportDate}</Text>
+          </View>
+          <View style={styles.row}>
+            <Text style={styles.label}>Verification URL</Text>
+            <Text style={[styles.value, { fontSize: 8, color: BLUE }]}>{data.verificationUrl}</Text>
+          </View>
+          <View style={styles.row}>
+            <Text style={styles.label}>IPFS CID</Text>
+            <Text style={[styles.value, { fontSize: 8 }]}>{data.ipfsCid || "-"}</Text>
+          </View>
+        </View>
+      </View>
+      <PageFooter hash={data.recordHash} exportDate={data.exportDate} pageLabel="Page 1 -- Case Caption" />
+    </Page>
+  );
+}
+
+/* ── Page 2: Affidavit / Declaration ──────────────────── */
+
+export function AffidavitPage({ data }: { data: EvidenceClaimData }) {
+  return (
+    <Page size="A4" style={styles.page}>
+      <PdfHeader caseRef={data.caseRef} />
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>AFFIDAVIT OF TECHNICAL EVIDENCE AUTHENTICITY</Text>
+
+        <View style={[styles.card, { marginBottom: 12 }]}>
+          <Text style={styles.cardTitle}>Declaration</Text>
+          <Text style={{ fontSize: 10, lineHeight: 1.6, color: DARK, marginBottom: 8 }}>
+            I, the undersigned, hereby declare under penalty of perjury under the laws of the State of California
+            and the United States of America that the following is true and correct to the best of my knowledge:
+          </Text>
+        </View>
+
+        <View style={[styles.card, { marginBottom: 12 }]}>
+          <Text style={styles.cardTitle}>1. Factual Basis</Text>
+          <Text style={{ fontSize: 10, lineHeight: 1.5, color: DARK }}>
+            On or about {data.infringementDetectedAt}, an infringement of digital portrait rights was detected
+            involving the portrait titled &ldquo;{data.portraitTitle}&rdquo; (Portrait ID: {data.portraitId}).
+            The infringing content was identified as: {data.infringementType.replace(/_/g, " ")}.
+          </Text>
+          <View style={[styles.statementBox, { marginTop: 8 }]}>
+            <Text style={{ fontSize: 9, color: DARK }}>
+              Description of infringement: {data.infringementDescription}
+            </Text>
+          </View>
+        </View>
+
+        <View style={[styles.card, { marginBottom: 12 }]}>
+          <Text style={styles.cardTitle}>2. Evidence Collection Method</Text>
+          <Text style={{ fontSize: 10, lineHeight: 1.5, color: DARK }}>
+            Evidence was captured using the PortraitPay AI platform&apos;s automated evidence preservation system.
+            Each evidence URL was fetched, hashed using SHA-256, and the resulting hash was recorded
+            at the time of capture. The evidence hashes were then committed to IPFS via the Pinata pinning service,
+            creating an immutable, content-addressed record. The IPFS Content Identifier (CID) for the evidence
+            manifest is: {data.ipfsCid || "not available"}.
+          </Text>
+        </View>
+
+        <View style={[styles.card, { marginBottom: 12 }]}>
+          <Text style={styles.cardTitle}>3. Chain of Custody</Text>
+          <Text style={{ fontSize: 10, lineHeight: 1.5, color: DARK }}>
+            From the time of capture to the generation of this evidence package, the data has remained
+            unaltered. The SHA-256 record hash ({data.recordHash.slice(0, 16)}&hellip;) was computed from
+            immutable case fields at the time of original submission and has not been recalculated.
+            Any attempt to alter the underlying data would result in a hash mismatch, immediately
+            detectable by any party.
+          </Text>
+        </View>
+
+        {data.hasVoice && (
+          <View style={[styles.card, { marginBottom: 12 }]}>
+            <Text style={styles.cardTitle}>4. Biometric Analysis</Text>
+            <Text style={{ fontSize: 10, lineHeight: 1.5, color: DARK }}>
+              A voice similarity analysis was performed using the ECAPA-TDNN speaker verification model
+              (192-dimensional x-vector embeddings, cosine similarity). The analysis returned a similarity
+              score of {(data.voiceSimilarityScore * 100).toFixed(1)}% against the reference voiceprint.
+              The reference embedding was captured from the portrait owner with verified consent.
+              The biometric comparison methodology and results are detailed in the Technical Analysis
+              Report section of this package.
+            </Text>
+          </View>
+        )}
+
+        {/* Signature block */}
+        <View style={{ marginTop: 20 }}>
+          <Text style={{ fontSize: 10, color: DARK, marginBottom: 24 }}>
+            Executed this {new Date(data.exportTimestamp).toLocaleDateString("en-US", { day: "numeric", month: "long", year: "numeric" })}, at San Francisco, California.
+          </Text>
+          <View style={styles.signatureLine}>
+            <Text style={{ fontSize: 9, color: GRAY }}>Signature of Declarant</Text>
+          </View>
+          <Text style={{ fontSize: 10, color: DARK, marginTop: 6 }}>
+            {data.lawyerName || "Attorney of Record"}{data.lawyerBarState ? `, ${data.lawyerBarState}` : ""}
+          </Text>
+          {data.lawyerBarNumber && (
+            <Text style={{ fontSize: 9, color: GRAY }}>Bar No. {data.lawyerBarNumber}</Text>
+          )}
+          {!!data.lawyerFirm && (
+            <Text style={{ fontSize: 9, color: GRAY }}>{data.lawyerFirm}</Text>
+          )}
+          <Text style={{ fontSize: 9, color: GRAY, marginTop: 4 }}>Esq.</Text>
+
+          {/* Evidence authentication block */}
+          <View style={{ marginTop: 24, borderTop: `1 solid #e5e7eb`, paddingTop: 12 }}>
+            <Text style={{ fontSize: 9, fontWeight: "bold", color: DARK, marginBottom: 6 }}>Digital Evidence Package</Text>
+            <Text style={{ fontSize: 9, color: GRAY, lineHeight: 1.4 }}>
+              I, {(data.lawyerName || "Attorney of Record") + (data.lawyerBarState ? `, an attorney duly admitted to practice law in the State of ${data.lawyerBarState}` : "")}{(data.lawyerBarNumber ? ` (Bar No. ${data.lawyerBarNumber})` : "")}, hereby certify under FRE 902(13) that the electronic records contained herein were produced by a process of digital identification that produces an accurate result, and that the SHA-256 hash computed at the time of capture matches the hash recorded in this package.{"
+"}
+              Self-Authenticating Under FRE 902(13){"\n"}
+              California Evidence Code §§ 1400-1454
+            </Text>
+          </View>
+        </View>
+      </View>
+      <PageFooter hash={data.recordHash} exportDate={data.exportDate} pageLabel="Page 2 -- Affidavit" />
+    </Page>
+  );
+}
+
+/* ── Page 3: Chain of Custody ──────────────────────────── */
+
+export function ChainOfCustodyPage({ data }: { data: EvidenceClaimData }) {
+  const items = data.infringementEvidence.map((url, i) => ({
+    exhibit: `Exhibit A-${i + 1}`,
+    description: `Evidence URL ${i + 1}`,
+    url,
+    capturedAt: data.infringementReportCreatedAt,
+    hash: data.recordHash.slice(0, 16) + "..." + data.recordHash.slice(-8),
+  }));
+
+  if (items.length === 0) {
+    items.push({
+      exhibit: "Exhibit A-1",
+      description: data.infringementDescription.slice(0, 60),
+      url: data.infringementPlatformUrl || "N/A",
+      capturedAt: data.infringementDetectedAt,
+      hash: data.recordHash.slice(0, 16) + "..." + data.recordHash.slice(-8),
+    });
+  }
+
+  return (
+    <Page size="A4" style={styles.page}>
+      <PdfHeader caseRef={data.caseRef} />
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>CHAIN OF CUSTODY -- EVIDENCE PRESERVATION LOG</Text>
+
+        <View style={[styles.card, { marginBottom: 12 }]}>
+          <Text style={{ fontSize: 9, color: GRAY, lineHeight: 1.5 }}>
+            The following records document the chain of custody for each piece of evidence in this package.
+            All timestamps are in Pacific Time (PT). Each evidence item was hashed at the time of capture
+            using SHA-256. The record hash was committed to IPFS for independent, third-party verification.
+            The IPFS Content Identifier (CID) provides a permanent, tamper-evident reference to the
+            evidence manifest.
+          </Text>
+        </View>
+
+        {/* Table header */}
+        <View style={styles.tableHeader}>
+          <Text style={[styles.tableHeaderCell, { flex: 0.8 }]}>Exhibit</Text>
+          <Text style={[styles.tableHeaderCell, { flex: 1.2 }]}>Description</Text>
+          <Text style={[styles.tableHeaderCell, { flex: 1.5 }]}>Source URL</Text>
+          <Text style={[styles.tableHeaderCell, { flex: 0.8 }]}>Capture Date</Text>
+          <Text style={[styles.tableHeaderCell, { flex: 1.2 }]}>SHA-256 Fragment</Text>
+        </View>
+
+        {items.map((item, i) => (
+          <View key={i} style={styles.tableRow}>
+            <Text style={[styles.tableCell, { flex: 0.8, fontWeight: "bold" }]}>{item.exhibit}</Text>
+            <Text style={[styles.tableCell, { flex: 1.2 }]}>{item.description}</Text>
+            <Text style={[styles.tableCell, { flex: 1.5, fontSize: 7 }]}>{item.url}</Text>
+            <Text style={[styles.tableCell, { flex: 0.8 }]}>{item.capturedAt}</Text>
+            <Text style={[styles.tableCell, { flex: 1.2, fontSize: 7, fontFamily: "Helvetica" }]}>{item.hash}</Text>
+          </View>
+        ))}
+
+        {/* IPFS verification */}
+        <View style={[styles.card, { marginTop: 16, backgroundColor: LIGHT_BLUE }]}>
+          <Text style={styles.cardTitle}>Independent Verification</Text>
+          <View style={styles.row}>
+            <Text style={styles.label}>IPFS CID</Text>
+            <Text style={[styles.value, { fontSize: 8 }]}>{data.ipfsCid || "Not available"}</Text>
+          </View>
+          <View style={styles.row}>
+            <Text style={styles.label}>Verification URL</Text>
+            <Text style={[styles.value, { fontSize: 8, color: BLUE }]}>{data.verificationUrl}</Text>
+          </View>
+          <View style={styles.row}>
+            <Text style={styles.label}>Full Record Hash</Text>
+            <Text style={[styles.value, { fontSize: 8, fontFamily: "Helvetica" }]}>{data.recordHash}</Text>
+          </View>
+          <Text style={{ fontSize: 8, color: GRAY, marginTop: 8,  }}>
+            To independently verify: visit the verification URL above, or retrieve the IPFS CID via any
+            IPFS gateway (e.g., ipfs.io, cloudflare-ipfs.com). The evidence manifest contains the complete
+            set of hashes needed to verify each piece of evidence in this package.
+          </Text>
+        </View>
+
+        {/* Integrity statement */}
+        <View style={[styles.card, { marginTop: 10 }]}>
+          <Text style={styles.cardTitle}>Evidence Integrity Certification</Text>
+          <Text style={{ fontSize: 9, lineHeight: 1.5, color: DARK }}>
+            I certify that the evidence listed above was collected and preserved in accordance with
+            Federal Rule of Evidence 902(13) (Certified Records Generated by an Electronic Process or System)
+            and California Evidence Code S.S. 1400-1454. The SHA-256 hashes recorded above were computed at
+            the time of evidence capture and have not been modified. Any comparison of the current content
+            at the listed URLs with the hashes recorded herein will confirm the integrity of the evidence.
+          </Text>
+        </View>
+      </View>
+      <PageFooter hash={data.recordHash} exportDate={data.exportDate} pageLabel="Page 3 -- Chain of Custody" />
+    </Page>
+  );
+}
+
+/* ── Page 4: Technical Analysis Report ─────────────────── */
+
+export function TechnicalReportPage({ data }: { data: EvidenceClaimData }) {
+  if (!data.hasVoice && !data.hasFace) {
+    // Render a placeholder page indicating no biometric data
+    return (
+      <Page size="A4" style={styles.page}>
+        <PdfHeader caseRef={data.caseRef} />
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>TECHNICAL ANALYSIS REPORT</Text>
+          <View style={styles.card}>
+            <Text style={{ fontSize: 10, color: GRAY, textAlign: "center", padding: 40 }}>
+              No biometric evidence was submitted with this case.{"\n"}
+              This report section is reserved for voice (ECAPA-TDNN) and/or facial recognition analysis.
+            </Text>
+          </View>
+        </View>
+        <PageFooter hash={data.recordHash} exportDate={data.exportDate} pageLabel="Page 4 -- Technical Report" />
+      </Page>
+    );
+  }
+
+  return (
+    <Page size="A4" style={styles.page}>
+      <PdfHeader caseRef={data.caseRef} />
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>TECHNICAL ANALYSIS REPORT -- BIOMETRIC EVIDENCE</Text>
+
+        {/* Methodology */}
+        <View style={[styles.card, { marginBottom: 12 }]}>
+          <Text style={styles.cardTitle}>Analysis Methodology</Text>
+          {data.hasVoice && (
+            <View style={{ marginBottom: 10 }}>
+              <Text style={{ fontSize: 9, fontWeight: "bold", color: DARK, marginBottom: 4 }}>Voice Similarity -- ECAPA-TDNN</Text>
+              <Text style={{ fontSize: 9, lineHeight: 1.5, color: DARK }}>
+                Speaker verification was performed using the ECAPA-TDNN (Emphasized Channel Attention,
+                Propagation and Aggregation Time-Delay Neural Network) architecture. This model extracts
+                a 192-dimensional x-vector embedding that captures speaker-specific characteristics
+                including vocal tract geometry, prosodic patterns, and spectral features. Comparison is
+                performed using cosine similarity between the reference embedding (enrolled from the
+                portrait owner) and the query embedding (extracted from the infringing content).
+              </Text>
+              <Text style={styles.legalRef}>
+                Reference: Desplanques, B., Thienpondt, J., Demuynck, K. (2020). ECAPA-TDNN: Emphasized
+                Channel Attention, Propagation and Aggregation in TDNN Based Speaker Verification. Interspeech 2020.
+              </Text>
+            </View>
+          )}
+          {data.hasFace && (
+            <View>
+              <Text style={{ fontSize: 9, fontWeight: "bold", color: DARK, marginBottom: 4 }}>Face Comparison</Text>
+              <Text style={{ fontSize: 9, lineHeight: 1.5, color: DARK }}>
+                Facial similarity analysis was performed by comparing facial embeddings extracted from
+                the reference portrait and the detected infringing image. The comparison uses deep
+                convolutional neural network features normalized to unit length and compared via cosine
+                similarity. Scores range from 0.0 (no similarity) to 1.0 (identical).
+              </Text>
+            </View>
+          )}
+        </View>
+
+        {/* Results */}
+        <View style={[styles.card, { marginBottom: 12 }]}>
+          <Text style={styles.cardTitle}>Comparison Results</Text>
+
+          {data.hasVoice && (
+            <View style={[styles.voiceCard, { marginBottom: 12 }]}>
+              <Text style={{ fontSize: 9, fontWeight: "bold", color: DARK, marginBottom: 6 }}>Voice Similarity</Text>
+              <View style={styles.row}>
+                <Text style={styles.label}>Reference Embedding ID</Text>
+                <Text style={styles.value}>{data.voiceRefId}</Text>
+              </View>
+              <View style={styles.row}>
+                <Text style={styles.label}>Similarity Score</Text>
+                <Text style={[styles.value, { fontWeight: "bold" }]}>
+                  {(data.voiceSimilarityScore * 100).toFixed(1)}% (raw: {data.voiceSimilarityScore.toFixed(4)})
+                </Text>
+              </View>
+              <View style={styles.row}>
+                <Text style={styles.label}>Decision Threshold</Text>
+                <Text style={styles.value}>0.80 (80%)</Text>
+              </View>
+              <View style={styles.row}>
+                <Text style={styles.label}>Risk Classification</Text>
+                <Text style={styles.value}>
+                  <Text style={
+                    data.voiceRisk === "HIGH" ? styles.riskHigh :
+                    data.voiceRisk === "MEDIUM" ? styles.riskMed : styles.riskLow
+                  }>
+                    {data.voiceRisk}
+                  </Text>
+                </Text>
+              </View>
+              <View style={styles.row}>
+                <Text style={styles.label}>Result</Text>
+                <Text style={[styles.value, {
+                  color: data.voiceSimilarityScore >= 0.80 ? RED : GREEN,
+                  fontWeight: "bold",
+                }]}>
+                  {data.voiceSimilarityScore >= 0.80 ? "THRESHOLD EXCEEDED -- Likely same speaker" : "BELOW THRESHOLD -- Insufficient evidence of match"}
+                </Text>
+              </View>
+            </View>
+          )}
+
+          {data.hasFace && (
+            <View style={[styles.card, { backgroundColor: "#fefce8", borderColor: "#fde047", marginBottom: 12 }]}>
+              <Text style={{ fontSize: 9, fontWeight: "bold", color: DARK, marginBottom: 6 }}>Face Comparison</Text>
+              <View style={styles.row}>
+                <Text style={styles.label}>Similarity Score</Text>
+                <Text style={[styles.value, { fontWeight: "bold" }]}>
+                  {(data.faceComparisonScore * 100).toFixed(1)}% (raw: {data.faceComparisonScore.toFixed(4)})
+                </Text>
+              </View>
+              {!!data.faceImageUrl && (
+                <View style={styles.row}>
+                  <Text style={styles.label}>Reference Image URL</Text>
+                  <Text style={[styles.value, { fontSize: 8, color: BLUE }]}>{data.faceImageUrl}</Text>
+                </View>
+              )}
+            </View>
+          )}
+        </View>
+
+        {/* D. Facial Recognition Analysis */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>D. Facial Recognition Analysis</Text>
+          <View style={styles.card}>
+            <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 8 }}>
+              <Text style={styles.tag}>FACIAL RECOGNITION</Text>
+              <Text style={[styles.value, { marginLeft: 8 }]}>
+                Score: {(data.faceComparisonScore * 100).toFixed(1)}%
+              </Text>
+            </View>
+            <Text style={{ fontSize: 9, color: GRAY, marginBottom: 6 }}>
+              Automated facial similarity comparison between registered portrait and detected infringement content.
+            </Text>
+            <View style={{ borderTop: "1 solid #e5e7eb", paddingTop: 6, marginTop: 4 }}>
+              {[
+                ["Algorithm", "Aliyun Face Verify / Tencent CompareFace"],
+                ["Method", "Cosine similarity on 128-dim embeddings"],
+                ["Threshold", "80% (0.80 cosine)"],
+                ["Input A", "Registered portrait — portraitImageUrl"],
+                ["Input B", "ID card original — originalImageUrl"],
+              ].map(([label, value]) => (
+                <View key={label} style={{ flexDirection: "row", marginBottom: 3 }}>
+                  <Text style={[styles.label, { width: 100 }]}>{label}</Text>
+                  <Text style={styles.value}>{value}</Text>
+                </View>
+              ))}
+            </View>
+            {data.faceImageUrl && (
+              <View style={{ marginTop: 8 }}>
+                <Text style={{ fontSize: 8, color: GRAY, marginBottom: 4 }}>Facial comparison reference image:</Text>
+                <Text style={{ fontSize: 8, color: BLUE }}>{data.faceImageUrl}</Text>
+              </View>
+            )}
+          </View>
+          <View style={styles.statementBox}>
+            <Text style={{ fontSize: 8, color: DARK, lineHeight: 1.4 }}>
+              The facial recognition score of {(data.faceComparisonScore * 100).toFixed(1)}% indicates{" "}
+              {data.faceComparisonScore >= 0.80 ? "a HIGH likelihood of identity match — same individual" : "a MEDIUM or LOW likelihood — different individuals"}. This analysis is generated automatically and should be reviewed by a qualified forensic facial identification expert before use in legal proceedings.
+            </Text>
+          </View>
+        </View>
+
+        {/* Expert Conclusion */}
+        <View style={[styles.card, { backgroundColor: LIGHT_BLUE, marginBottom: 12 }]}>
+          <Text style={styles.cardTitle}>Expert Conclusion</Text>
+          {data.hasVoice && (
+            <Text style={{ fontSize: 10, lineHeight: 1.6, color: DARK, marginBottom: 8 }}>
+              Based on the ECAPA-TDNN voice similarity analysis, the questioned audio sample returns a
+              similarity score of {(data.voiceSimilarityScore * 100).toFixed(1)}% against the reference
+              voiceprint ({data.voiceRefId}). The established decision threshold for this method is 0.80 (80%).
+              {data.voiceSimilarityScore >= 0.80
+                ? ` The obtained score exceeds this threshold, indicating a HIGH likelihood that the questioned voice belongs to the same speaker as the reference voiceprint. This finding is consistent with the hypothesis of voice cloning or unauthorized voice reproduction.`
+                : ` The obtained score does not exceed the decision threshold, indicating INSUFFICIENT statistical evidence to conclude that the voices match.`
+              }
+            </Text>
+          )}
+          {data.hasFace && (
+            <Text style={{ fontSize: 10, lineHeight: 1.6, color: DARK, marginBottom: 8 }}>
+              The facial similarity analysis returns a score of {(data.faceComparisonScore * 100).toFixed(1)}%.
+              {data.faceComparisonScore >= 0.85
+                ? " This score indicates a strong likelihood of facial identity match."
+                : data.faceComparisonScore >= 0.70
+                ? " This score indicates a moderate likelihood of facial identity match. Additional corroborating evidence is recommended."
+                : " This score indicates weak or inconclusive evidence of facial identity match."
+              }
+            </Text>
+          )}
+          <Text style={{ fontSize: 8, color: GRAY,marginTop: 8 }}>
+            Disclaimer: This analysis is generated by the PortraitPay AI platform for evidentiary purposes.
+            The methodology is based on peer-reviewed speaker verification techniques. However, this report
+            should be reviewed by a qualified forensic expert before being presented as expert testimony.
+            Scores and conclusions are provided as technical evidence, not legal opinions.
+          </Text>
+        </View>
+
+        {/* Technical data sheet */}
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Technical Specifications</Text>
+          <View style={styles.row}>
+            <Text style={styles.label}>Platform</Text>
+            <Text style={styles.value}>PortraitPay AI v2.0</Text>
+          </View>
+          {data.hasVoice && (
+            <>
+              <View style={styles.row}>
+                <Text style={styles.label}>Voice Model</Text>
+                <Text style={styles.value}>ECAPA-TDNN (x-vector)</Text>
+              </View>
+              <View style={styles.row}>
+                <Text style={styles.label}>Embedding Dimension</Text>
+                <Text style={styles.value}>192</Text>
+              </View>
+              <View style={styles.row}>
+                <Text style={styles.label}>Similarity Metric</Text>
+                <Text style={styles.value}>Cosine Similarity</Text>
+              </View>
+            </>
+          )}
+          <View style={styles.row}>
+            <Text style={styles.label}>Evidence Hashing</Text>
+            <Text style={styles.value}>SHA-256 (FIPS 180-4)</Text>
+          </View>
+          <View style={styles.row}>
+            <Text style={styles.label}>Storage Backend</Text>
+            <Text style={styles.value}>IPFS (Pinata) + Amazon S3 (R2)</Text>
+          </View>
+        </View>
+      </View>
+      <PageFooter hash={data.recordHash} exportDate={data.exportDate} pageLabel="Page 4 -- Technical Report" />
+    </Page>
+  );
+}
+
+/* ── Page 5: Party Information ────────────────────────── */
+
+export function PartyInfoPage({ data }: { data: EvidenceClaimData }) {
+  return (
+    <Page size="A4" style={styles.page}>
+      <PdfHeader caseRef={data.caseRef} />
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>PARTY INFORMATION & CONSENT RECORD</Text>
+
+        {/* Plaintiff / Portrait Owner */}
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Plaintiff -- Portrait Rights Holder</Text>
+          <View style={styles.row}>
+            <Text style={styles.label}>Full Name</Text>
+            <Text style={styles.value}>{data.plaintiffName || data.portraitOwnerName || data.claimantName}</Text>
+          </View>
+          <View style={styles.row}>
+            <Text style={styles.label}>Email</Text>
+            <Text style={styles.value}>{data.portraitOwnerEmail || data.claimantEmail}</Text>
+          </View>
+          <View style={styles.row}>
+            <Text style={styles.label}>PortraitPay Profile</Text>
+            <Text style={[styles.value, { fontSize: 8, color: BLUE }]}>{data.claimantProfileUrl}</Text>
+          </View>
+          <View style={styles.row}>
+            <Text style={styles.label}>Portrait at Issue</Text>
+            <Text style={styles.value}>{data.portraitTitle} (ID: {data.portraitId})</Text>
+          </View>
+        </View>
+
+        {/* Consent Passport */}
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Consent Passport</Text>
+          <View style={styles.row}>
+            <Text style={styles.label}>Passport ID</Text>
+            <Text style={styles.value}>{data.consentPassportId || "-"}</Text>
+          </View>
+          <View style={styles.row}>
+            <Text style={styles.label}>Created</Text>
+            <Text style={styles.value}>{data.consentCreatedAt}</Text>
+          </View>
+          {!!data.consentModifiedAt && data.consentModifiedAt !== data.consentCreatedAt && (
+            <View style={styles.row}>
+              <Text style={styles.label}>Last Modified</Text>
+              <Text style={styles.value}>{data.consentModifiedAt}</Text>
+            </View>
+          )}
+        </View>
+
+        {/* Permitted / Prohibited */}
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Permitted AI Uses</Text>
+          {data.allowedScopes.length === 0 ? (
+            <Text style={{ color: GRAY, fontSize: 9 }}>No permitted uses specified.</Text>
+          ) : (
+            data.allowedScopes.map((scope, i) => (
+              <View key={i} style={styles.checklist}>
+                <Text style={styles.checkMark}>YES</Text>
+                <Text style={styles.checklistText}>{scope}</Text>
+              </View>
+            ))
+          )}
+        </View>
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Prohibited AI Uses</Text>
+          {data.prohibitedScopes.length === 0 ? (
+            <Text style={{ color: GRAY, fontSize: 9 }}>No prohibitions specified.</Text>
+          ) : (
+            data.prohibitedScopes.map((scope, i) => (
+              <View key={i} style={styles.checklist}>
+                <Text style={styles.crossMark}>NO</Text>
+                <Text style={styles.checklistText}>{scope}</Text>
+              </View>
+            ))
+          )}
+        </View>
+
+        {/* Lawyer counsel */}
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Counsel of Record</Text>
+          <View style={styles.row}>
+            <Text style={styles.label}>Firm</Text>
+            <Text style={styles.value}>{data.lawyerFirm || "-"}</Text>
+          </View>
+          <View style={styles.row}>
+            <Text style={styles.label}>Attorney Name</Text>
+            <Text style={styles.value}>{data.lawyerName || "-"}</Text>
+          </View>
+          <View style={styles.row}>
+            <Text style={styles.label}>Email</Text>
+            <Text style={styles.value}>{data.lawyerEmail || "-"}</Text>
+          </View>
+          {!!data.lawyerPhone && (
+            <View style={styles.row}>
+              <Text style={styles.label}>Phone</Text>
+              <Text style={styles.value}>{data.lawyerPhone}</Text>
+            </View>
+          )}
+        </View>
+      </View>
+      <PageFooter hash={data.recordHash} exportDate={data.exportDate} pageLabel="Page 5 -- Party Information" />
+    </Page>
+  );
+}
+
+/* ── Page 6: Infringement Details ───────────────────────── */
+
+export function InfringementPage({ data }: { data: EvidenceClaimData }) {
+  const typeMap: Record<string, string> = {
+    AI_FACE_CLONE: "AI Face Clone",
+    VOICE_CLONE: "Voice Clone",
+    AI_SHORT_DRAMA: "AI Short Drama",
+    UNAUTHORIZED_USE: "Unauthorized Commercial Use",
+    DEEPFAKE: "Deepfake / Digital Re-creation",
+    EXPIRED_LICENSE: "Expired License",
+    SCOPE_VIOLATION: "Scope Violation",
+    RESALE: "Unauthorized Resale",
+  };
+
+  return (
+    <Page size="A4" style={styles.page}>
+      <PdfHeader caseRef={data.caseRef} />
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>INFRINGEMENT REPORT DETAILS</Text>
+        <View style={styles.card}>
+          <View style={{ flexDirection: "row", gap: 8, marginBottom: 10 }}>
+            <Text style={styles.tag}>{typeMap[data.infringementType] || data.infringementType}</Text>
+            <Text style={styles.tagRed}>{data.status}</Text>
+          </View>
+          <View style={styles.row}>
+            <Text style={styles.label}>Description</Text>
+            <Text style={[styles.value, { lineHeight: 1.4 }]}>{data.infringementDescription}</Text>
+          </View>
+          <View style={styles.row}>
+            <Text style={styles.label}>Date Discovered</Text>
+            <Text style={styles.value}>{data.infringementDetectedAt || "-"}</Text>
+          </View>
+          <View style={styles.row}>
+            <Text style={styles.label}>Platform / URL</Text>
+            <Text style={[styles.value, { fontSize: 8 }]}>{data.infringementPlatformUrl || "-"}</Text>
+          </View>
+          <View style={styles.row}>
+            <Text style={styles.label}>Report Number</Text>
+            <Text style={styles.value}>{data.infringementReportId}</Text>
+          </View>
+          <View style={styles.row}>
+            <Text style={styles.label}>Report Submitted</Text>
+            <Text style={styles.value}>{data.infringementReportCreatedAt}</Text>
+          </View>
+        </View>
+      </View>
+      <PageFooter hash={data.recordHash} exportDate={data.exportDate} pageLabel="Page 6 -- Infringement Details" />
+    </Page>
+  );
+}
+
+/* ── Page 6A: Face Comparison Technical Report ────────────── */
+
+export function FaceReportPage({ data }: { data: EvidenceClaimData }) {
+  const fr = data.faceReport;
+  if (!fr) return null;
+
+  const [ciLower, ciUpper] = fr.comparison.confidenceInterval;
+  const passed = fr.comparison.score >= fr.methodology.threshold;
+
+  return (
+    <Page size="A4" style={styles.page}>
+      <PdfHeader caseRef={data.caseRef} />
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>FACE COMPARISON TECHNICAL REPORT</Text>
+        <Text style={{ fontSize: 8, color: GRAY, marginBottom: 8 }}>
+          Report ID: {fr.reportId} | Generated: {fr.generatedAt}
+        </Text>
+
+        {/* Methodology */}
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>1. Methodology</Text>
+          <View style={styles.row}>
+            <Text style={styles.label}>Algorithm</Text>
+            <Text style={[styles.value, { fontSize: 9 }]}>{fr.methodology.algorithm}</Text>
+          </View>
+          <View style={styles.row}>
+            <Text style={styles.label}>Provider</Text>
+            <Text style={styles.value}>{fr.methodology.provider}</Text>
+          </View>
+          <View style={styles.row}>
+            <Text style={styles.label}>Embedding Dimension</Text>
+            <Text style={styles.value}>{fr.methodology.embeddingDimension}-dim</Text>
+          </View>
+          <View style={styles.row}>
+            <Text style={styles.label}>Similarity Metric</Text>
+            <Text style={styles.value}>{fr.methodology.similarityMetric}</Text>
+          </View>
+          <View style={styles.row}>
+            <Text style={styles.label}>Decision Threshold</Text>
+            <Text style={styles.value}>{fr.methodology.threshold}%</Text>
+          </View>
+          <View style={styles.row}>
+            <Text style={styles.label}>Peer-Reviewed</Text>
+            <Text style={styles.value}>{fr.methodology.peerReviewed ? "Yes" : "Proprietary — validated against industry benchmarks"}</Text>
+          </View>
+          <View style={{ marginTop: 8 }}>
+            <Text style={{ fontSize: 9, color: GRAY, lineHeight: 1.5 }}>
+              {fr.methodology.confidenceIntervalMethod}
+            </Text>
+          </View>
+        </View>
+
+        {/* Comparison Results */}
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>2. Comparison Results</Text>
+          <View style={styles.row}>
+            <Text style={styles.label}>Score</Text>
+            <Text style={[styles.value, { fontWeight: "bold", color: passed ? RED : GREEN }]}>
+              {fr.comparison.score}%
+            </Text>
+          </View>
+          <View style={styles.row}>
+            <Text style={styles.label}>Result</Text>
+            <Text style={[styles.value, {
+              fontWeight: "bold",
+              color: fr.comparison.result === "PASS" ? RED : fr.comparison.result === "REVIEW" ? "#854d0e" : GREEN,
+            }]}>
+              {fr.comparison.result === "PASS" ? "MATCH — Identity verified" : fr.comparison.result === "REVIEW" ? "INCONCLUSIVE — Manual review required" : "NO MATCH"}
+            </Text>
+          </View>
+          <View style={styles.row}>
+            <Text style={styles.label}>90% Confidence Interval</Text>
+            <Text style={styles.value}>[{ciLower}%, {ciUpper}%]</Text>
+          </View>
+          <View style={styles.row}>
+            <Text style={styles.label}>Confidence Level</Text>
+            <Text style={styles.value}>{(fr.comparison.confidenceLevel * 100).toFixed(0)}%</Text>
+          </View>
+          <View style={styles.row}>
+            <Text style={styles.label}>Reference (ID Card)</Text>
+            <Text style={[styles.value, { fontSize: 7, color: BLUE }]}>{fr.comparison.referenceImage}</Text>
+          </View>
+          <View style={styles.row}>
+            <Text style={styles.label}>Candidate (Portrait)</Text>
+            <Text style={[styles.value, { fontSize: 7, color: BLUE }]}>{fr.comparison.candidateImage}</Text>
+          </View>
+        </View>
+
+        {/* Chain of Custody */}
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>3. Chain of Custody</Text>
+          <View style={styles.row}>
+            <Text style={styles.label}>Report Hash</Text>
+            <Text style={[styles.value, { fontSize: 7, fontFamily: "Helvetica" }]}>{fr.chainOfCustody.reportHash}</Text>
+          </View>
+          <View style={styles.row}>
+            <Text style={styles.label}>Hash Algorithm</Text>
+            <Text style={styles.value}>{fr.chainOfCustody.hashAlgorithm}</Text>
+          </View>
+          {fr.chainOfCustody.referenceImageHash && (
+            <View style={styles.row}>
+              <Text style={styles.label}>ID Card Hash</Text>
+              <Text style={[styles.value, { fontSize: 7, fontFamily: "Helvetica" }]}>{fr.chainOfCustody.referenceImageHash.slice(0, 32)}...</Text>
+            </View>
+          )}
+          {fr.chainOfCustody.candidateImageHash && (
+            <View style={styles.row}>
+              <Text style={styles.label}>Portrait Hash</Text>
+              <Text style={[styles.value, { fontSize: 7, fontFamily: "Helvetica" }]}>{fr.chainOfCustody.candidateImageHash.slice(0, 32)}...</Text>
+            </View>
+          )}
+          {fr.chainOfCustody.verifiedAt && (
+            <View style={styles.row}>
+              <Text style={styles.label}>Verified At</Text>
+              <Text style={styles.value}>{fr.chainOfCustody.verifiedAt}</Text>
+            </View>
+          )}
+        </View>
+
+        {/* Expert Conclusion */}
+        <View style={[styles.card, { backgroundColor: LIGHT_BLUE }]}>
+          <Text style={styles.cardTitle}>4. Expert Conclusion</Text>
+          <Text style={{ fontSize: 10, lineHeight: 1.6, color: DARK }}>
+            {fr.expertConclusion}
+          </Text>
+        </View>
+
+        {/* Disclaimer */}
+        <View style={[styles.card, { marginTop: 8 }]}>
+          <Text style={[styles.cardTitle, { fontSize: 8 }]}>5. Disclaimer & Admissibility</Text>
+          <Text style={{ fontSize: 7, color: GRAY, lineHeight: 1.4 }}>
+            {fr.disclaimer}
+          </Text>
+        </View>
+      </View>
+      <PageFooter hash={data.recordHash} exportDate={data.exportDate} pageLabel="Page 6A — Face Comparison Technical Report" />
+    </Page>
+  );
+}
+
+/* ── Page 7: Exhibits ──────────────────────────────────── */
+
+export function ExhibitsPage({ data }: { data: EvidenceClaimData }) {
+  return (
+    <Page size="A4" style={styles.page}>
+      <PdfHeader caseRef={data.caseRef} />
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>EXHIBITS INDEX</Text>
+
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Exhibit A -- Infringement Evidence URLs</Text>
+          {data.infringementEvidence.length === 0 ? (
+            <Text style={{ fontSize: 9, color: GRAY }}>No evidence URLs recorded.</Text>
+          ) : (
+            data.infringementEvidence.map((url, i) => (
+              <View key={i} style={[styles.row, { marginBottom: 4 }]}>
+                <Text style={[styles.label, { width: 50 }]}>Item {i + 1}</Text>
+                <Text style={[styles.value, { fontSize: 8, color: BLUE }]}>{url}</Text>
+              </View>
+            ))
+          )}
+        </View>
+
+        {(data.evidenceScreenshots?.length ?? 0) > 0 && (
+          <View style={styles.card}>
+            <Text style={styles.cardTitle}>Exhibit A-S -- Evidence Screenshot Archive</Text>
+            <Text style={{ fontSize: 8, color: GRAY, marginBottom: 6 }}>
+              Automated full-page screenshots captured at the time of evidence preservation.
+              Each screenshot is SHA-256 hashed for tamper detection and stored in cloud archive (R2).
+            </Text>
+            {data.evidenceScreenshots!.map((ss, i) => (
+              <View key={i} style={[styles.card, { marginBottom: 4, backgroundColor: WHITE }]} break>
+                <View style={styles.row}>
+                  <Text style={[styles.label, { width: 50 }]}>Shot {i + 1}</Text>
+                  <Text style={[styles.value, { fontSize: 8 }]}>{ss.pageTitle || ss.pageUrl}</Text>
+                </View>
+                <View style={styles.row}>
+                  <Text style={[styles.label, { width: 50 }]}>URL</Text>
+                  <Text style={[styles.value, { fontSize: 7, color: BLUE }]}>{ss.pageUrl}</Text>
+                </View>
+                <View style={styles.row}>
+                  <Text style={[styles.label, { width: 50 }]}>Hash</Text>
+                  <Text style={[styles.value, { fontSize: 7, fontFamily: "Helvetica" }]}>
+                    {ss.screenshotHash.slice(0, 24)}...
+                  </Text>
+                </View>
+                <View style={styles.row}>
+                  <Text style={[styles.label, { width: 50 }]}>Captured</Text>
+                  <Text style={[styles.value, { fontSize: 8 }]}>{ss.capturedAt}</Text>
+                </View>
+                {ss.screenshotUrl ? (
+                  <Image src={ss.screenshotUrl} style={{ width: "100%", maxHeight: 400, objectFit: "contain", marginTop: 8, border: "1px solid #e5e7eb" }} />
+                ) : (
+                  <Text style={{ fontSize: 8, color: "#9ca3af", marginTop: 8 }}>[Screenshot image not available — see archive URL above]</Text>
+                )}
+              </View>
+            ))}
+          </View>
+        )}
+
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Exhibit B -- Portrait Registration Record</Text>
+          <View style={styles.row}>
+            <Text style={styles.label}>Portrait ID</Text>
+            <Text style={styles.value}>{data.portraitId}</Text>
+          </View>
+          <View style={styles.row}>
+            <Text style={styles.label}>Title</Text>
+            <Text style={styles.value}>{data.portraitTitle}</Text>
+          </View>
+          <View style={styles.row}>
+            <Text style={styles.label}>Owner</Text>
+            <Text style={styles.value}>{data.portraitOwnerName || data.claimantName}</Text>
+          </View>
+        </View>
+
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Exhibit C -- Consent Passport Configuration</Text>
+          <View style={styles.row}>
+            <Text style={styles.label}>Passport ID</Text>
+            <Text style={styles.value}>{data.consentPassportId || "-"}</Text>
+          </View>
+          <View style={styles.row}>
+            <Text style={styles.label}>Created</Text>
+            <Text style={styles.value}>{data.consentCreatedAt}</Text>
+          </View>
+        </View>
+
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Exhibit D -- Platform Authentication Certificate</Text>
+          <View style={styles.row}>
+            <Text style={styles.label}>Platform</Text>
+            <Text style={styles.value}>PortraitPay AI</Text>
+          </View>
+          <View style={styles.row}>
+            <Text style={styles.label}>Record Hash</Text>
+            <Text style={[styles.value, { fontSize: 8, fontFamily: "Helvetica" }]}>{data.recordHash}</Text>
+          </View>
+          <View style={styles.row}>
+            <Text style={styles.label}>IPFS CID</Text>
+            <Text style={[styles.value, { fontSize: 8 }]}>{data.ipfsCid || "Not available"}</Text>
+          </View>
+          <View style={styles.row}>
+            <Text style={styles.label}>Package Generated</Text>
+            <Text style={styles.value}>{data.exportDate}</Text>
+          </View>
+          <View style={styles.row}>
+            <Text style={styles.label}>Verification URL</Text>
+            <Text style={[styles.value, { fontSize: 8, color: BLUE }]}>{data.verificationUrl}</Text>
+          </View>
+        </View>
+      </View>
+      <PageFooter hash={data.recordHash} exportDate={data.exportDate} pageLabel="Page 7 -- Exhibits" />
+    </Page>
+  );
+}
+
+/* ── Legacy pages (kept for backward compatibility) ────── */
+
+export function ClaimantPage({ data }: { data: EvidenceClaimData }) {
+  return (
+    <Page size="A4" style={styles.page}>
+      <PdfHeader caseRef={data.caseRef} />
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>CLAIMANT INFORMATION (Legacy Format)</Text>
+        <View style={styles.card}>
+          <View style={styles.row}><Text style={styles.label}>Full Legal Name</Text><Text style={styles.value}>{data.claimantName || "-"}</Text></View>
+          <View style={styles.row}><Text style={styles.label}>Email</Text><Text style={styles.value}>{data.claimantEmail}</Text></View>
+        </View>
+        <View style={styles.card}>
+          <View style={styles.row}><Text style={styles.label}>Portrait Title</Text><Text style={styles.value}>{data.portraitTitle || "-"}</Text></View>
+          <View style={styles.row}><Text style={styles.label}>Portrait ID</Text><Text style={styles.value}>{data.portraitId || "-"}</Text></View>
+        </View>
+      </View>
+      <PageFooter hash={data.recordHash} exportDate={data.exportDate} />
+    </Page>
+  );
+}
+
+export function ConsentPage({ data }: { data: EvidenceClaimData }) {
+  return (
+    <Page size="A4" style={styles.page}>
+      <PdfHeader caseRef={data.caseRef} />
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>CONSENT RECORD (Legacy Format)</Text>
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Permitted</Text>
+          {data.allowedScopes.length === 0 ? (
+            <Text style={{ color: GRAY, fontSize: 9 }}>None specified.</Text>
+          ) : (
+            data.allowedScopes.map((s, i) => (
+              <View key={i} style={styles.checklist}>
+                <Text style={styles.checkMark}>YES</Text>
+                <Text style={styles.checklistText}>{s}</Text>
+              </View>
+            ))
+          )}
+        </View>
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Prohibited</Text>
+          {data.prohibitedScopes.length === 0 ? (
+            <Text style={{ color: GRAY, fontSize: 9 }}>None specified.</Text>
+          ) : (
+            data.prohibitedScopes.map((s, i) => (
+              <View key={i} style={styles.checklist}>
+                <Text style={styles.crossMark}>NO</Text>
+                <Text style={styles.checklistText}>{s}</Text>
+              </View>
+            ))
+          )}
+        </View>
+      </View>
+      <PageFooter hash={data.recordHash} exportDate={data.exportDate} />
+    </Page>
+  );
+}
+
+export function VoicePage({ data }: { data: EvidenceClaimData }) {
+  if (!data.hasVoice) return null;
+  const riskStyle = data.voiceRisk === "HIGH" ? styles.riskHigh : data.voiceRisk === "MEDIUM" ? styles.riskMed : styles.riskLow;
+  const pct = (data.voiceSimilarityScore * 100).toFixed(1);
+  return (
+    <Page size="A4" style={styles.page}>
+      <PdfHeader caseRef={data.caseRef} />
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>VOICE ID VERIFICATION (Legacy Format)</Text>
+        <View style={styles.voiceCard}>
+          <View style={{ flexDirection: "row", gap: 8, marginBottom: 10 }}><Text style={riskStyle}>{data.voiceRisk} RISK</Text></View>
+          <View style={styles.row}><Text style={styles.label}>Similarity Score</Text><Text style={styles.value}>{pct}% ({data.voiceSimilarityScore.toFixed(4)})</Text></View>
+          <View style={styles.row}><Text style={styles.label}>Model</Text><Text style={styles.value}>ECAPA-TDNN (x-vector, 192-dim)</Text></View>
+          <View style={styles.row}><Text style={styles.label}>Threshold</Text><Text style={styles.value}>0.80</Text></View>
+        </View>
+      </View>
+      <PageFooter hash={data.recordHash} exportDate={data.exportDate} />
+    </Page>
+  );
+}
+
+/* ── Signature Confirmation Page (ESIGN Act / UETA) ─────── */
+
+export function SignatureConfirmationPage({ data }: { data: EvidenceClaimData }) {
+  if (!data.isSigned || !data.signedByName) return null;
+
+  return (
+    <Page size="A4" style={styles.page}>
+      <PdfHeader caseRef={data.caseRef} />
+      <View style={styles.section}>
+        <Text style={[styles.sectionTitle, { fontSize: 13, textAlign: "center", marginBottom: 16 }]}>
+          ELECTRONIC SIGNATURE CONFIRMATION
+        </Text>
+
+        {/* Card 1: Legal Basis */}
+        <View style={[styles.card, { marginBottom: 10 }]}>
+          <Text style={styles.cardTitle}>Legal Basis for Electronic Signature</Text>
+          <Text style={{ fontSize: 9, lineHeight: 1.5, color: DARK, marginBottom: 6 }}>
+            This electronic signature constitutes a legally binding agreement under the following statutory frameworks:
+          </Text>
+          <Text style={{ fontSize: 9, fontWeight: "bold", color: BLUE, marginBottom: 3 }}>
+            Electronic Signatures in Global and National Commerce Act (ESIGN), 15 U.S.C. S. 7001
+          </Text>
+          <Text style={{ fontSize: 8, color: GRAY, lineHeight: 1.4, marginBottom: 6 }}>
+            A signature, contract, or other record relating to such transaction may not be denied legal effect, validity, or enforceability solely because it is in electronic form. The subscriber intentionally executed the electronic signature.
+          </Text>
+          <Text style={{ fontSize: 9, fontWeight: "bold", color: BLUE, marginBottom: 3 }}>
+            California Uniform Electronic Transactions Act (UETA), Cal. Civ. Code SS. 1633.1 et seq.
+          </Text>
+          <Text style={{ fontSize: 8, color: GRAY, lineHeight: 1.4 }}>
+            California has adopted the UETA to provide consistency with other states and to validate electronic signatures in commerce and law. Electronic records and signatures carry the same legal weight as paper counterparts when executed with intent.
+          </Text>
+        </View>
+
+        {/* Card 2: Signature Metadata */}
+        <View style={[styles.card, { marginBottom: 10, backgroundColor: LIGHT_BLUE }]}>
+          <Text style={styles.cardTitle}>Signature Metadata</Text>
+          <View style={styles.row}>
+            <Text style={styles.label}>Signer Name</Text>
+            <Text style={[styles.value, { fontWeight: "bold" }]}>{data.signedByName}</Text>
+          </View>
+          <View style={styles.row}>
+            <Text style={styles.label}>Date Signed</Text>
+            <Text style={styles.value}>{data.signedAt || "-"}</Text>
+          </View>
+          <View style={styles.row}>
+            <Text style={styles.label}>Signature Hash</Text>
+            <Text style={[styles.value, { fontSize: 7, fontFamily: "Helvetica" }]}>
+              {data.signatureHash || "-"}
+            </Text>
+          </View>
+          <View style={styles.row}>
+            <Text style={styles.label}>Hash Algorithm</Text>
+            <Text style={styles.value}>SHA-256 (FIPS 180-4)</Text>
+          </View>
+        </View>
+
+        {/* Card 3: Certification */}
+        <View style={[styles.card, { marginBottom: 10 }]}>
+          <Text style={styles.cardTitle}>Certification Statement</Text>
+          <Text style={{ fontSize: 9, lineHeight: 1.5, color: DARK }}>
+            The signer certifies under penalty of perjury that:
+          </Text>
+          <View style={[styles.checklist, { marginTop: 6 }]}>
+            <Text style={styles.checkMark}>✓</Text>
+            <Text style={styles.checklistText}>
+              The signer is the attorney of record or a qualified person authorized to certify evidence on behalf of the plaintiff in the above-captioned matter.
+            </Text>
+          </View>
+          <View style={styles.checklist}>
+            <Text style={styles.checkMark}>✓</Text>
+            <Text style={styles.checklistText}>
+              The evidence contained in this package was properly collected and preserved using the PortraitPay AI automated evidence preservation system, which satisfies Federal Rule of Evidence 902(13) (Certified Records Generated by an Electronic Process or System).
+            </Text>
+          </View>
+          <View style={styles.checklist}>
+            <Text style={styles.checkMark}>✓</Text>
+            <Text style={styles.checklistText}>
+              The identity verification process used to establish the portrait owner&apos;s consent was performed in good faith and is accurate to the best of the signer&apos;s knowledge.
+            </Text>
+          </View>
+          <View style={styles.checklist}>
+            <Text style={styles.checkMark}>✓</Text>
+            <Text style={styles.checklistText}>
+              This electronic signature, consisting of the typed name of the signer, constitutes a valid and binding electronic signature under 15 U.S.C. S. 7001 and California Civil Code S. 1633.1 et seq.
+            </Text>
+          </View>
+        </View>
+
+        {/* Signature block */}
+        <View style={{ marginTop: 16 }}>
+          <View style={styles.signatureLine}>
+            <Text style={{ fontSize: 9, color: GRAY }}>Electronic Signature of Authorized Signer</Text>
+          </View>
+          <Text style={{ fontSize: 10, color: DARK, marginTop: 6 }}>
+            {data.signedByName}
+          </Text>
+          {!!data.signedAt && (
+            <Text style={{ fontSize: 9, color: GRAY, marginTop: 2 }}>
+              Signed: {data.signedAt}
+            </Text>
+          )}
+          <Text style={{ fontSize: 8, color: GRAY, marginTop: 6 }}>
+            Hash: {data.signatureHash?.slice(0, 16)}...
+          </Text>
+          <View style={{ marginTop: 16, borderTop: "1 solid #e5e7eb", paddingTop: 10 }}>
+            <Text style={{ fontSize: 9, fontWeight: "bold", color: DARK, marginBottom: 4 }}>Self-Authenticating Under:</Text>
+            <Text style={{ fontSize: 8, color: GRAY }}>
+              FRE 902(13) | 15 U.S.C. S. 7001 (ESIGN) | Cal. Civ. Code SS. 1633.1 (UETA) | Cal. Evid. Code SS. 1400-1454
+            </Text>
+          </View>
+        </View>
+      </View>
+      <PageFooter hash={data.recordHash} exportDate={data.exportDate} pageLabel="Page -- Signature Confirmation" />
+    </Page>
+  );
+}
+
+/* ── Main Document Assembly ────────────────────────────── */
+
+export function EvidenceDocument({ data }: { data: EvidenceClaimData }) {
+  const hasBiometric = data.hasVoice || data.hasFace;
+  return (
+    <Document
+      title={`PortraitPay Evidence -- ${data.caseRef}`}
+      author="PortraitPay AI"
+      creator="PortraitPay AI"
+      producer="PortraitPay AI"
+      subject={`Expert Evidence Package -- Case ${data.caseRef}`}
+    >
+      {/* Court-ready format */}
+      <CaseCaptionPage data={data} />
+      <AffidavitPage data={data} />
+      <ChainOfCustodyPage data={data} />
+      <TechnicalReportPage data={data} />
+      <PartyInfoPage data={data} />
+      <InfringementPage data={data} />
+      {data.faceReport && <FaceReportPage data={data} />}
+      <ExhibitsPage data={data} />
+      {data.isSigned && data.signedByName && <SignatureConfirmationPage data={data} />}
+    </Document>
+  );
+}

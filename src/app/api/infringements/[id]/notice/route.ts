@@ -152,8 +152,8 @@ export async function POST(req: NextRequest, context: RouteContext) {
         notarizationId = notaryResult.notarizationId;
         notarizationCertNo = notaryResult.certificateNo;
       } catch (err) {
-        console.error("[Notice] Notarization submission failed:", err);
-        // Continue without notarization — don't block notice creation
+        console.warn("[Notice] Notarization not available, generating notice without notarization:", (err as Error).message);
+        // Continue without notarization — notice will be generated without notarization claims
       }
     }
 

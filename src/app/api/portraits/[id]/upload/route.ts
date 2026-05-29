@@ -5,6 +5,9 @@
  * (SHA-256 hashes are computed in /upload/direct — this route just records URLs)
  */
 import { NextRequest, NextResponse } from "next/server";
+
+export const dynamic = "force-dynamic";
+
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { getSessionFromRequest } from "@/lib/auth/session";

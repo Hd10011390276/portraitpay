@@ -1,4 +1,5 @@
 "use client";
+export const dynamic = "force-dynamic";
 /**
  * /verify-email — Email verification page
  * Receives code + userId from URL ?code=XXXXXX&userId=xxx

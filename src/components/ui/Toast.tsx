@@ -64,10 +64,10 @@ const bgColors: Record<ToastType, string> = {
 };
 
 const titleColors: Record<ToastType, string> = {
-  success: "text-green-800 dark:text-green-200",
-  error:   "text-red-800   dark:text-red-200",
-  warning: "text-yellow-800 dark:text-yellow-200",
-  info:    "text-blue-800  dark:text-blue-200",
+  success: "text-green-800 dark:text-green-400",
+  error:   "text-red-800   dark:text-red-400",
+  warning: "text-yellow-800 dark:text-yellow-400",
+  info:    "text-blue-800  dark:text-blue-400",
 };
 
 // ─── Toast Item ────────────────────────────────────────────────────────────────

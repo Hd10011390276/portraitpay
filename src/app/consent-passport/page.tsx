@@ -7,7 +7,7 @@
 
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import ThemeToggle from "@/components/ThemeToggle";
 import { useLanguage } from "@/context/LanguageContext";
@@ -51,6 +51,20 @@ export default function ConsentPassportPage() {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [shareUrl, setShareUrl] = useState("");
+  const [kycStatus, setKycStatus] = useState<string | null>(null);
+  const [kycVerifiedAt, setKycVerifiedAt] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetch("/api/auth/me", { credentials: "include" })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((j) => {
+        if (j?.success) {
+          setKycStatus(j.data?.user?.kycStatus ?? null);
+          setKycVerifiedAt(j.data?.user?.kycVerifiedAt ?? null);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   function toggleUse(set: string[], setter: React.Dispatch<React.SetStateAction<string[]>>, value: string) {
     if (set.includes(value)) {
@@ -168,6 +182,32 @@ export default function ConsentPassportPage() {
           <p className="text-gray-500 dark:text-gray-400 max-w-md mx-auto mt-2">
             Not just for actors — anyone whose face or voice has commercial value can create a Consent Passport.
           </p>
+
+          {/* KYC Identity Verified badge */}
+          {kycStatus === "APPROVED" && (
+            <div className="mt-4 inline-flex items-center gap-2 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 text-sm px-4 py-2 rounded-full">
+              <div className="w-5 h-5 rounded-full bg-green-500 flex items-center justify-center">
+                <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+              <span className="font-semibold">Identity Verified</span>
+              {kycVerifiedAt && (
+                <span className="text-green-600/70 dark:text-green-400/70">
+                  — {new Date(kycVerifiedAt).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" })}
+                </span>
+              )}
+            </div>
+          )}
+          {kycStatus && kycStatus !== "APPROVED" && (
+            <div className="mt-4 inline-flex items-center gap-2 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300 text-sm px-4 py-2 rounded-full">
+              <span>⚠️</span>
+              <span>Identity not verified — </span>
+              <Link href="/dashboard" className="underline font-medium hover:text-yellow-800 dark:hover:text-yellow-200">
+                complete KYC to add verification
+              </Link>
+            </div>
+          )}
         </div>
 
         <form onSubmit={handleSubmit} className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 p-6 space-y-6">

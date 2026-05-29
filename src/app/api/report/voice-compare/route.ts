@@ -17,8 +17,8 @@ export const dynamic = "force-dynamic";
 const VOICE_SERVICE_URL = "https://hd10011390276--portraitpay-voice-final-web.modal.run";
 
 function riskLevel(score: number): string {
-  if (score >= 0.75) return "HIGH";
-  if (score >= 0.55) return "MEDIUM";
+  if (score >= 0.80) return "HIGH";
+  if (score >= 0.65) return "MEDIUM";
   return "LOW";
 }
 

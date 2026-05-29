@@ -12,17 +12,20 @@ const PUBLIC_PATHS = [
   "/enterprise/authorization/apply",
   "/enterprise/lawyer-registration",
   "/enterprise/certification",
-  "/contracts",
   "/faq",
   "/report-public",
   "/verify",
   "/consent-passport",
   "/verify-batch",
+  "/lawyer/earnings",
   "/lawyers",
   "/lawyer/apply",
   "/infringement-report",
   "/report",
+  "/api/verify",
 ];
+
+const adminRoles = ["SUPER_ADMIN", "ADMIN", "VERIFIER"];
 
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
@@ -49,7 +52,8 @@ export async function middleware(req: NextRequest) {
     pathname.startsWith("/api/portraits/") && pathname.includes("/mint") ||
     (pathname.startsWith("/api/lawyers") && req.method === "GET") ||
     pathname.startsWith("/api/consent-passport") ||
-    (pathname.startsWith("/api/report/") && !pathname.endsWith("/submit"))
+    (pathname.startsWith("/api/report/") && !pathname.endsWith("/submit")) ||
+    pathname.startsWith("/api/verify")
   ) {
     return NextResponse.next();
   }
@@ -76,10 +80,7 @@ export async function middleware(req: NextRequest) {
   if (pathname.startsWith("/admin")) {
     const jwtPayload = await verifyToken(token!);
     const userRole = jwtPayload?.role ?? "";
-    // Dev test accounts bypass role check — can access all dashboards
-    const testEmails = ["799096322@qq.com", "admin@portraitpay.ai"];
-    const isTestAccount = testEmails.includes(jwtPayload?.email ?? "");
-    if (!isTestAccount && !adminRoles.includes(userRole)) {
+    if (!adminRoles.includes(userRole)) {
       return NextResponse.redirect(new URL("/dashboard", req.url));
     }
   }
@@ -88,10 +89,22 @@ export async function middleware(req: NextRequest) {
   if (pathname.startsWith("/lawyer")) {
     const jwtPayload = await verifyToken(token!);
     const userRole = jwtPayload?.role ?? "";
-    // Dev test accounts bypass role check
-    const testEmails = ["799096322@qq.com", "admin@portraitpay.ai"];
-    const isTestAccount = testEmails.includes(jwtPayload?.email ?? "");
-    if (!isTestAccount && userRole !== "LAWYER") {
+    if (userRole !== "LAWYER" && userRole !== "SUPER_ADMIN" && userRole !== "ADMIN") {
+      return NextResponse.redirect(new URL("/dashboard", req.url));
+    }
+  }
+
+  
+  // ── Enterprise route protection ───────────────────────────────────
+  if (
+    pathname.startsWith("/enterprise") &&
+    !pathname.startsWith("/enterprise/certification") &&
+    !pathname.startsWith("/enterprise/authorization") &&
+    !pathname.startsWith("/enterprise/lawyer-registration")
+  ) {
+    const jwtPayload = await verifyToken(token!);
+    const userRole = jwtPayload?.role ?? "";
+    if (userRole !== "AGENCY" && userRole !== "ENTERPRISE") {
       return NextResponse.redirect(new URL("/dashboard", req.url));
     }
   }

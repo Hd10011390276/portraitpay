@@ -5,9 +5,11 @@
 
 import { jwtVerify, SignJWT } from "jose";
 
-const JWT_SECRET = new TextEncoder().encode(
-  process.env.JWT_SECRET || "portraitpay-dev-secret-change-in-prod"
-);
+function getJwtSecret(): Uint8Array {
+  const secret = process.env.JWT_SECRET;
+  if (!secret) throw new Error("JWT_SECRET environment variable is required");
+  return new TextEncoder().encode(secret);
+}
 
 export interface JwtPayload {
   userId: string;
@@ -27,7 +29,7 @@ export async function signAccessToken(payload: Omit<JwtPayload, "iat" | "exp">):
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()
     .setExpirationTime("2h")
-    .sign(JWT_SECRET);
+    .sign(getJwtSecret());
 }
 
 export async function signRefreshToken(payload: Omit<JwtPayload, "iat" | "exp">): Promise<string> {
@@ -35,7 +37,7 @@ export async function signRefreshToken(payload: Omit<JwtPayload, "iat" | "exp">)
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()
     .setExpirationTime("7d")
-    .sign(JWT_SECRET);
+    .sign(getJwtSecret());
 }
 
 export async function signTokenPair(payload: Omit<JwtPayload, "iat" | "exp">): Promise<TokenPair> {
@@ -47,7 +49,7 @@ export async function signTokenPair(payload: Omit<JwtPayload, "iat" | "exp">): P
 
 export async function verifyToken(token: string): Promise<JwtPayload | null> {
   try {
-    const { payload } = await jwtVerify(token, JWT_SECRET);
+    const { payload } = await jwtVerify(token, getJwtSecret());
     return payload as unknown as JwtPayload;
   } catch {
     return null;

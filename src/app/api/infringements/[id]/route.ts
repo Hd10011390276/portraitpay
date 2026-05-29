@@ -41,6 +41,18 @@ async function getReport(id: string, userId: string, role: string) {
       notices: {
         orderBy: { createdAt: "desc" },
       },
+      evidencePackages: {
+        orderBy: { capturedAt: "desc" },
+        select: {
+          id: true,
+          evidenceType: true,
+          pageSnapshotUrl: true,
+          contentHash: true,
+          pageUrl: true,
+          pageTitle: true,
+          capturedAt: true,
+        },
+      },
     },
   });
 

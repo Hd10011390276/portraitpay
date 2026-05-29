@@ -60,6 +60,18 @@ export async function POST(req: NextRequest) {
     }
 
     const data = parsed.data;
+
+    // XSS sanitization — reject dangerous patterns in all string fields
+    const dangerousPattern = /<script|<\/script|<iframe|onerror\s*=|onload\s*=|javascript:/i;
+    for (const [key, value] of Object.entries(data)) {
+      if (typeof value === "string" && dangerousPattern.test(value)) {
+        return NextResponse.json(
+          { success: false, error: "Invalid input: unsafe content detected" },
+          { status: 400 }
+        );
+      }
+    }
+
     const reportNumber = makeReportNumber();
 
     const record = await prisma.infringementReportQuick.create({
@@ -82,6 +94,27 @@ export async function POST(req: NextRequest) {
         voiceComparedAt: data.voiceSimilarityScore != null ? new Date() : null,
       },
     });
+
+    // Record manual evidence entries (cold-start — no screenshot dependency)
+    try {
+      const { recordManualEvidence } = await import("@/lib/infringement/evidence");
+      for (const url of data.evidenceUrls) {
+        await recordManualEvidence({
+          evidenceUrl: url,
+          evidenceDescription: data.description || `Evidence URL submitted via report ${reportNumber}`,
+          capturedBy: userId,
+        });
+      }
+      if (data.description && data.description.length > 0) {
+        await recordManualEvidence({
+          evidenceDescription: data.description,
+          capturedBy: userId,
+        });
+      }
+    } catch (err) {
+      console.error("[report/submit] Manual evidence recording failed:", err);
+      // Non-blocking
+    }
 
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
     const reportUrl = `${baseUrl}/report/${reportNumber}`;

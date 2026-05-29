@@ -190,6 +190,25 @@ export async function POST(request: NextRequest) {
       },
     });
 
+    // ── Trigger async evidence capture (non-blocking) ────────────────────
+    const urlsToCapture = [
+      detectedUrl,
+      ...evidenceUrls,
+    ].filter((u): u is string => !!u);
+
+    if (urlsToCapture.length > 0) {
+      import("@/lib/infringement/evidence").then(({ captureEvidence }) => {
+        urlsToCapture.forEach((url) => {
+          captureEvidence(url, { reportId: report.id }).catch((err) =>
+            console.error(
+              `[Evidence] Auto-capture failed for ${url}:`,
+              err instanceof Error ? err.message : String(err)
+            )
+          );
+        });
+      });
+    }
+
     return NextResponse.json({ success: true, data: report }, { status: 201 });
   } catch (error) {
     console.error("[POST /api/infringements]", error);

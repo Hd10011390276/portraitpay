@@ -2,7 +2,7 @@ import "./globals.css";
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import { LanguageProvider } from "@/context/LanguageContext";
-import ThemeToggle from "@/components/ThemeToggle";
+import { CookieBanner } from "@/components/CookieBanner";
 import { ToastProvider } from "@/components/ui/Toast";
 
 const inter = Inter({
@@ -65,6 +65,8 @@ export default function RootLayout({
     var t = localStorage.getItem('theme') ||
             (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
     document.documentElement.setAttribute('data-theme', t);
+    if (t === 'dark') document.documentElement.classList.add('dark');
+    else document.documentElement.classList.remove('dark');
   } catch(e) {}
 })();
             `.trim(),
@@ -77,6 +79,7 @@ export default function RootLayout({
             {children}
           </LanguageProvider>
         </ToastProvider>
+        <CookieBanner />
       </body>
     </html>
   );

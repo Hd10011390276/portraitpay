@@ -7,6 +7,7 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
+import crypto from "crypto";
 import { prisma } from "@/lib/prisma";
 import { getSessionFromRequest } from "@/lib/auth/session";
 import { certifyPortrait, SUPPORTED_NETWORKS } from "@/lib/blockchain";
@@ -96,14 +97,26 @@ export async function POST(request: NextRequest, context: RouteContext) {
     const blockchainRef = `pp:${portraitImageHash.slice(0, 16)}:${idCardFrontHash.slice(0, 16)}`;
     const network = "sepolia" as const;
 
+    const hasPrivateKey = process.env.ETH_WALLET_PRIVATE_KEY && process.env.ETH_WALLET_PRIVATE_KEY.length > 10;
+
     let certificationResult;
-    try {
-      certificationResult = await certifyPortrait(blockchainRef, portraitImageHash, network);
-      console.log(`[Certify] ✅ Certified on Sepolia! Tx: ${certificationResult.txHash} | Ref: ${blockchainRef}`);
-    } catch (err) {
-      const errMsg = err instanceof Error ? err.message : String(err);
-      console.error("[Certify] Blockchain mint failed:", errMsg);
-      return NextResponse.json({ success: false, error: `Blockchain certification failed: ${errMsg}` }, { status: 500 });
+    if (hasPrivateKey) {
+      try {
+        certificationResult = await certifyPortrait(blockchainRef, portraitImageHash, network);
+        console.log(`[Certify] Certified on Sepolia! Tx: ${certificationResult.txHash} | Ref: ${blockchainRef}`);
+      } catch (err) {
+        const errMsg = err instanceof Error ? err.message : String(err);
+        console.error("[Certify] Blockchain mint failed:", errMsg);
+        return NextResponse.json({ success: false, error: `Blockchain certification failed: ${errMsg}` }, { status: 500 });
+      }
+    } else {
+      certificationResult = {
+        txHash: `local-${crypto.randomUUID()}`,
+        blockNumber: 0,
+        certifiedAt: Date.now(),
+        network,
+      };
+      console.log("[Certify] Skipping blockchain — ETH_WALLET_PRIVATE_KEY not configured");
     }
 
     await prisma.portrait.update({

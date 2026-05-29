@@ -6,9 +6,26 @@ import { signTokenPair } from "@/lib/auth/edge-jwt";
 import { logAudit } from "@/lib/audit/service";
 export const dynamic = "force-dynamic";
 
+// In-memory rate limiter: 5 attempts per IP per minute
+const loginRateLimitMap = new Map<string, { count: number; resetAt: number }>();
+
 
 export async function POST(req: NextRequest) {
   try {
+    // Rate limit check
+    const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim()
+      ?? req.headers.get("x-real-ip") ?? "unknown";
+    const now = Date.now();
+    const limit = loginRateLimitMap.get(ip);
+    if (limit && limit.count >= 5 && now < limit.resetAt) {
+      return NextResponse.json({ success: false, error: "Too many login attempts. Try again later." }, { status: 429 });
+    }
+    if (!limit || now >= limit.resetAt) {
+      loginRateLimitMap.set(ip, { count: 1, resetAt: now + 60000 });
+    } else {
+      limit.count++;
+    }
+
     const body = await req.json();
     const parsed = EmailLoginSchema.safeParse(body);
 
@@ -45,52 +62,72 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim()
-      ?? req.headers.get("x-real-ip") ?? null;
     const userAgent = req.headers.get("user-agent") ?? null;
 
     const isValid = await bcrypt.compare(password, user.passwordHash);
     if (!isValid) {
-      await logAudit({
+      // Fire-and-forget: never block login due to audit failure
+      logAudit({
         userId: user.id,
         action: "LOGIN_FAILED",
         success: false,
         detail: "Wrong password",
         meta: { ip, userAgent, errorCode: "INVALID_PASSWORD" },
-      });
+      }).catch((err) => console.error("[LOGIN_AUDIT_ERROR]", err));
       return NextResponse.json(
         { success: false, message: "Email or password incorrect" },
         { status: 401 }
       );
     }
 
-    await logAudit({
+    // Validate loginAs: check if user has the corresponding account type
+    let effectiveRole = user.role;
+    if (loginAs === "agency") {
+      const agencyAccount = await prisma.agencyAccount.findUnique({ where: { userId: user.id } });
+      if (agencyAccount) {
+        effectiveRole = "AGENCY";
+      } else {
+        return NextResponse.json(
+          { success: false, message: "No agency account found. Please register as a creator first.", code: "NO_AGENCY_ACCOUNT" },
+          { status: 403 }
+        );
+      }
+    } else if (loginAs === "lawyer") {
+      const lawyerReg = await prisma.lawyerRegistration.findFirst({
+        where: { userId: user.id, status: "APPROVED" },
+      });
+      if (lawyerReg) {
+        effectiveRole = "LAWYER";
+      } else {
+        return NextResponse.json(
+          { success: false, message: "No approved lawyer registration found. Please complete lawyer registration first.", code: "NO_LAWYER_REGISTRATION" },
+          { status: 403 }
+        );
+      }
+    }
+
+    // Fire-and-forget: never block login due to audit failure
+    logAudit({
       userId: user.id,
       action: "LOGIN",
       success: true,
-      detail: "Email login successful",
+      detail: `Email login successful (effectiveRole=${effectiveRole}, loginAs=${loginAs || "none"})`,
       meta: { ip, userAgent },
-    });
+    }).catch((err) => console.error("[LOGIN_AUDIT_ERROR]", err));
 
     const tokens = await signTokenPair({
       userId: user.id,
       email: user.email,
-      role: user.role,
+      role: effectiveRole,
     });
 
-    // loginAs from UI tab overrides DB role for redirect
+    // Redirect based on effective role
     const redirectTo =
-      loginAs === "lawyer"
+      effectiveRole === "LAWYER"
         ? "/lawyer/dashboard"
-        : loginAs === "agency"
+        : effectiveRole === "AGENCY"
         ? "/enterprise/dashboard"
-        : loginAs === "user"
-        ? "/dashboard"
-        : user.role === "LAWYER"
-        ? "/lawyer/dashboard"
-        : user.role === "AGENCY"
-        ? "/enterprise/dashboard"
-        : user.role === "SUPER_ADMIN" || user.role === "ADMIN" || user.role === "VERIFIER"
+        : effectiveRole === "SUPER_ADMIN" || effectiveRole === "ADMIN" || effectiveRole === "VERIFIER"
         ? "/admin"
         : "/dashboard";
 
@@ -102,7 +139,7 @@ export async function POST(req: NextRequest) {
           id: user.id,
           email: user.email,
           name: user.name,
-          role: user.role,
+          role: effectiveRole,
         },
         accessToken: tokens.accessToken,
         refreshToken: tokens.refreshToken,

@@ -1,0 +1,386 @@
+  ▲ Next.js 14.2.35
+  - Local:        http://localhost:3005
+
+ ✓ Starting...
+ ✓ Ready in 491ms
+prisma:error 
+Invalid `prisma.auditLog.create()` invocation:
+
+{
+  data: {
+    userId: "cmpi1s0v1000010u1ppwypnwf",
+    action: "LOGIN",
+    targetId: undefined,
+    success: true,
+    detail: "Email login successful (effectiveRole=SUPER_ADMIN, loginAs=none)",
+    meta: {
+      ip: "::ffff:127.0.0.1",
+      userAgent: "curl/7.88.1"
+    },
++   targetType: String
+  }
+}
+
+Argument `targetType` is missing.
+[logAudit] PrismaClientValidationError: 
+Invalid `prisma.auditLog.create()` invocation:
+
+{
+  data: {
+    userId: "cmpi1s0v1000010u1ppwypnwf",
+    action: "LOGIN",
+    targetId: undefined,
+    success: true,
+    detail: "Email login successful (effectiveRole=SUPER_ADMIN, loginAs=none)",
+    meta: {
+      ip: "::ffff:127.0.0.1",
+      userAgent: "curl/7.88.1"
+    },
++   targetType: String
+  }
+}
+
+Argument `targetType` is missing.
+    at wn (C:\Users\Administrator\portraitpay-next\node_modules\@prisma\client\runtime\library.js:29:1363)
+    at $n.handleRequestError (C:\Users\Administrator\portraitpay-next\node_modules\@prisma\client\runtime\library.js:121:6958)
+    at $n.handleAndLogRequestError (C:\Users\Administrator\portraitpay-next\node_modules\@prisma\client\runtime\library.js:121:6623)
+    at $n.request (C:\Users\Administrator\portraitpay-next\node_modules\@prisma\client\runtime\library.js:121:6307)
+    at async l (C:\Users\Administrator\portraitpay-next\node_modules\@prisma\client\runtime\library.js:130:9633)
+    at async i (C:\Users\Administrator\portraitpay-next\.next\server\app\api\auth\login\route.js:1:4082) {
+  clientVersion: '5.22.0'
+}
+prisma:error 
+Invalid `prisma.auditLog.create()` invocation:
+
+{
+  data: {
+    userId: "cmpi1s0v1000010u1ppwypnwf",
+    action: "LOGIN",
+    targetId: undefined,
+    success: true,
+    detail: "Email login successful (effectiveRole=SUPER_ADMIN, loginAs=none)",
+    meta: {
+      ip: "::ffff:127.0.0.1",
+      userAgent: "curl/7.88.1"
+    },
++   targetType: String
+  }
+}
+
+Argument `targetType` is missing.
+[logAudit] PrismaClientValidationError: 
+Invalid `prisma.auditLog.create()` invocation:
+
+{
+  data: {
+    userId: "cmpi1s0v1000010u1ppwypnwf",
+    action: "LOGIN",
+    targetId: undefined,
+    success: true,
+    detail: "Email login successful (effectiveRole=SUPER_ADMIN, loginAs=none)",
+    meta: {
+      ip: "::ffff:127.0.0.1",
+      userAgent: "curl/7.88.1"
+    },
++   targetType: String
+  }
+}
+
+Argument `targetType` is missing.
+    at wn (C:\Users\Administrator\portraitpay-next\node_modules\@prisma\client\runtime\library.js:29:1363)
+    at $n.handleRequestError (C:\Users\Administrator\portraitpay-next\node_modules\@prisma\client\runtime\library.js:121:6958)
+    at $n.handleAndLogRequestError (C:\Users\Administrator\portraitpay-next\node_modules\@prisma\client\runtime\library.js:121:6623)
+    at $n.request (C:\Users\Administrator\portraitpay-next\node_modules\@prisma\client\runtime\library.js:121:6307)
+    at async l (C:\Users\Administrator\portraitpay-next\node_modules\@prisma\client\runtime\library.js:130:9633)
+    at async i (C:\Users\Administrator\portraitpay-next\.next\server\app\api\auth\login\route.js:1:4082) {
+  clientVersion: '5.22.0'
+}
+ ⨯ TypeError: Cannot read properties of undefined (reading 'get')
+    at s (C:\Users\Administrator\portraitpay-next\.next\server\app\api\v1\notifications\unread-count\route.js:1:2997)
+    at l (C:\Users\Administrator\portraitpay-next\.next\server\app\api\v1\notifications\unread-count\route.js:1:984)
+    at C:\Users\Administrator\portraitpay-next\node_modules\next\dist\compiled\next-server\app-route.runtime.prod.js:6:38417
+    at C:\Users\Administrator\portraitpay-next\node_modules\next\dist\server\lib\trace\tracer.js:140:36
+    at NoopContextManager.with (C:\Users\Administrator\portraitpay-next\node_modules\@opentelemetry\api\build\src\context\NoopContextManager.js:14:19)
+    at ContextAPI.with (C:\Users\Administrator\portraitpay-next\node_modules\@opentelemetry\api\build\src\api\context.js:51:46)
+    at NoopTracer.startActiveSpan (C:\Users\Administrator\portraitpay-next\node_modules\@opentelemetry\api\build\src\trace\NoopTracer.js:54:31)
+    at ProxyTracer.startActiveSpan (C:\Users\Administrator\portraitpay-next\node_modules\@opentelemetry\api\build\src\trace\ProxyTracer.js:27:24)
+    at C:\Users\Administrator\portraitpay-next\node_modules\next\dist\server\lib\trace\tracer.js:122:103
+    at NoopContextManager.with (C:\Users\Administrator\portraitpay-next\node_modules\@opentelemetry\api\build\src\context\NoopContextManager.js:14:19)
+[LOGIN_ERROR] SyntaxError: Expected property name or '}' in JSON at position 1 (line 1 column 2)
+    at JSON.parse (<anonymous>)
+    at parseJSONFromBytes (node:internal/deps/undici/undici:4259:19)
+    at successSteps (node:internal/deps/undici/undici:6882:27)
+    at readAllBytes (node:internal/deps/undici/undici:5807:13)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+prisma:error 
+Invalid `prisma.auditLog.create()` invocation:
+
+{
+  data: {
+    userId: "cmpi1s0v1000010u1ppwypnwf",
+    action: "LOGIN",
+    targetId: undefined,
+    success: true,
+    detail: "Email login successful (effectiveRole=SUPER_ADMIN, loginAs=none)",
+    meta: {
+      ip: "::ffff:127.0.0.1",
+      userAgent: "curl/7.88.1"
+    },
++   targetType: String
+  }
+}
+
+Argument `targetType` is missing.
+[logAudit] PrismaClientValidationError: 
+Invalid `prisma.auditLog.create()` invocation:
+
+{
+  data: {
+    userId: "cmpi1s0v1000010u1ppwypnwf",
+    action: "LOGIN",
+    targetId: undefined,
+    success: true,
+    detail: "Email login successful (effectiveRole=SUPER_ADMIN, loginAs=none)",
+    meta: {
+      ip: "::ffff:127.0.0.1",
+      userAgent: "curl/7.88.1"
+    },
++   targetType: String
+  }
+}
+
+Argument `targetType` is missing.
+    at wn (C:\Users\Administrator\portraitpay-next\node_modules\@prisma\client\runtime\library.js:29:1363)
+    at $n.handleRequestError (C:\Users\Administrator\portraitpay-next\node_modules\@prisma\client\runtime\library.js:121:6958)
+    at $n.handleAndLogRequestError (C:\Users\Administrator\portraitpay-next\node_modules\@prisma\client\runtime\library.js:121:6623)
+    at $n.request (C:\Users\Administrator\portraitpay-next\node_modules\@prisma\client\runtime\library.js:121:6307)
+    at async l (C:\Users\Administrator\portraitpay-next\node_modules\@prisma\client\runtime\library.js:130:9633)
+    at async i (C:\Users\Administrator\portraitpay-next\.next\server\app\api\auth\login\route.js:1:4082) {
+  clientVersion: '5.22.0'
+}
+ ⨯ TypeError: Cannot read properties of undefined (reading 'get')
+    at s (C:\Users\Administrator\portraitpay-next\.next\server\app\api\v1\notifications\unread-count\route.js:1:2997)
+    at l (C:\Users\Administrator\portraitpay-next\.next\server\app\api\v1\notifications\unread-count\route.js:1:984)
+    at C:\Users\Administrator\portraitpay-next\node_modules\next\dist\compiled\next-server\app-route.runtime.prod.js:6:38417
+    at C:\Users\Administrator\portraitpay-next\node_modules\next\dist\server\lib\trace\tracer.js:140:36
+    at NoopContextManager.with (C:\Users\Administrator\portraitpay-next\node_modules\@opentelemetry\api\build\src\context\NoopContextManager.js:14:19)
+    at ContextAPI.with (C:\Users\Administrator\portraitpay-next\node_modules\@opentelemetry\api\build\src\api\context.js:51:46)
+    at NoopTracer.startActiveSpan (C:\Users\Administrator\portraitpay-next\node_modules\@opentelemetry\api\build\src\trace\NoopTracer.js:54:31)
+    at ProxyTracer.startActiveSpan (C:\Users\Administrator\portraitpay-next\node_modules\@opentelemetry\api\build\src\trace\ProxyTracer.js:27:24)
+    at C:\Users\Administrator\portraitpay-next\node_modules\next\dist\server\lib\trace\tracer.js:122:103
+    at NoopContextManager.with (C:\Users\Administrator\portraitpay-next\node_modules\@opentelemetry\api\build\src\context\NoopContextManager.js:14:19)
+prisma:error 
+Invalid `prisma.auditLog.create()` invocation:
+
+{
+  data: {
+    userId: "cmpi1s0v1000010u1ppwypnwf",
+    action: "LOGIN",
+    targetId: undefined,
+    success: true,
+    detail: "Email login successful (effectiveRole=SUPER_ADMIN, loginAs=none)",
+    meta: {
+      ip: "::ffff:127.0.0.1",
+      userAgent: "curl/7.88.1"
+    },
++   targetType: String
+  }
+}
+
+Argument `targetType` is missing.
+[logAudit] PrismaClientValidationError: 
+Invalid `prisma.auditLog.create()` invocation:
+
+{
+  data: {
+    userId: "cmpi1s0v1000010u1ppwypnwf",
+    action: "LOGIN",
+    targetId: undefined,
+    success: true,
+    detail: "Email login successful (effectiveRole=SUPER_ADMIN, loginAs=none)",
+    meta: {
+      ip: "::ffff:127.0.0.1",
+      userAgent: "curl/7.88.1"
+    },
++   targetType: String
+  }
+}
+
+Argument `targetType` is missing.
+    at wn (C:\Users\Administrator\portraitpay-next\node_modules\@prisma\client\runtime\library.js:29:1363)
+    at $n.handleRequestError (C:\Users\Administrator\portraitpay-next\node_modules\@prisma\client\runtime\library.js:121:6958)
+    at $n.handleAndLogRequestError (C:\Users\Administrator\portraitpay-next\node_modules\@prisma\client\runtime\library.js:121:6623)
+    at $n.request (C:\Users\Administrator\portraitpay-next\node_modules\@prisma\client\runtime\library.js:121:6307)
+    at async l (C:\Users\Administrator\portraitpay-next\node_modules\@prisma\client\runtime\library.js:130:9633)
+    at async i (C:\Users\Administrator\portraitpay-next\.next\server\app\api\auth\login\route.js:1:4082) {
+  clientVersion: '5.22.0'
+}
+prisma:error 
+Invalid `prisma.auditLog.create()` invocation:
+
+{
+  data: {
+    userId: "cmpi1s0v1000010u1ppwypnwf",
+    action: "LOGIN",
+    targetId: undefined,
+    success: true,
+    detail: "Email login successful (effectiveRole=SUPER_ADMIN, loginAs=user)",
+    meta: {
+      ip: "::1",
+      userAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+    },
++   targetType: String
+  }
+}
+
+Argument `targetType` is missing.
+[logAudit] PrismaClientValidationError: 
+Invalid `prisma.auditLog.create()` invocation:
+
+{
+  data: {
+    userId: "cmpi1s0v1000010u1ppwypnwf",
+    action: "LOGIN",
+    targetId: undefined,
+    success: true,
+    detail: "Email login successful (effectiveRole=SUPER_ADMIN, loginAs=user)",
+    meta: {
+      ip: "::1",
+      userAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+    },
++   targetType: String
+  }
+}
+
+Argument `targetType` is missing.
+    at wn (C:\Users\Administrator\portraitpay-next\node_modules\@prisma\client\runtime\library.js:29:1363)
+    at $n.handleRequestError (C:\Users\Administrator\portraitpay-next\node_modules\@prisma\client\runtime\library.js:121:6958)
+    at $n.handleAndLogRequestError (C:\Users\Administrator\portraitpay-next\node_modules\@prisma\client\runtime\library.js:121:6623)
+    at $n.request (C:\Users\Administrator\portraitpay-next\node_modules\@prisma\client\runtime\library.js:121:6307)
+    at async l (C:\Users\Administrator\portraitpay-next\node_modules\@prisma\client\runtime\library.js:130:9633)
+    at async i (C:\Users\Administrator\portraitpay-next\.next\server\app\api\auth\login\route.js:1:4082) {
+  clientVersion: '5.22.0'
+}
+ ⨯ TypeError: Cannot read properties of undefined (reading 'get')
+    at s (C:\Users\Administrator\portraitpay-next\.next\server\app\api\v1\notifications\unread-count\route.js:1:2997)
+    at l (C:\Users\Administrator\portraitpay-next\.next\server\app\api\v1\notifications\unread-count\route.js:1:984)
+    at C:\Users\Administrator\portraitpay-next\node_modules\next\dist\compiled\next-server\app-route.runtime.prod.js:6:38417
+    at C:\Users\Administrator\portraitpay-next\node_modules\next\dist\server\lib\trace\tracer.js:140:36
+    at NoopContextManager.with (C:\Users\Administrator\portraitpay-next\node_modules\@opentelemetry\api\build\src\context\NoopContextManager.js:14:19)
+    at ContextAPI.with (C:\Users\Administrator\portraitpay-next\node_modules\@opentelemetry\api\build\src\api\context.js:51:46)
+    at NoopTracer.startActiveSpan (C:\Users\Administrator\portraitpay-next\node_modules\@opentelemetry\api\build\src\trace\NoopTracer.js:54:31)
+    at ProxyTracer.startActiveSpan (C:\Users\Administrator\portraitpay-next\node_modules\@opentelemetry\api\build\src\trace\ProxyTracer.js:27:24)
+    at C:\Users\Administrator\portraitpay-next\node_modules\next\dist\server\lib\trace\tracer.js:122:103
+    at NoopContextManager.with (C:\Users\Administrator\portraitpay-next\node_modules\@opentelemetry\api\build\src\context\NoopContextManager.js:14:19)
+ ⨯ TypeError: Cannot read properties of undefined (reading 'get')
+    at s (C:\Users\Administrator\portraitpay-next\.next\server\app\api\v1\notifications\unread-count\route.js:1:2997)
+    at l (C:\Users\Administrator\portraitpay-next\.next\server\app\api\v1\notifications\unread-count\route.js:1:984)
+    at C:\Users\Administrator\portraitpay-next\node_modules\next\dist\compiled\next-server\app-route.runtime.prod.js:6:38417
+    at C:\Users\Administrator\portraitpay-next\node_modules\next\dist\server\lib\trace\tracer.js:140:36
+    at NoopContextManager.with (C:\Users\Administrator\portraitpay-next\node_modules\@opentelemetry\api\build\src\context\NoopContextManager.js:14:19)
+    at ContextAPI.with (C:\Users\Administrator\portraitpay-next\node_modules\@opentelemetry\api\build\src\api\context.js:51:46)
+    at NoopTracer.startActiveSpan (C:\Users\Administrator\portraitpay-next\node_modules\@opentelemetry\api\build\src\trace\NoopTracer.js:54:31)
+    at ProxyTracer.startActiveSpan (C:\Users\Administrator\portraitpay-next\node_modules\@opentelemetry\api\build\src\trace\ProxyTracer.js:27:24)
+    at C:\Users\Administrator\portraitpay-next\node_modules\next\dist\server\lib\trace\tracer.js:122:103
+    at NoopContextManager.with (C:\Users\Administrator\portraitpay-next\node_modules\@opentelemetry\api\build\src\context\NoopContextManager.js:14:19)
+ ⨯ TypeError: Cannot read properties of undefined (reading 'get')
+    at s (C:\Users\Administrator\portraitpay-next\.next\server\app\api\v1\notifications\unread-count\route.js:1:2997)
+    at l (C:\Users\Administrator\portraitpay-next\.next\server\app\api\v1\notifications\unread-count\route.js:1:984)
+    at C:\Users\Administrator\portraitpay-next\node_modules\next\dist\compiled\next-server\app-route.runtime.prod.js:6:38417
+    at C:\Users\Administrator\portraitpay-next\node_modules\next\dist\server\lib\trace\tracer.js:140:36
+    at NoopContextManager.with (C:\Users\Administrator\portraitpay-next\node_modules\@opentelemetry\api\build\src\context\NoopContextManager.js:14:19)
+    at ContextAPI.with (C:\Users\Administrator\portraitpay-next\node_modules\@opentelemetry\api\build\src\api\context.js:51:46)
+    at NoopTracer.startActiveSpan (C:\Users\Administrator\portraitpay-next\node_modules\@opentelemetry\api\build\src\trace\NoopTracer.js:54:31)
+    at ProxyTracer.startActiveSpan (C:\Users\Administrator\portraitpay-next\node_modules\@opentelemetry\api\build\src\trace\ProxyTracer.js:27:24)
+    at C:\Users\Administrator\portraitpay-next\node_modules\next\dist\server\lib\trace\tracer.js:122:103
+    at NoopContextManager.with (C:\Users\Administrator\portraitpay-next\node_modules\@opentelemetry\api\build\src\context\NoopContextManager.js:14:19)
+ ⨯ TypeError: Cannot read properties of undefined (reading 'get')
+    at s (C:\Users\Administrator\portraitpay-next\.next\server\app\api\v1\notifications\unread-count\route.js:1:2997)
+    at l (C:\Users\Administrator\portraitpay-next\.next\server\app\api\v1\notifications\unread-count\route.js:1:984)
+    at C:\Users\Administrator\portraitpay-next\node_modules\next\dist\compiled\next-server\app-route.runtime.prod.js:6:38417
+    at C:\Users\Administrator\portraitpay-next\node_modules\next\dist\server\lib\trace\tracer.js:140:36
+    at NoopContextManager.with (C:\Users\Administrator\portraitpay-next\node_modules\@opentelemetry\api\build\src\context\NoopContextManager.js:14:19)
+    at ContextAPI.with (C:\Users\Administrator\portraitpay-next\node_modules\@opentelemetry\api\build\src\api\context.js:51:46)
+    at NoopTracer.startActiveSpan (C:\Users\Administrator\portraitpay-next\node_modules\@opentelemetry\api\build\src\trace\NoopTracer.js:54:31)
+    at ProxyTracer.startActiveSpan (C:\Users\Administrator\portraitpay-next\node_modules\@opentelemetry\api\build\src\trace\ProxyTracer.js:27:24)
+    at C:\Users\Administrator\portraitpay-next\node_modules\next\dist\server\lib\trace\tracer.js:122:103
+    at NoopContextManager.with (C:\Users\Administrator\portraitpay-next\node_modules\@opentelemetry\api\build\src\context\NoopContextManager.js:14:19)
+ ⨯ TypeError: Cannot read properties of undefined (reading 'get')
+    at s (C:\Users\Administrator\portraitpay-next\.next\server\app\api\v1\notifications\unread-count\route.js:1:2997)
+    at l (C:\Users\Administrator\portraitpay-next\.next\server\app\api\v1\notifications\unread-count\route.js:1:984)
+    at C:\Users\Administrator\portraitpay-next\node_modules\next\dist\compiled\next-server\app-route.runtime.prod.js:6:38417
+    at C:\Users\Administrator\portraitpay-next\node_modules\next\dist\server\lib\trace\tracer.js:140:36
+    at NoopContextManager.with (C:\Users\Administrator\portraitpay-next\node_modules\@opentelemetry\api\build\src\context\NoopContextManager.js:14:19)
+    at ContextAPI.with (C:\Users\Administrator\portraitpay-next\node_modules\@opentelemetry\api\build\src\api\context.js:51:46)
+    at NoopTracer.startActiveSpan (C:\Users\Administrator\portraitpay-next\node_modules\@opentelemetry\api\build\src\trace\NoopTracer.js:54:31)
+    at ProxyTracer.startActiveSpan (C:\Users\Administrator\portraitpay-next\node_modules\@opentelemetry\api\build\src\trace\ProxyTracer.js:27:24)
+    at C:\Users\Administrator\portraitpay-next\node_modules\next\dist\server\lib\trace\tracer.js:122:103
+    at NoopContextManager.with (C:\Users\Administrator\portraitpay-next\node_modules\@opentelemetry\api\build\src\context\NoopContextManager.js:14:19)
+prisma:error 
+Invalid `prisma.auditLog.create()` invocation:
+
+{
+  data: {
+    userId: "cmpi1s0v1000010u1ppwypnwf",
+    action: "LOGIN",
+    targetId: undefined,
+    success: true,
+    detail: "Email login successful (effectiveRole=SUPER_ADMIN, loginAs=none)",
+    meta: {
+      ip: "::ffff:127.0.0.1",
+      userAgent: "curl/7.88.1"
+    },
++   targetType: String
+  }
+}
+
+Argument `targetType` is missing.
+[logAudit] PrismaClientValidationError: 
+Invalid `prisma.auditLog.create()` invocation:
+
+{
+  data: {
+    userId: "cmpi1s0v1000010u1ppwypnwf",
+    action: "LOGIN",
+    targetId: undefined,
+    success: true,
+    detail: "Email login successful (effectiveRole=SUPER_ADMIN, loginAs=none)",
+    meta: {
+      ip: "::ffff:127.0.0.1",
+      userAgent: "curl/7.88.1"
+    },
++   targetType: String
+  }
+}
+
+Argument `targetType` is missing.
+    at wn (C:\Users\Administrator\portraitpay-next\node_modules\@prisma\client\runtime\library.js:29:1363)
+    at $n.handleRequestError (C:\Users\Administrator\portraitpay-next\node_modules\@prisma\client\runtime\library.js:121:6958)
+    at $n.handleAndLogRequestError (C:\Users\Administrator\portraitpay-next\node_modules\@prisma\client\runtime\library.js:121:6623)
+    at $n.request (C:\Users\Administrator\portraitpay-next\node_modules\@prisma\client\runtime\library.js:121:6307)
+    at async l (C:\Users\Administrator\portraitpay-next\node_modules\@prisma\client\runtime\library.js:130:9633)
+    at async i (C:\Users\Administrator\portraitpay-next\.next\server\app\api\auth\login\route.js:1:4082) {
+  clientVersion: '5.22.0'
+}
+ ⨯ TypeError: Cannot read properties of undefined (reading 'get')
+    at s (C:\Users\Administrator\portraitpay-next\.next\server\app\api\v1\notifications\unread-count\route.js:1:2997)
+    at l (C:\Users\Administrator\portraitpay-next\.next\server\app\api\v1\notifications\unread-count\route.js:1:984)
+    at C:\Users\Administrator\portraitpay-next\node_modules\next\dist\compiled\next-server\app-route.runtime.prod.js:6:38417
+    at C:\Users\Administrator\portraitpay-next\node_modules\next\dist\server\lib\trace\tracer.js:140:36
+    at NoopContextManager.with (C:\Users\Administrator\portraitpay-next\node_modules\@opentelemetry\api\build\src\context\NoopContextManager.js:14:19)
+    at ContextAPI.with (C:\Users\Administrator\portraitpay-next\node_modules\@opentelemetry\api\build\src\api\context.js:51:46)
+    at NoopTracer.startActiveSpan (C:\Users\Administrator\portraitpay-next\node_modules\@opentelemetry\api\build\src\trace\NoopTracer.js:54:31)
+    at ProxyTracer.startActiveSpan (C:\Users\Administrator\portraitpay-next\node_modules\@opentelemetry\api\build\src\trace\ProxyTracer.js:27:24)
+    at C:\Users\Administrator\portraitpay-next\node_modules\next\dist\server\lib\trace\tracer.js:122:103
+    at NoopContextManager.with (C:\Users\Administrator\portraitpay-next\node_modules\@opentelemetry\api\build\src\context\NoopContextManager.js:14:19)
+ ⨯ TypeError: Cannot read properties of undefined (reading 'get')
+    at s (C:\Users\Administrator\portraitpay-next\.next\server\app\api\v1\notifications\unread-count\route.js:1:2997)
+    at l (C:\Users\Administrator\portraitpay-next\.next\server\app\api\v1\notifications\unread-count\route.js:1:984)
+    at C:\Users\Administrator\portraitpay-next\node_modules\next\dist\compiled\next-server\app-route.runtime.prod.js:6:38417
+    at C:\Users\Administrator\portraitpay-next\node_modules\next\dist\server\lib\trace\tracer.js:140:36
+    at NoopContextManager.with (C:\Users\Administrator\portraitpay-next\node_modules\@opentelemetry\api\build\src\context\NoopContextManager.js:14:19)
+    at ContextAPI.with (C:\Users\Administrator\portraitpay-next\node_modules\@opentelemetry\api\build\src\api\context.js:51:46)
+    at NoopTracer.startActiveSpan (C:\Users\Administrator\portraitpay-next\node_modules\@opentelemetry\api\build\src\trace\NoopTracer.js:54:31)
+    at ProxyTracer.startActiveSpan (C:\Users\Administrator\portraitpay-next\node_modules\@opentelemetry\api\build\src\trace\ProxyTracer.js:27:24)
+    at C:\Users\Administrator\portraitpay-next\node_modules\next\dist\server\lib\trace\tracer.js:122:103
+    at NoopContextManager.with (C:\Users\Administrator\portraitpay-next\node_modules\@opentelemetry\api\build\src\context\NoopContextManager.js:14:19)

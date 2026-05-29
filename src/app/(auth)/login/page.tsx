@@ -128,6 +128,8 @@ export default function LoginPage() {
 
       // Redirect based on loginAs tab selection
       const destination = data.data.redirectTo;
+      // Clear any stale effective role from localStorage
+      localStorage.removeItem("pp_effective_role");
       if (destination) {
         router.push(destination);
       } else {

@@ -28,8 +28,8 @@ function AccordionItem({ question, answer, isOpen, onToggle }: { question: strin
         </svg>
       </button>
       {isOpen && (
-        <div className="px-6 py-4 bg-gray-50 dark:bg-gray-800 border-t border-gray-100 dark:border-gray-700">
-          <p className="text-gray-600 dark:text-gray-300 leading-relaxed">{answer}</p>
+        <div className="px-6 py-4 bg-gray-100 dark:bg-gray-800 border-t border-gray-100 dark:border-gray-700">
+          <p className="text-gray-700 dark:text-gray-300 leading-relaxed">{answer}</p>
         </div>
       )}
     </div>
@@ -64,10 +64,7 @@ export default function FaqPage() {
             <span className="font-bold text-gray-900 dark:text-white text-sm" style={{ letterSpacing: "-0.02em" }}>PortraitPay AI</span>
           </Link>
           <div className="flex items-center gap-4">
-            <Link href="/contracts" className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white text-sm">
-              {t.common?.contracts || t.nav?.contracts || "Contracts"}
-            </Link>
-            <Link href="/login" className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white text-sm">
+                        <Link href="/login" className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white text-sm">
               {t.nav?.signIn || "Sign In"}
             </Link>
             <ThemeToggle />
@@ -81,10 +78,7 @@ export default function FaqPage() {
           <h1 className="text-4xl font-bold mb-4" style={{ letterSpacing: "-0.03em" }}>
             {t.faq.title}
           </h1>
-          <p className="text-gray-300 max-w-xl mx-auto">
-            {t.faq.sub || t.faq.title}
-          </p>
-        </div>
+          </div>
       </section>
 
       {/* FAQ content */}
@@ -114,7 +108,7 @@ export default function FaqPage() {
                 <h3 className="font-semibold text-gray-900 dark:text-white mb-3">
                   {t.faq.stillHaveQuestions || "Still have questions?"}
                 </h3>
-                <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+                <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
                   {t.faq.teamResponseTime || "Our team will respond within 1-3 business days"}
                 </p>
                 <Link
@@ -132,8 +126,7 @@ export default function FaqPage() {
                 </h3>
                 <div className="space-y-3">
                   {[
-                    { href: "/contracts", label: t.contracts?.title || "Contracts" },
-                    { href: "/enterprise/authorization/apply", label: t.enterprise?.requestLicense || "Request a License" },
+                                        { href: "/enterprise/authorization/apply", label: t.enterprise?.requestLicense || "Request a License" },
                     { href: "/enterprise/certification", label: t.enterprise?.certification || "Enterprise Certification" },
                     { href: "/lawyer/apply", label: t.lawyerSection?.applyNow || "Lawyer Registration" },
                   ].map((link) => (
@@ -172,8 +165,7 @@ export default function FaqPage() {
           <div className="flex gap-6 text-sm text-gray-500 dark:text-gray-400">
             <Link href="/privacy" className="hover:text-gray-900 dark:hover:text-white">{t.footer?.privacy || "Privacy Policy"}</Link>
             <Link href="/terms" className="hover:text-gray-900 dark:hover:text-white">{t.footer?.terms || "Terms of Service"}</Link>
-            <Link href="/contracts" className="hover:text-gray-900 dark:hover:text-white">{t.contracts?.title || "Contracts"}</Link>
-          </div>
+                      </div>
         </div>
       </footer>
     </div>

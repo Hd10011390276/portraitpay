@@ -162,24 +162,9 @@ export function isPinataConfigured(): boolean {
 export async function submitForNotarization(
   request: NotarizationRequest
 ): Promise<NotarizationResult> {
-  console.warn(
-    `[Notarization] STUB CALLED — not submitting to real 公证处. Request:`,
-    JSON.stringify(request, null, 2)
+  throw new Error(
+    "Notarization service not configured. Set NOTARIZATION_API_KEY and NOTARIZATION_ENDPOINT environment variables to enable third-party notarization."
   );
-
-  // Simulate API response
-  const stubResult: NotarizationResult = {
-    notarizationId: `NOT-${Date.now()}`,
-    certificateNo: `GZS-${new Date().getFullYear()}-${Math.random().toString(36).slice(2, 10).toUpperCase()}`,
-    chainHash: `0x${Array.from({ length: 64 }, () =>
-      Math.floor(Math.random() * 16).toString(16)
-    ).join("")}`,
-    issuedAt: new Date(),
-    authority: "STUB_NOTARIZATION_AUTHORITY",
-    queryUrl: "https://notarization.example.com/query/STUB",
-  };
-
-  return stubResult;
 }
 
 /**
@@ -190,15 +175,7 @@ export async function submitForNotarization(
 export async function getNotarizationStatus(
   notarizationId: string
 ): Promise<NotarizationStatus> {
-  console.warn(`[Notarization] STUB — querying status for ${notarizationId}`);
-
-  return {
-    notarizationId,
-    status: "ISSUED",
-    certificateNo: `GZS-${new Date().getFullYear()}-STUB`,
-    chainHash: `0x${"a".repeat(64)}`,
-    issuedAt: new Date(),
-  };
+  throw new Error("Notarization service not configured.");
 }
 
 /**
@@ -209,13 +186,7 @@ export async function getNotarizationStatus(
 export async function getNotarizationCertificate(
   notarizationId: string
 ): Promise<string | null> {
-  console.warn(`[Notarization] STUB — certificate download for ${notarizationId}`);
-  // Real implementation:
-  //   const status = await getNotarizationStatus(notarizationId);
-  //   if (status.status !== "ISSUED") return null;
-  //   const response = await fetch(`${NOTARIZATION_API}/cert/${notarizationId}/pdf`);
-  //   return response.url; // signed URL
-  return null;
+  throw new Error("Notarization service not configured.");
 }
 
 /**

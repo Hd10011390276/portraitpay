@@ -76,9 +76,9 @@ export default function InfringementDetailPage() {
   const statusInfo = { label: ti[report.status] || report.status, color: STATUS_COLORS[report.status] || "bg-gray-100" };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       {/* Header */}
-      <div className="bg-white border-b border-gray-200 sticky top-0 z-20">
+      <div className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 sticky top-0 z-20">
         <div className="max-w-4xl mx-auto px-4 h-14 flex items-center justify-between">
           <Link href="/infringements" className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-900">
             ‹ {tc.backToInfringements}
@@ -113,7 +113,7 @@ export default function InfringementDetailPage() {
           {/* Main content */}
           <div className="col-span-2 space-y-6">
             {/* Basic Info */}
-            <div className="rounded-xl bg-white p-6 shadow-sm">
+            <div className="rounded-xl bg-white dark:bg-gray-900 p-6 shadow-sm">
               <h2 className="mb-4 text-lg font-semibold text-gray-900">{tc.basicInfo}</h2>
               <dl className="grid grid-cols-2 gap-4 text-sm">
                 <div><dt className="text-gray-500">{tc.portraitInvolved}</dt><dd className="font-medium">{report.portrait?.title}</dd></div>
@@ -130,13 +130,13 @@ export default function InfringementDetailPage() {
             </div>
 
             {/* Description */}
-            <div className="rounded-xl bg-white p-6 shadow-sm">
+            <div className="rounded-xl bg-white dark:bg-gray-900 p-6 shadow-sm">
               <h2 className="mb-3 text-lg font-semibold text-gray-900">{tc.infringementDesc}</h2>
               <p className="whitespace-pre-wrap text-sm text-gray-700 leading-relaxed">{report.description}</p>
             </div>
 
             {/* Evidence */}
-            <div className="rounded-xl bg-white p-6 shadow-sm">
+            <div className="rounded-xl bg-white dark:bg-gray-900 p-6 shadow-sm">
               <h2 className="mb-3 text-lg font-semibold text-gray-900">{tc.evidenceScreenshots}</h2>
               {report.evidenceUrls?.length > 0 ? (
                 <div className="grid grid-cols-2 gap-3">
@@ -163,7 +163,7 @@ export default function InfringementDetailPage() {
             </div>
 
             {/* Notices */}
-            <div className="rounded-xl bg-white p-6 shadow-sm">
+            <div className="rounded-xl bg-white dark:bg-gray-900 p-6 shadow-sm">
               <h2 className="mb-3 text-lg font-semibold text-gray-900">{tc.sentNotices}</h2>
               {report.notices?.length > 0 ? (
                 <div className="space-y-3">
@@ -186,7 +186,7 @@ export default function InfringementDetailPage() {
 
             {/* Resolution */}
             {report.resolution && (
-              <div className="rounded-xl bg-white p-6 shadow-sm">
+              <div className="rounded-xl bg-white dark:bg-gray-900 p-6 shadow-sm">
                 <h2 className="mb-3 text-lg font-semibold text-gray-900">{tc.resolutionOpinion}</h2>
                 <p className="text-sm text-gray-700 whitespace-pre-wrap">{report.resolution}</p>
                 {report.verifiedAt && (

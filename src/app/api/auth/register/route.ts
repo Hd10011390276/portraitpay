@@ -31,19 +31,10 @@ export async function POST(req: NextRequest) {
       where: { email, deletedAt: null },
     });
     if (existing) {
-      const testEmails = ["799096322@qq.com", "admin@portraitpay.ai"];
-      const isTestAccount = testEmails.includes(email);
-      if (!isTestAccount) {
-        return NextResponse.json(
-          { success: false, message: "This email is already registered" },
-          { status: 409 }
-        );
-      }
-      // Test accounts: soft-delete the old record so a new registration with a different role proceeds
-      await prisma.user.update({
-        where: { id: existing.id },
-        data: { deletedAt: new Date() },
-      });
+      return NextResponse.json(
+        { success: false, message: "This email is already registered" },
+        { status: 409 }
+      );
     }
 
     // If a soft-deleted user exists with this email, hard-delete them to allow re-registration

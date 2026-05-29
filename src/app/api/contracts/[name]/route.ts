@@ -3,6 +3,8 @@ import { NextResponse } from "next/server";
 import { readFile, stat } from "fs/promises";
 import { join } from "path";
 
+export const dynamic = "force-dynamic";
+
 const ALLOWED_FILES = [
   "00-Overview-and-Signing-Guide.docx",
   "01-Standard-License-Agreement.docx",

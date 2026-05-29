@@ -8,7 +8,7 @@
  * - SMTP_PORT: SMTP server port (e.g., 465 for SSL, 587 for TLS)
  * - SMTP_USER: SMTP username/email
  * - SMTP_PASS: SMTP password
- * - CONTACT_TO_EMAIL: Recipient email address (defaults to ADMIN_EMAIL or noreply@portraitpayai.com)
+ * - CONTACT_TO_EMAIL: Recipient email address (defaults to ADMIN_EMAIL or contact@portraitpayai.com)
  */
 
 import { NextRequest, NextResponse } from "next/server";
@@ -169,7 +169,7 @@ export async function POST(req: NextRequest) {
     const toEmail =
       process.env.CONTACT_TO_EMAIL ??
       process.env.ADMIN_EMAIL ??
-      "noreply@portraitpayai.com";
+      "contact@portraitpayai.com";
 
     // Get sender email (must be authenticated SMTP user)
     const fromEmail = smtpUser;

@@ -21,6 +21,7 @@ export async function GET(
       select: {
         id: true,
         fullName: true,
+        email: true,
         allowedUses: true,
         prohibitedUses: true,
         contactInfo: true,
@@ -36,7 +37,22 @@ export async function GET(
       return NextResponse.json({ success: false, error: "Consent Passport not found" }, { status: 404 });
     }
 
-    return NextResponse.json({ success: true, data: passport });
+    // Check if the passport owner has completed KYC identity verification
+    let kycStatus: string | null = null;
+    let kycVerifiedAt: string | null = null;
+    const user = await prisma.user.findUnique({
+      where: { email: passport.email },
+      select: { kycStatus: true, kycVerifiedAt: true },
+    });
+    if (user) {
+      kycStatus = user.kycStatus;
+      kycVerifiedAt = user.kycVerifiedAt?.toISOString() ?? null;
+    }
+
+    return NextResponse.json({
+      success: true,
+      data: { ...passport, kycStatus, kycVerifiedAt },
+    });
   } catch (error) {
     console.error("[GET /api/consent-passport/[token]]", error);
     return NextResponse.json({ success: false, error: "Internal server error" }, { status: 500 });

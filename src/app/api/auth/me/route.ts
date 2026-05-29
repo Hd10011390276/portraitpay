@@ -19,9 +19,25 @@ export async function GET(req: NextRequest) {
     );
   }
 
+  // Check available account types for role switching
+  const [agencyAccount, lawyerRegistration] = await Promise.all([
+    prisma.agencyAccount.findUnique({ where: { userId: session.userId }, select: { id: true, status: true } }),
+    prisma.lawyerRegistration.findFirst({
+      where: { userId: session.userId, status: "APPROVED" },
+      select: { id: true, status: true },
+    }),
+  ]);
+
+  const availableRoles: string[] = ["USER"];
+  if (agencyAccount) availableRoles.push("AGENCY");
+  if (lawyerRegistration) availableRoles.push("LAWYER");
+
   return NextResponse.json({
     success: true,
-    data: { user: session },
+    data: {
+      user: session,
+      availableRoles: [...new Set(availableRoles)],
+    },
   });
 }
 

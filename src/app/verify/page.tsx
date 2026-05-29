@@ -1,4 +1,5 @@
 ﻿"use client";
+export const dynamic = "force-dynamic";
 
 import React, { useState } from "react";
 import { useLanguage } from "@/context/LanguageContext";
@@ -14,11 +15,20 @@ export default function VerifyPage() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<{
     found: boolean;
+    source?: "InfringementReport" | "EvidenceExport" | "onchain";
     txHash?: string;
     portraitHash?: string;
     owner?: string;
     timestamp?: string;
     error?: string;
+    reportId?: number;
+    reportHash?: string;
+    reportStatus?: string;
+    reportType?: string;
+    portraitTitle?: string | null;
+    evidenceId?: string;
+    exportedAt?: string;
+    caseId?: string;
   } | null>(null);
 
   const handleVerify = async (e: React.FormEvent) => {
@@ -28,13 +38,49 @@ export default function VerifyPage() {
     setResult(null);
 
     try {
-      // Try API call first
+      // 1. Check evidence records first (DB lookup)
+      const evidenceRes = await fetch(
+        `/api/verify?hash=${encodeURIComponent(input.trim())}`
+      );
+      if (evidenceRes.ok) {
+        const evidenceData = await evidenceRes.json();
+        if (evidenceData.found) {
+          if (evidenceData.source === "InfringementReport") {
+            setResult({
+              found: true,
+              source: "InfringementReport",
+              reportId: evidenceData.data.reportId,
+              reportHash: evidenceData.data.reportHash,
+              reportStatus: evidenceData.data.status,
+              reportType: evidenceData.data.type,
+              portraitTitle: evidenceData.data.portraitTitle,
+              timestamp: evidenceData.data.createdAt,
+            });
+            setLoading(false);
+            return;
+          } else if (evidenceData.source === "EvidenceExport") {
+            setResult({
+              found: true,
+              source: "EvidenceExport",
+              evidenceId: evidenceData.data.evidenceId,
+              reportHash: evidenceData.data.fileHash,
+              exportedAt: evidenceData.data.exportedAt,
+              caseId: evidenceData.data.caseId,
+              timestamp: evidenceData.data.exportedAt,
+            });
+            setLoading(false);
+            return;
+          }
+        }
+      }
+
+      // 2. Fallback: on-chain verification via API
       const res = await fetch(
         `/api/verify-portrait?hash=${encodeURIComponent(input.trim())}`
       );
       if (res.ok) {
         const data = await res.json();
-        setResult(data);
+        setResult({ ...data, source: "onchain" });
       } else {
         // Direct blockchain check via public RPC
         const body = {
@@ -62,9 +108,9 @@ export default function VerifyPage() {
         );
         const rpcData = await rpcRes.json();
         if (rpcData.result && rpcData.result !== "0x") {
-          setResult({ found: true, txHash: "via RPC" });
+          setResult({ found: true, source: "onchain", txHash: "via RPC" });
         } else {
-          setResult({ found: false });
+          setResult({ found: false, source: "onchain" });
         }
       }
     } catch (err) {
@@ -149,41 +195,114 @@ export default function VerifyPage() {
                   <span>✓</span>
                   <span>{tv.found || "Certificate found"}</span>
                 </div>
-                {result.txHash && (
+
+                {result.source === "InfringementReport" && (
                   <div className="text-sm space-y-1">
                     <p className="text-gray-600 dark:text-gray-400">
-                      <span className="font-medium text-gray-700 dark:text-gray-300">{tv.txHash || "Transaction Hash"}:</span>
+                      <span className="font-medium text-gray-700 dark:text-gray-300">Evidence record created by PortraitPay</span>
                     </p>
+                    {result.timestamp && (
+                      <p className="text-gray-600 dark:text-gray-400">
+                        <span className="font-medium">{tv.date || "Date"}:</span>{" "}
+                        {new Date(result.timestamp).toLocaleDateString()}
+                      </p>
+                    )}
+                    {result.reportType && (
+                      <p className="text-gray-600 dark:text-gray-400">
+                        <span className="font-medium">{tv.type || "Type"}:</span>{" "}
+                        {result.reportType}
+                      </p>
+                    )}
+                    {result.reportStatus && (
+                      <p className="text-gray-600 dark:text-gray-400">
+                        <span className="font-medium">{tv.status || "Status"}:</span>{" "}
+                        {result.reportStatus}
+                      </p>
+                    )}
+                    {result.portraitTitle && (
+                      <p className="text-gray-600 dark:text-gray-400">
+                        <span className="font-medium">{tv.portrait || "Portrait"}:</span>{" "}
+                        {result.portraitTitle}
+                      </p>
+                    )}
+                    {result.reportHash && (
+                      <p className="text-gray-600 dark:text-gray-400">
+                        <span className="font-medium">{tv.hash || "Hash"}:</span>{" "}
+                        <span className="font-mono text-xs">{result.reportHash}</span>
+                      </p>
+                    )}
+                  </div>
+                )}
+
+                {result.source === "EvidenceExport" && (
+                  <div className="text-sm space-y-1">
+                    <p className="text-gray-600 dark:text-gray-400">
+                      <span className="font-medium text-gray-700 dark:text-gray-300">Evidence package exported</span>
+                    </p>
+                    {result.exportedAt && (
+                      <p className="text-gray-600 dark:text-gray-400">
+                        <span className="font-medium">{tv.date || "Date"}:</span>{" "}
+                        {new Date(result.exportedAt).toLocaleDateString()}
+                      </p>
+                    )}
+                    {result.caseId && (
+                      <p className="text-gray-600 dark:text-gray-400">
+                        <span className="font-medium">{tv.case || "Case ID"}:</span>{" "}
+                        <span className="font-mono text-xs">{result.caseId}</span>
+                      </p>
+                    )}
+                    {result.reportHash && (
+                      <p className="text-gray-600 dark:text-gray-400">
+                        <span className="font-medium">{tv.hash || "Hash"}:</span>{" "}
+                        <span className="font-mono text-xs">{result.reportHash}</span>
+                      </p>
+                    )}
+                  </div>
+                )}
+
+                {(result.source === "onchain" || !result.source) && (
+                  <div className="text-sm space-y-1">
+                    {result.txHash && result.txHash !== "via RPC" ? (
+                      <div>
+                        <p className="text-gray-600 dark:text-gray-400">
+                          <span className="font-medium text-gray-700 dark:text-gray-300">{tv.txHash || "Transaction Hash"}:</span>
+                        </p>
+                        <a
+                          href={ETHERSCAN_BASE + result.txHash}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="font-mono text-xs text-blue-600 dark:text-blue-400 break-all hover:underline"
+                        >
+                          {result.txHash}
+                        </a>
+                      </div>
+                    ) : (
+                      <p className="text-gray-600 dark:text-gray-400">
+                        <span className="font-medium text-gray-700 dark:text-gray-300">Certified on Ethereum Sepolia</span>
+                      </p>
+                    )}
+                    {result.portraitHash && (
+                      <p className="text-gray-600 dark:text-gray-400">
+                        <span className="font-medium">{tv.portraitHash || "Portrait Hash"}:</span>{" "}
+                        <span className="font-mono text-xs">{result.portraitHash}</span>
+                      </p>
+                    )}
+                    {result.owner && (
+                      <p className="text-gray-600 dark:text-gray-400">
+                        <span className="font-medium">{tv.owner || "Owner"}:</span>{" "}
+                        <span className="font-mono text-xs">{result.owner}</span>
+                      </p>
+                    )}
                     <a
-                      href={ETHERSCAN_BASE + result.txHash}
+                      href={`https://sepolia.etherscan.io/address/${CONTRACT_ADDRESS}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="font-mono text-xs text-blue-600 dark:text-blue-400 break-all hover:underline"
+                      className="inline-flex items-center gap-1 text-xs text-blue-600 dark:text-blue-400 hover:underline"
                     >
-                      {result.txHash}
+                      View contract on block explorer →
                     </a>
                   </div>
                 )}
-                {result.portraitHash && (
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
-                    <span className="font-medium">{tv.portraitHash || "Portrait Hash"}:</span>{" "}
-                    <span className="font-mono text-xs">{result.portraitHash}</span>
-                  </p>
-                )}
-                {result.owner && (
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
-                    <span className="font-medium">{tv.owner || "Owner"}:</span>{" "}
-                    <span className="font-mono text-xs">{result.owner}</span>
-                  </p>
-                )}
-                <a
-                  href={`https://sepolia.etherscan.io/address/${CONTRACT_ADDRESS}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 text-xs text-blue-600 dark:text-blue-400 hover:underline"
-                >
-                  View contract on block explorer →
-                </a>
               </div>
             ) : result.error ? (
               <div className="text-red-700 dark:text-red-300">

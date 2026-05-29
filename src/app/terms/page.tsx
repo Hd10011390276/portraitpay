@@ -1,6 +1,6 @@
 ﻿"use client";
+export const dynamic = "force-dynamic";
 
-import type { Metadata } from "next";
 import Link from "next/link";
 import { useLanguage } from "@/context/LanguageContext";
 import ThemeToggle from "@/components/ThemeToggle";
@@ -55,7 +55,7 @@ export default function TermsPage() {
           {/* Section 1: Acceptance */}
           <section>
             <h2 className="text-xl font-semibold mb-3" style={{ color: "var(--text-primary)" }}>{l.sections.acceptance}</h2>
-            <p className="text-sm leading-relaxed" style={{ color: "var(--text-secondary)" }}>
+            <p className="text-base leading-relaxed" style={{ color: "var(--text-secondary)" }}>
               {l.sections.acceptanceDesc}
             </p>
           </section>
@@ -63,10 +63,10 @@ export default function TermsPage() {
           {/* Section 2: Service Description */}
           <section>
             <h2 className="text-xl font-semibold mb-3" style={{ color: "var(--text-primary)" }}>{l.sections.serviceDesc}</h2>
-            <p className="text-sm leading-relaxed mb-3" style={{ color: "var(--text-secondary)" }}>
+            <p className="text-base leading-relaxed mb-3" style={{ color: "var(--text-secondary)" }}>
               {l.sections.serviceDescDesc}
             </p>
-            <ul className="list-disc pl-5 text-sm space-y-1" style={{ color: "var(--text-secondary)" }}>
+            <ul className="list-disc pl-5 text-base space-y-1 leading-relaxed" style={{ color: "var(--text-secondary)" }}>
               <li>{l.sections.serviceDescList.upload}</li>
               <li>{l.sections.serviceDescList.blockchain}</li>
               <li>{l.sections.serviceDescList.ipfs}</li>
@@ -77,7 +77,7 @@ export default function TermsPage() {
           {/* Section 3: Eligibility */}
           <section>
             <h2 className="text-xl font-semibold mb-3" style={{ color: "var(--text-primary)" }}>{l.sections.eligibility}</h2>
-            <p className="text-sm leading-relaxed" style={{ color: "var(--text-secondary)" }}>
+            <p className="text-base leading-relaxed" style={{ color: "var(--text-secondary)" }}>
               {l.sections.eligibilityDesc}
             </p>
           </section>
@@ -85,17 +85,17 @@ export default function TermsPage() {
           {/* Section 4: Portrait Rights */}
           <section>
             <h2 className="text-xl font-semibold mb-3" style={{ color: "var(--text-primary)" }}>{l.sections.portraitRights}</h2>
-            <p className="text-sm leading-relaxed mb-3" style={{ color: "var(--text-secondary)" }}>
+            <p className="text-base leading-relaxed mb-3" style={{ color: "var(--text-secondary)" }}>
               {l.sections.portraitRightsDesc}
             </p>
-            <ul className="list-disc pl-5 text-sm space-y-1 mb-3" style={{ color: "var(--text-secondary)" }}>
+            <ul className="list-disc pl-5 text-base space-y-1 mb-3 leading-relaxed" style={{ color: "var(--text-secondary)" }}>
               <li>{l.sections.portraitRightsList.own}</li>
               <li>{l.sections.portraitRightsList.noInfringe}</li>
               <li>{l.sections.portraitRightsList.capacity}</li>
               <li>{l.sections.portraitRightsList.celebrity}</li>
             </ul>
             <div className="rounded-xl p-4" style={{ background: "var(--warning-light)", border: "1px solid var(--warning)" }}>
-              <p className="text-sm" style={{ color: "var(--warning)" }}>
+              <p className="text-base" style={{ color: "var(--warning)" }}>
                 <strong>Note:</strong> {l.sections.portraitRightsWarning}
               </p>
             </div>
@@ -104,7 +104,7 @@ export default function TermsPage() {
           {/* Section 6: Payment Terms */}
           <section>
             <h2 className="text-xl font-semibold mb-3" style={{ color: "var(--text-primary)" }}>{l.sections.blockchain}</h2>
-            <p className="text-sm leading-relaxed" style={{ color: "var(--text-secondary)" }}>
+            <p className="text-base leading-relaxed" style={{ color: "var(--text-secondary)" }}>
               {l.sections.blockchainDesc}
             </p>
           </section>
@@ -112,7 +112,7 @@ export default function TermsPage() {
           {/* Section 7: Licensing */}
           <section>
             <h2 className="text-xl font-semibold mb-3" style={{ color: "var(--text-primary)" }}>{l.sections.licensing}</h2>
-            <p className="text-sm leading-relaxed" style={{ color: "var(--text-secondary)" }}>
+            <p className="text-base leading-relaxed" style={{ color: "var(--text-secondary)" }}>
               {l.sections.licensingDesc}
             </p>
           </section>
@@ -120,14 +120,14 @@ export default function TermsPage() {
           {/* Section 8: Payment Terms */}
           <section>
             <h2 className="text-xl font-semibold mb-3" style={{ color: "var(--text-primary)" }}>{l.sections.payment}</h2>
-            <ul className="list-disc pl-5 text-sm space-y-1 mb-3" style={{ color: "var(--text-secondary)" }}>
+            <ul className="list-disc pl-5 text-base space-y-1 mb-3 leading-relaxed" style={{ color: "var(--text-secondary)" }}>
               <li><strong style={{ color: "var(--text-primary)" }}>{l.sections.paymentList.platformFee}</strong></li>
               <li><strong style={{ color: "var(--text-primary)" }}>{l.sections.paymentList.ownerShare}</strong></li>
               <li><strong style={{ color: "var(--text-primary)" }}>{l.sections.paymentList.minWithdrawal}</strong></li>
               <li><strong style={{ color: "var(--text-primary)" }}>{l.sections.paymentList.withdrawalTime}</strong></li>
               <li><strong style={{ color: "var(--text-primary)" }}>{l.sections.paymentList.methods}</strong></li>
             </ul>
-            <p className="text-sm leading-relaxed" style={{ color: "var(--text-secondary)" }}>
+            <p className="text-base leading-relaxed" style={{ color: "var(--text-secondary)" }}>
               {l.sections.paymentNote}
             </p>
           </section>
@@ -138,7 +138,7 @@ export default function TermsPage() {
             <p className="text-sm leading-relaxed mb-3" style={{ color: "var(--text-secondary)" }}>
               {l.sections.conductDesc}
             </p>
-            <ul className="list-disc pl-5 text-sm space-y-1" style={{ color: "var(--text-secondary)" }}>
+            <ul className="list-disc pl-5 text-base space-y-1 mb-3 leading-relaxed" style={{ color: "var(--text-secondary)" }}>
               <li>{l.sections.conductList.consent}</li>
               <li>{l.sections.conductList.illegal}</li>
               <li>{l.sections.conductList.manipulate}</li>
@@ -151,16 +151,16 @@ export default function TermsPage() {
           {/* Section 10: Deletion Process */}
           <section>
             <h2 className="text-xl font-semibold mb-3" style={{ color: "var(--text-primary)" }}>{l.sections.deletionProcess}</h2>
-            <p className="text-sm leading-relaxed mb-3" style={{ color: "var(--text-secondary)" }}>
+            <p className="text-base leading-relaxed mb-3" style={{ color: "var(--text-secondary)" }}>
               {l.sections.deletionProcessDesc}
             </p>
-            <ol className="list-decimal pl-5 text-sm space-y-2 mb-3" style={{ color: "var(--text-secondary)" }}>
+            <ol className="list-decimal pl-5 text-base space-y-2 mb-3 leading-relaxed" style={{ color: "var(--text-secondary)" }}>
               <li>{l.sections.deletionSteps.step1}</li>
               <li>{l.sections.deletionSteps.step2}</li>
               <li>{l.sections.deletionSteps.step3}</li>
               <li>{l.sections.deletionSteps.step4}</li>
             </ol>
-            <p className="text-sm leading-relaxed" style={{ color: "var(--text-secondary)" }}>
+            <p className="text-base leading-relaxed" style={{ color: "var(--text-secondary)" }}>
               {l.sections.deletionNote}
             </p>
           </section>
@@ -168,7 +168,7 @@ export default function TermsPage() {
           {/* Section 11: Disclaimer */}
           <section>
             <h2 className="text-xl font-semibold mb-3" style={{ color: "var(--text-primary)" }}>{l.sections.disclaimer}</h2>
-            <p className="text-sm leading-relaxed" style={{ color: "var(--text-secondary)" }}>
+            <p className="text-base leading-relaxed" style={{ color: "var(--text-secondary)" }}>
               {l.sections.disclaimerDesc}
             </p>
           </section>
@@ -176,15 +176,26 @@ export default function TermsPage() {
           {/* Section 12: Governing Law */}
           <section>
             <h2 className="text-xl font-semibold mb-3" style={{ color: "var(--text-primary)" }}>{l.sections.governingLaw}</h2>
-            <p className="text-sm leading-relaxed" style={{ color: "var(--text-secondary)" }}>
+            <p className="text-base leading-relaxed" style={{ color: "var(--text-secondary)" }}>
               {l.sections.governingLawDesc}
+            </p>
+          </section>
+
+          {/* Section 4.4: Dispute Resolution */}
+          <section>
+            <h2 className="text-xl font-semibold mb-3" style={{ color: "var(--text-primary)" }}>Dispute Resolution</h2>
+            <p className="text-base leading-relaxed mb-3" style={{ color: "var(--text-secondary)" }}>
+              Any dispute, claim, or controversy arising out of or relating to these Terms or the use of the Platform shall be resolved by binding arbitration administered by JAMS in Los Angeles County, California, under its Comprehensive Arbitration Rules. Judgment on the award may be entered in any court having jurisdiction.
+            </p>
+            <p className="text-base leading-relaxed" style={{ color: "var(--text-secondary)" }}>
+              The exclusive venue for any action not subject to arbitration shall be the state and federal courts located in Los Angeles County, California. You and PortraitPay AI hereby consent to the personal jurisdiction of such courts.
             </p>
           </section>
 
           {/* Section 13: Changes to Terms */}
           <section>
             <h2 className="text-xl font-semibold mb-3" style={{ color: "var(--text-primary)" }}>{l.sections.changesToTerms}</h2>
-            <p className="text-sm leading-relaxed" style={{ color: "var(--text-secondary)" }}>
+            <p className="text-base leading-relaxed" style={{ color: "var(--text-secondary)" }}>
               {l.sections.changesToTermsDesc}
             </p>
           </section>
@@ -192,7 +203,7 @@ export default function TermsPage() {
           {/* Section 14: Contact Us */}
           <section>
             <h2 className="text-xl font-semibold mb-3" style={{ color: "var(--text-primary)" }}>{l.sections.contactUs}</h2>
-            <p className="text-sm leading-relaxed" style={{ color: "var(--text-secondary)" }}>
+            <p className="text-base leading-relaxed" style={{ color: "var(--text-secondary)" }}>
               {l.sections.contactUsDesc}
             </p>
           </section>

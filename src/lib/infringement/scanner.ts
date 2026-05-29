@@ -20,6 +20,15 @@
  * are registered as "sources".
  */
 
+declare global {
+  namespace NodeJS {
+    interface ProcessEnv {
+      GOOGLE_API_KEY?: string;
+      GOOGLE_CSE_ID?: string;
+    }
+  }
+}
+
 import { prisma } from "@/lib/prisma";
 import { findSimilarPortraits, extractEmbeddingFromUrl, SimilarityMatch } from "./face-similarity";
 import { captureEvidence } from "./evidence";
@@ -62,16 +71,35 @@ const SCAN_SOURCES: Array<{
    * Fetch page and return all image URLs found.
    * Return [] if the source is down or rate-limited.
    */
-  fetchImageUrls: () => Promise<string[]>;
+  fetchImageUrls: (keywords: string[]) => Promise<string[]>;
 }> = [
   {
     name: "GoogleImages",
-    type: "website",
-    async fetchImageUrls() {
-      // STUB — real implementation would use Google Custom Search JSON API
-      // with reverse image search or keyword-based search.
-      // const res = await fetch(`https://www.googleapis.com/customsearch/v1?q=...`);
-      return [];
+    type: "ai_platform",
+    fetchImageUrls: async (keywords: string[]) => {
+      const apiKey = process.env.GOOGLE_API_KEY;
+      const cseId = process.env.GOOGLE_CSE_ID;
+      if (!apiKey || !cseId) {
+        console.warn("[Scanner] Google CSE not configured, skipping");
+        return [];
+      }
+      try {
+        const allUrls: string[] = [];
+        for (const query of keywords.slice(0, 3)) {
+          const url = `https://www.googleapis.com/customsearch/v1?key=${encodeURIComponent(apiKey)}&cx=${encodeURIComponent(cseId)}&q=${encodeURIComponent(query)}&searchType=image&num=10`;
+          const res = await fetch(url, { signal: AbortSignal.timeout(10_000) });
+          if (!res.ok) continue;
+          const data = await res.json();
+          for (const item of (data.items ?? [])) {
+            if (item.link) allUrls.push(item.link);
+            if (item.image?.thumbnailLink) allUrls.push(item.image.thumbnailLink);
+          }
+        }
+        return [...new Set(allUrls)];
+      } catch (err) {
+        console.warn("[Scanner] Google CSE request failed:", err);
+        return [];
+      }
     },
   },
   {
@@ -161,9 +189,11 @@ export async function runMonitoringCycle(config?: Partial<MonitorConfig>): Promi
       portraitsScanned += portraits.length;
 
       // ── Step 3: Collect candidate image URLs from all scan sources ──────
+      const searchKeywords = portraits.flatMap(p => [p.title, ...(p.tags ?? [])].filter(Boolean));
       const candidateUrls = await collectCandidateUrls(
         userConfig.enabledPlatforms,
-        userConfig.excludedPlatforms
+        userConfig.excludedPlatforms,
+        searchKeywords
       );
 
       if (!candidateUrls.length) {
@@ -291,7 +321,8 @@ async function processUrlForInfringement(
  */
 async function collectCandidateUrls(
   enabledPlatforms: string[],
-  excludedPlatforms: string[]
+  excludedPlatforms: string[],
+  keywords: string[]
 ): Promise<string[]> {
   const sources = SCAN_SOURCES.filter((s) => {
     if (excludedPlatforms.includes(s.name)) return false;
@@ -302,7 +333,7 @@ async function collectCandidateUrls(
   const results = await Promise.allSettled(
     sources.map(async (source) => {
       try {
-        return await source.fetchImageUrls();
+        return await source.fetchImageUrls(keywords);
       } catch {
         return [];
       }

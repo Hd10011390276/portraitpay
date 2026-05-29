@@ -111,11 +111,16 @@ export default function InboxThreadPage() {
 
       // Fetch messages separately
       const msgRes = await fetch(`/api/conversations/${convId}/messages`);
-      const msgJson = msgRes.ok ? await msgRes.json() : { success: true, data: [], meta: {} };
+      const msgJson = msgRes.ok ? await msgRes.json() : { success: true, data: { messages: [] }, meta: {} };
 
+      const msgData = msgJson.success ? msgJson.data : { messages: [] };
       setThread({
         conversation: convJson.data,
-        messages: msgJson.success ? msgJson.data : [],
+        messages: Array.isArray(msgData.messages)
+          ? msgData.messages
+          : Array.isArray(msgData)
+          ? msgData
+          : [],
         meta: msgJson.meta,
         currentUserId: convJson.currentUserId,
       });

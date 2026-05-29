@@ -19,10 +19,16 @@ export function RoleSelector({ value, onChange, error }: RoleSelectorProps) {
       icon: "🎭",
     },
     {
-      value: "AGENT",
-      label: t.register.roleAgent || "Agent / IP Holder",
-      description: t.register.roleAgentDesc || "Manage multiple people's portraits, licenses, and rights",
+      value: "AGENCY",
+      label: t.register.roleAgency || "Agent / IP Holder",
+      description: t.register.roleAgencyDesc || "Manage multiple people's portraits, licenses, and rights",
       icon: "🏢",
+    },
+    {
+      value: "LAWYER",
+      label: t.register.roleLawyer || "Lawyer",
+      description: t.register.roleLawyerDesc || "Represent clients, prepare evidence, handle infringement cases",
+      icon: "⚖️",
     },
   ];
 

@@ -4,7 +4,6 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/components/ui/Toast";
-import ThemeToggle from "@/components/ThemeToggle";
 import { useLanguage } from "@/context/LanguageContext";
 
 interface User {
@@ -21,9 +20,10 @@ interface HeaderProps {
   action?: React.ReactNode;
   effectiveRole?: string | null;
   onRoleSwitch?: (role: string) => void;
+  availableRoles?: string[];
 }
 
-export function Header({ user, title, subtitle, action, effectiveRole, onRoleSwitch }: HeaderProps) {
+export function Header({ user, title, subtitle, action, effectiveRole, onRoleSwitch, availableRoles }: HeaderProps) {
   const router = useRouter();
   const { toast } = useToast();
   const { t } = useLanguage();
@@ -80,8 +80,8 @@ export function Header({ user, title, subtitle, action, effectiveRole, onRoleSwi
         <div className="flex items-center gap-3">
           {action && <div className="hidden sm:block">{action}</div>}
 
-{/* Test account role switcher */}
-          {user?.email === "799096322@qq.com" && (
+{/* Role switcher — shown when user has multiple account types */}
+          {availableRoles && availableRoles.length > 1 && (
             <div className="relative">
               <button
                 onClick={() => setRoleSwitcherOpen((o) => !o)}
@@ -101,32 +101,36 @@ export function Header({ user, title, subtitle, action, effectiveRole, onRoleSwi
                     <p className="px-4 py-2 text-xs font-semibold text-gray-400 uppercase tracking-wider border-b border-gray-100 dark:border-gray-700">
                       Switch Role
                     </p>
-                    {[
-                      { label: "Actor / Creator", role: "USER", href: "/dashboard" },
-                      { label: "Agency / Entertainment", role: "AGENCY", href: "/dashboard" },
-                      { label: "Lawyer", role: "LAWYER", href: "/lawyer/dashboard" },
-                    ].map((opt) => (
-                      <button
-                        key={opt.role}
-                        onClick={() => {
-                          setRoleSwitcherOpen(false);
-                          if (onRoleSwitch) onRoleSwitch(opt.role);
-                          router.push(opt.href);
-                        }}
-                        className={`w-full text-left px-4 py-2.5 text-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors flex items-center justify-between ${
-                          (effectiveRole || user?.role) === opt.role
-                            ? "text-blue-600 dark:text-blue-400 font-medium"
-                            : "text-gray-700 dark:text-gray-300"
-                        }`}
-                      >
-                        {opt.label}
-                        {(effectiveRole || user?.role) === opt.role && (
-                          <svg className="w-4 h-4 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                          </svg>
-                        )}
-                      </button>
-                    ))}
+                    {availableRoles?.map((role) => {
+                      const label = role === "AGENCY" ? "Agency / Entertainment" : role === "LAWYER" ? "Lawyer" : "Actor / Creator";
+                      const href = role === "LAWYER" ? "/lawyer/dashboard" : role === "AGENCY" ? "/enterprise/dashboard" : "/dashboard";
+                      return (
+                        <button
+                          key={role}
+                          onClick={async () => {
+                            setRoleSwitcherOpen(false);
+                            if (onRoleSwitch) {
+                              await onRoleSwitch(role);
+                            } else {
+                              localStorage.setItem("pp_effective_role", role);
+                            }
+                            router.push(href);
+                          }}
+                          className={`w-full text-left px-4 py-2.5 text-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors flex items-center justify-between ${
+                            (effectiveRole || user?.role) === role
+                              ? "text-blue-600 dark:text-blue-400 font-medium"
+                              : "text-gray-700 dark:text-gray-300"
+                          }`}
+                        >
+                          {label}
+                          {(effectiveRole || user?.role) === role && (
+                            <svg className="w-4 h-4 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                            </svg>
+                          )}
+                        </button>
+                      );
+                    })}
                   </div>
                 </>
               )}

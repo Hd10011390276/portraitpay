@@ -515,7 +515,7 @@ export default function PortraitDetailPage() {
                 <div className="flex items-center gap-2">
                   <span className="text-gray-500 dark:text-gray-400">License Fee:</span>
                   <span className="text-gray-800 dark:text-gray-200">
-                    {licensing.aiLicenseFee ? `$${licensing.aiLicenseFee} USD` : `(Default: $${licensing.defaults.defaultLicenseFee})`}
+                    {licensing.aiLicenseFee ? `$${licensing.aiLicenseFee} USD` : `(Default: $${licensing.defaults?.defaultLicenseFee ?? 0})`}
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
@@ -709,7 +709,7 @@ export default function PortraitDetailPage() {
                   step="0.01"
                   value={editFee}
                   onChange={(e) => setEditFee(e.target.value)}
-                  placeholder={`Default: $${licensing.defaults.defaultLicenseFee}`}
+                  placeholder={`Default: $${licensing.defaults?.defaultLicenseFee ?? 0}`}
                   className="w-full px-4 py-3 border border-gray-200 dark:border-gray-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-800"
                 />
               </div>

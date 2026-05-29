@@ -25,6 +25,11 @@ type RouteContext = { params: Promise<{ id: string }> };
 
 export async function GET(request: NextRequest, context: RouteContext) {
   try {
+    const session = await getSessionFromRequest(request);
+    if (!session?.userId) {
+      return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
+    }
+
     const { id } = await context.params;
 
     const portrait = await prisma.portrait.findUnique({

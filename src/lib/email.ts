@@ -71,7 +71,7 @@ function createTransporter(): nodemailer.Transporter {
 // Email sender (Resend preferred, SMTP fallback)
 // ============================================================
 async function sendViaSMTP(opts: EmailOptions): Promise<void> {
-  const from = process.env.EMAIL_FROM ?? process.env.SMTP_USER ?? "noreply@portraitpayai.com";
+  const from = process.env.EMAIL_FROM ?? process.env.SMTP_USER ?? "contact@portraitpayai.com";
   const fromName = process.env.EMAIL_FROM_NAME ?? "PortraitPay AI";
   const toAddresses = Array.isArray(opts.to) ? opts.to : [opts.to];
 
@@ -255,7 +255,7 @@ export async function sendPortraitCertifiedEmail(params: PortraitCertifiedEmailP
         <tr><td style="padding:6px 0;color:#666;font-size:13px">ID Number</td><td style="padding:6px 0;font-size:13px;font-family:monospace;color:#7c3aed">${idCardNumberMasked}</td></tr>
         <tr><td style="padding:6px 0;color:#666;font-size:13px">Portrait Photo Hash</td><td style="padding:6px 0;font-size:11px;font-family:monospace;color:#7c3aed;word-break:break-all">${portraitImageHash.slice(0, 20)}...</td></tr>
         <tr><td style="padding:6px 0;color:#666;font-size:13px">ID Photo Hash</td><td style="padding:6px 0;font-size:11px;font-family:monospace;color:#7c3aed;word-break:break-all">${idCardFrontHash.slice(0, 20)}...</td></tr>
-        <tr><td style="padding:6px 0;color:#666;font-size:13px">Network</td><td style="padding:6px 0;font-size:13px">${network === "base" ? "Base Mainnet" : network}</td></tr>
+        <tr><td style="padding:6px 0;color:#666;font-size:13px">Network</td><td style="padding:6px 0;font-size:13px">${network === "base" ? "Base Mainnet (Production)" : network}</td></tr>
         <tr><td style="padding:6px 0;color:#666;font-size:13px">Certification Time</td><td style="padding:6px 0;font-size:13px">${certifiedAtStr}</td></tr>
         <tr><td style="padding:6px 0;color:#666;font-size:13px">Transaction Hash</td><td style="padding:6px 0;font-size:12px;font-family:monospace;color:#7c3aed">${blockchainTxHash.slice(0, 16)}...</td></tr>
       </table>
@@ -263,13 +263,13 @@ export async function sendPortraitCertifiedEmail(params: PortraitCertifiedEmailP
     <div style="text-align:center;margin:20px 0">
       <a href="${txUrl}" style="display:inline-block;padding:12px 24px;background:#7c3aed;color:#fff;text-decoration:none;border-radius:8px;font-size:14px">View Transaction →</a>
     </div>
-    <p style="font-size:12px;color:#999">This is an automated system notification. Please do not reply. Contact support@portraitpayai.com for questions.</p>
+    <p style="font-size:12px;color:#999">This is an automated system notification. Please do not reply. Contact contact@portraitpayai.com for questions.</p>
   </div>
 </div>
 </body>
 </html>`;
 
-  const text = `PortraitPay AI — Portrait Certification Complete\n\nHello ${name}!\nYour portrait "${portraitTitle}" has been successfully certified — permanently stored and tamper-proof.\n${certificateNo ? 'Certificate No: ' + certificateNo + '\n' : ''}\nLegal Name: ${idCardName}\nID Type: ${idTypeLabel}\nID Number: ${idCardNumberMasked}\nPortrait Photo Hash: ${portraitImageHash}\nID Photo Hash: ${idCardFrontHash}\nNetwork: ${network === "base" ? "Base Mainnet" : network}\nCertification Time: ${certifiedAtStr}\nTransaction Hash: ${blockchainTxHash}\n\nView Transaction: ${txUrl}\n\nThis is an automated system notification. Please do not reply.`;
+  const text = `PortraitPay AI — Portrait Certification Complete\n\nHello ${name}!\nYour portrait "${portraitTitle}" has been successfully certified — permanently stored and tamper-proof.\n${certificateNo ? 'Certificate No: ' + certificateNo + '\n' : ''}\nLegal Name: ${idCardName}\nID Type: ${idTypeLabel}\nID Number: ${idCardNumberMasked}\nPortrait Photo Hash: ${portraitImageHash}\nID Photo Hash: ${idCardFrontHash}\nNetwork: ${network === "base" ? "Base Mainnet (Production)" : network}\nCertification Time: ${certifiedAtStr}\nTransaction Hash: ${blockchainTxHash}\n\nView Transaction: ${txUrl}\n\nThis is an automated system notification. Please do not reply.`;
 
   try {
     await sendEmail({
@@ -364,72 +364,6 @@ export async function sendConsentPassportEmail(params: ConsentPassportEmailParam
     console.log("[sendConsentPassportEmail] Sent to:", email);
   } catch (err) {
     console.error("[sendConsentPassportEmail] failed:", err instanceof Error ? err.message : String(err));
-  }
-}
-
-// ============================================================
-// Portrait mint failed email
-// ============================================================
-interface PortraitMintFailedEmailParams {
-  name: string;
-  email: string;
-  portraitTitle: string;
-  reason: string;
-}
-
-export async function sendPortraitMintFailedEmail(params: PortraitMintFailedEmailParams): Promise<void> {
-  const { name, email, portraitTitle, reason } = params;
-  const timestamp = new Date().toLocaleString("zh-CN", { timeZone: "Asia/Shanghai" });
-
-  const html = `<!DOCTYPE html>
-<html>
-<head><meta charset="utf-8"></head>
-<body style="font-family:Arial,sans-serif;background:#f4f4f4;margin:0;padding:20px">
-<div style="max-width:600px;margin:0 auto;background:#fff;border-radius:8px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.08)">
-  <div style="background:#dc2626;padding:20px 24px">
-    <h2 style="margin:0;color:#fff;font-size:18px">❌ 区块链上链失败</h2>
-    <p style="margin:4px 0 0;color:#fecaca;font-size:13px">PortraitPay AI · 认证失败通知</p>
-  </div>
-  <div style="padding:24px">
-    <p style="font-size:15px;color:#333">${name}，您好！</p>
-    <p style="font-size:15px;color:#333">您的肖像 <strong>"${portraitTitle}"</strong> 在区块链上链过程中未能通过身份核验，上链已被拒绝。</p>
-    <div style="margin:20px 0;padding:16px;background:#fef2f2;border-radius:8px;border-left:4px solid #dc2626">
-      <p style="margin:0 0 8px;font-size:13px;font-weight:bold;color:#991b1b">❌ 认证失败原因：</p>
-      <p style="margin:0;font-size:14px;color:#991b1b">${reason}</p>
-    </div>
-    <div style="margin:20px 0;padding:16px;background:#f9f9f9;border-radius:8px">
-      <p style="margin:0 0 8px;font-size:13px;font-weight:bold;color:#333">📋 如何解决：</p>
-      <ol style="margin:0;padding-left:20px;color:#666;font-size:13px;line-height:1.8">
-        <li>重新上传一张清晰、正对摄像头的人脸照片（纯色背景最佳）</li>
-        <li>确保证件照片和本次人脸为同一人</li>
-        <li>在光线充足的环境下重新操作</li>
-        <li>如果证件信息有变更，请先更新身份证信息</li>
-      </ol>
-    </div>
-    <div style="text-align:center;margin:20px 0">
-      <a href="${process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"}" style="display:inline-block;padding:12px 24px;background:#dc2626;color:#fff;text-decoration:none;border-radius:8px;font-size:14px">重新上传肖像 →</a>
-    </div>
-    <p style="font-size:12px;color:#999">请求时间：${timestamp}</p>
-    <p style="font-size:12px;color:#999">此通知由系统自动发送，请勿回复。如有疑问请联系 support@portraitpayai.com</p>
-  </div>
-</div>
-</body>
-</html>`;
-
-  const text = `PortraitPay AI — 区块链上链失败通知\n\n${name}，您好！\n您的肖像 "${portraitTitle}" 在区块链上链过程中未能通过身份核验，上链已被拒绝。\n\n失败原因：\n${reason}\n\n如何解决：\n1. 重新上传一张清晰、正对摄像头的人脸照片（纯色背景最佳）\n2. 确保证件照片和本次人脸为同一人\n3. 在光线充足的环境下重新操作\n4. 如果证件信息有变更，请先更新身份证信息\n\n请求时间：${timestamp}\n\n此通知由系统自动发送，请勿回复。`;
-
-  try {
-    await sendEmail({
-      to: email,
-      subject: `❌ 区块链上链失败 - ${portraitTitle}`,
-      html,
-      text,
-    });
-    console.log("[sendPortraitMintFailedEmail] Sent to:", email);
-  } catch (err) {
-    // Non-blocking: log but don't throw
-    console.error("[sendPortraitMintFailedEmail] SMTP send failed (non-blocking):", err instanceof Error ? err.message : String(err));
-    console.log("[sendPortraitMintFailedEmail] Would have sent to:", email, "subject:", `❌ 区块链上链失败 - ${portraitTitle}`, "reason:", reason);
   }
 }
 

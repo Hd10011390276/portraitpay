@@ -102,8 +102,8 @@ export default function LawyersPage() {
             <Link href="/faq" className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white">
               {nav.faq || "FAQ"}
             </Link>
-            <Link href="/celebrity" className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white">
-              {nav.celebrity || "For Actors"}
+            <Link href="/portraits" className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white">
+              {nav.celebrity || "Portraits"}
             </Link>
             <Link href="/lawyer/apply" className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white">
               {nav.lawyer || "Lawyer Registration"}
@@ -135,6 +135,10 @@ export default function LawyersPage() {
           </h1>
           <p className="text-gray-600 dark:text-gray-400 max-w-xl mx-auto mb-8">
             {tl.subtitle || "Browse platform-authorized law firms and lawyers specializing in AI portrait rights protection. All listed lawyers are vetted by PortraitPay AI."}
+          </p>
+
+          <p className="text-sm text-gray-500 dark:text-gray-400 mb-4 max-w-xl mx-auto">
+            Lawyers listed on this platform are independent third-party professionals and are not employees, agents, or affiliates of PortraitPay AI. PortraitPay AI does not endorse or guarantee the services of any listed lawyer. All attorney-client relationships are formed directly between you and the lawyer.
           </p>
 
           {/* Filters */}
@@ -201,7 +205,7 @@ export default function LawyersPage() {
           </div>
         ) : (
           <>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
+            <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
               {tl.showingCount?.replace("{count}", String(filteredLawyers.length)) || `${filteredLawyers.length} lawyer${filteredLawyers.length !== 1 ? "s" : ""} found`}
             </p>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

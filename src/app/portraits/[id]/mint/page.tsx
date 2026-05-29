@@ -479,7 +479,7 @@ function delay(ms: number) {
 function getNetworkLabel(network: string): string {
   const labels: Record<string, string> = {
     sepolia: "Ethereum Sepolia (Testnet)",
-    base: "Base Mainnet",
+    base: "Base Mainnet (Production)",
   };
   return labels[network] ?? network;
 }

@@ -203,7 +203,7 @@ function SettingsContent() {
                 <div key={item.id} className="flex items-start justify-between gap-4">
                   <div className="flex-1">
                     <p className="text-sm font-medium text-gray-900 dark:text-white">{item.label}</p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{item.desc}</p>
+                    <p className="text-xs text-gray-600 dark:text-gray-400 mt-0.5">{item.desc}</p>
                   </div>
                   <button
                     type="button"
@@ -410,7 +410,7 @@ function SettingsContent() {
                   </label>
                 ))}
               </div>
-              <p className="text-xs text-gray-400 mt-1.5">Leave all unchecked = all types allowed</p>
+              <p className="text-xs text-gray-500 mt-1.5">Leave all unchecked = all types allowed</p>
             </div>
 
             {/* Prohibited Content */}
@@ -431,7 +431,7 @@ function SettingsContent() {
                   </label>
                 ))}
               </div>
-              <p className="text-xs text-gray-400 mt-1.5">Content types NEVER allowed regardless of licensing</p>
+              <p className="text-xs text-gray-500 mt-1.5">Content types NEVER allowed regardless of licensing</p>
             </div>
 
             {/* Default Fee + Territory */}
@@ -446,7 +446,7 @@ function SettingsContent() {
                   onChange={(e) => setDefaultLicenseFee(parseFloat(e.target.value) || 0)}
                   className="w-full px-4 py-2.5 border border-gray-200 dark:border-gray-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
                 />
-                <p className="text-xs text-gray-400 mt-1">0 = case by case</p>
+                <p className="text-xs text-gray-500 mt-1">0 = case by case</p>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Default Territory</label>

@@ -14,10 +14,18 @@ import { prisma } from "@/lib/prisma";
 import { getSessionFromRequest } from "@/lib/auth/session";
 import { generateImageKey, uploadFile } from "@/lib/storage";
 
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+
 type RouteContext = { params: Promise<{ id: string }> };
 
 async function computeHash(buffer: Buffer): Promise<string> {
-  const hashBuffer = await crypto.subtle.digest("SHA-256", buffer as unknown as BufferSource);
+  // Use buffer's underlying ArrayBuffer slice to ensure correct byte range
+  const arrayBuf = buffer.buffer.slice(
+    buffer.byteOffset,
+    buffer.byteOffset + buffer.byteLength
+  );
+  const hashBuffer = await crypto.subtle.digest("SHA-256", arrayBuf);
   return Array.from(new Uint8Array(hashBuffer))
     .map(b => b.toString(16).padStart(2, "0"))
     .join("");
@@ -70,9 +78,18 @@ export async function POST(request: NextRequest, context: RouteContext) {
         return NextResponse.json({ success: false, error: "No image provided" }, { status: 400 });
       }
 
+      if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
+        return NextResponse.json({ success: false, error: "Invalid file type. Only JPG, PNG, WebP allowed." }, { status: 400 });
+      }
+
       filename = file.name || filename;
       const arrayBuffer = await file.arrayBuffer();
       imageBuffer = Buffer.from(arrayBuffer);
+
+      // Validate size: max 10MB
+      if (imageBuffer.length > 10 * 1024 * 1024) {
+        return NextResponse.json({ success: false, error: "File too large. Maximum 10MB." }, { status: 400 });
+      }
     } catch (formErr) {
       return NextResponse.json({ success: false, error: "Failed to parse form data" }, { status: 400 });
     }
@@ -107,12 +124,12 @@ export async function POST(request: NextRequest, context: RouteContext) {
     const updateData: Record<string, string> = {};
 
     if (isIdCard) {
-      // Store ID card hash (reuse originalImageUrl for simplicity)
+      // Store ID card image URL + hash
       updateData.originalImageUrl = objectUrl;
       updateData.idCardFrontHash = imageHash;
     } else {
-      // Store portrait hash + URL
-      updateData.originalImageUrl = objectUrl;
+      // Store portrait face photo URL + hash (separate from ID card)
+      updateData.portraitImageUrl = objectUrl;
       updateData.thumbnailUrl = objectUrl;
       updateData.portraitImageHash = imageHash;
     }
@@ -127,6 +144,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
       data: {
         portraitId: updated.id,
         originalImageUrl: updated.originalImageUrl,
+        portraitImageUrl: updated.portraitImageUrl,
         thumbnailUrl: updated.thumbnailUrl,
         imageHash: isIdCard ? updated.idCardFrontHash : updated.portraitImageHash,
       },

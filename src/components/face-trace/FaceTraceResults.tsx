@@ -80,7 +80,7 @@ function MatchCard({
   const catIcon = CATEGORY_ICON[result.category] ?? CATEGORY_ICON.default;
 
   return (
-    <div className="bg-white border border-gray-200 rounded-2xl p-5 hover:shadow-md hover:border-indigo-200 transition-all">
+    <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl p-5 hover:shadow-md hover:border-indigo-200 dark:hover:border-indigo-700 transition-all">
       {/* Header */}
       <div className="flex items-start justify-between gap-3 mb-4">
         <div className="flex items-center gap-3">
